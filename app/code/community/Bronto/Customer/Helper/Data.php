@@ -15,14 +15,30 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
 
     const XML_PREFIX_CUSTOMER_ATTR = 'bronto_customer/attributes/';
     const XML_PREFIX_ADDRESS_ATTR  = 'bronto_customer/address_attributes/';
+    const XML_PREFIX_BILLING_ATTR  = 'bronto_customer/billing_address_attributes/';
 
     const XML_PATH_CRON_STRING = 'crontab/jobs/bronto_customer_import/schedule/cron_expr';
     const XML_PATH_CRON_MODEL  = 'crontab/jobs/bronto_customer_import/run/model';
+
+    private $_addressTypes = array(
+        'address' => 'getPrimaryShippingAddress',
+        'billing_address' => 'getPrimaryBillingAddress'
+    );
 
     /**
      * Module Human Readable Name
      */
     protected $_name = 'Bronto Contact Import';
+
+    /**
+     * Gets the address types to customer method to obtain them
+     *
+     * @return array
+     */
+    public function getAddressTypes()
+    {
+        return $this->_addressTypes;
+    }
 
     /**
      * Get Human Readable Name
@@ -170,10 +186,36 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
                 'new_city',
                 'region',
                 'new_region',
+                'region_code_id',
+                'new_region_code_id',
                 'postcode',
                 'new_postcode',
                 'country_id',
                 'new_country_id',
+                'country_code_id',
+                'new_country_code_id',
+                'company',
+                'new_company',
+                'telephone',
+                'new_telephone',
+                'fax',
+                'new_fax',
+            ),
+            'billing_address_attributes' => array(
+                'street',
+                'new_street',
+                'city',
+                'new_city',
+                'region',
+                'new_region',
+                'region_code_id',
+                'new_region_code_id',
+                'postcode',
+                'new_postcode',
+                'country_id',
+                'new_country_id',
+                'country_code_id',
+                'new_country_code_id',
                 'company',
                 'new_company',
                 'telephone',
@@ -199,6 +241,22 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
     }
 
     /**
+     * Gets Customer attributes that may or may not be prefixed
+     *
+     * @param string $attribute
+     * @param string $prefix
+     * @param string $scope
+     * @param int $scopeId
+     *
+     * @return mixed
+     */
+    public function getPrefixedAttributeField($attribute, $prefix = '', $scope = 'default', $scopeId = 0)
+    {
+        $prefix = !empty($prefix) ? $prefix . '_' : '';
+        return $this->getAdminScopedConfig("bronto_customer/{$prefix}attributes/" . $attribute, $scope, $scopeId);
+    }
+
+    /**
      * Get Address Attribute Field for scope
      *
      * @param        $attribute
@@ -209,7 +267,21 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
      */
     public function getAddressAttributeField($attribute, $scope = 'default', $scopeId = 0)
     {
-        return $this->getAdminScopedConfig(self::XML_PREFIX_ADDRESS_ATTR . $attribute, $scope, $scopeId);
+        return $this->getPrefixedAttributeField($attribute, 'address', $scope, $scopeId);
+    }
+
+    /**
+     * Get the billing address attribute field for scope
+     *
+     * @param string $attribute
+     * @param string $scope
+     * @param int $scopeId
+     *
+     * @return mixed
+     */
+    public function getBillingAddressAttributeField($attribute, $scope = 'default', $scopeId = 0)
+    {
+        return $this->getPrefixedAttributeField($attribute, 'billing_address', $scope, $scopeId);
     }
 
     /**
@@ -286,7 +358,7 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
      *
      * @return array
      */
-    public function getCustomConfig($store = null)
+    public function getCustomConfig($scope = 'default', $scopeId = 0)
     {
         $customerAttributes = Mage::getModel('customer/entity_attribute_collection');
         $addressAttributes  = Mage::getModel('customer/entity_address_attribute_collection');
@@ -294,21 +366,23 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
         $attributes = array();
         $data       = array();
         foreach ($customerAttributes as $attribute) {
-            $config = $this->getCustomerAttributeField($attribute->getAttributeCode(), $store);
+            $config = $this->getCustomerAttributeField($attribute->getAttributeCode(), $scope, $scopeId);
             if ($config && $attribute->getFrontendLabel()) {
                 $data[$attribute->getAttributeCode()] = $config;
             }
         }
         $attributes['customer_attributes'] = $data;
 
-        $data = array();
-        foreach ($addressAttributes as $attribute) {
-            $config = $this->getAddressAttributeField($attribute->getAttributeCode(), $store);
-            if ($config && $attribute->getFrontendLabel()) {
-                $data[$attribute->getAttributeCode()] = $config;
+        foreach ($this->_addressTypes as $prefix => $methodName) {
+            $addressData = array();
+            foreach ($addressAttributes as $attribute) {
+                $config = $this->getPrefixedAttributeField($attribute->getAttributeCode(), $prefix, $scope, $scopeId);
+                if ($config && $attribute->getFrontendLabel()) {
+                    $addressData[$attribute->getAttributeCode()] = $config;
+                }
             }
+            $attributes["{$prefix}_attributes"] = $addressData;
         }
-        $attributes['address_attributes'] = $data;
 
         return $attributes;
     }

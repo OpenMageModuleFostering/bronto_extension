@@ -121,7 +121,9 @@ class Bronto_Newsletter_Model_Observer
             switch ($isSubscribed) {
                 case Bronto_Api_Contact::STATUS_ACTIVE:
                 case Bronto_Api_Contact::STATUS_ONBOARDING:
-                    return $subscriber->subscribe($email);
+                    if ($subscriber->getStatus() != Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED) {
+                        $subscriber->subscribe($email);
+                    }
                     break;
                 case Bronto_Api_Contact::STATUS_UNSUBSCRIBED:
                     return $subscriber->unsubscribe();

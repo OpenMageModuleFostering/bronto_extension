@@ -28,6 +28,7 @@ class Bronto_Email_Model_Resource_Setup extends Bronto_Common_Model_Resource_Abs
             `store_id` int(11) NOT NULL DEFAULT '1' COMMENT 'Store ID for Template',
             `sales_rule` int(10) NULL COMMENT 'Sales Rule for Coupon Codes',
             `product_recommendation` int(11) unsigned DEFAULT NULL COMMENT 'Product Recommendations',
+            `send_flags` int(3) unsigned DEFAULT NULL COMMENT 'Delivery Flags',
             PRIMARY KEY (`core_template_id`),
             KEY `IDX_BRONTO_STORE_ID` (`store_id`),
             CONSTRAINT `FK_BRONTO_EMAIL_TEMPLATE_ID_CORE_EMAIL_TEMPLATE_ID` FOREIGN KEY (`core_template_id`)
@@ -62,8 +63,14 @@ class Bronto_Email_Model_Resource_Setup extends Bronto_Common_Model_Resource_Abs
         return array(
             '1.2.0' => array(
                 'message' => array(
-                  'sql' =>
-                  "ALTER TABLE {table} ADD COLUMN `product_recommendation` int(11) unsigned DEFAULT NULL AFTER `sales_rule`;"
+                    'sql' =>
+                    "ALTER TABLE {table} ADD COLUMN `product_recommendation` int(11) unsigned DEFAULT NULL AFTER `sales_rule`;"
+                )
+            ),
+            '1.2.1' => array(
+                'message' => array(
+                    'sql' =>
+                    "ALTER TABLE {table} ADD COLUMN `send_flags` int(3) unsigned DEFAULT NULL AFTER `product_recommendation`;"
                 )
             )
         );

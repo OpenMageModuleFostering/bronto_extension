@@ -12,6 +12,16 @@ class Bronto_Common_Model_Keysentry extends Mage_Core_Model_Abstract
     const COMMON = 'bronto_common';
 
     /**
+     * Bronto API Retry and Send Queue
+     */
+    const API = 'bronto_common/api';
+
+    /**
+     * Bronto Couponmodue alias
+     */
+    const COUPON = 'bronto_common/coupon';
+
+    /**
      * Bronto customer module alias
      */
     const CUSTOMER = 'bronto_customer';
@@ -42,6 +52,11 @@ class Bronto_Common_Model_Keysentry extends Mage_Core_Model_Abstract
     const REVIEWS = 'bronto_reviews';
 
     /**
+     * Bronto product reccommendations
+     */
+    const PRODUCT = 'bronto_product';
+
+    /**
      * Disable all the defined modules for the scope
      *
      * @param mixed   $scope          Site scope
@@ -61,6 +76,9 @@ class Bronto_Common_Model_Keysentry extends Mage_Core_Model_Abstract
         Mage::helper(self::ORDER)->disableModule($scope, $scopeId, $deleteChildren);
         Mage::helper(self::REMINDER)->disableModule($scope, $scopeId, $deleteChildren);
         Mage::helper(self::REVIEWS)->disableModule($scope, $scopeId, $deleteChildren);
+        Mage::helper(self::PRODUCT)->disableModule($scope, $scopeId, $deleteChildren);
+        Mage::helper(self::COUPON)->disableModule($scope, $scopeId, $deleteChildren);
+        Mage::helper(self::API)->disableModule($scope, $scopeId, $deleteChildren);
 
         Mage::getConfig()->reinit();
         Mage::app()->reinitStores();

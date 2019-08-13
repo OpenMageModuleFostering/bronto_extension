@@ -18,7 +18,7 @@
                             <config>
                                 <children>
                                     <bronto_verify translate="title" module="bronto_verify">
-                                        <title>Bronto Verify Installation Section</title>
+                                        <title>Bronto Admin Tools Section</title>
                                         <sort_order>9999</sort_order>
                                     </bronto_verify>
                                 </children>

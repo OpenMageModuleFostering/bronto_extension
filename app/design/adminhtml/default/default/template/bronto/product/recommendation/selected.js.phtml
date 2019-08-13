@@ -3,7 +3,7 @@ function selectProducts(fieldId, matchesField) {
   if (matchesField) {
     var source = fieldId.split('_')[1];
     var original = source + "_source";
-    var title = $$('label[for=' + original + ']').first().innerText.replace("*", '');
+    var title = $(original).getAttribute('title');
   } else {
     var source = 'none';
     var title = 'Optional Products';

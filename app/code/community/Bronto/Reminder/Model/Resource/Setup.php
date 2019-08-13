@@ -53,6 +53,7 @@ class Bronto_Reminder_Model_Resource_Setup extends Bronto_Common_Model_Resource_
           `store_id` smallint(5) NOT NULL,
           `message_id` varchar(255) NOT NULL DEFAULT '',
           `send_type` varchar(20) NOT NULL DEFAULT 'transactional',
+          `send_flags` int(3) unsigned DEFAULT NULL,
           `label` varchar(255) DEFAULT NULL,
           `description` text,
           PRIMARY KEY (`rule_id`,`store_id`),
@@ -126,6 +127,12 @@ class Bronto_Reminder_Model_Resource_Setup extends Bronto_Common_Model_Resource_
                 ),
                 'coupon' => array(
                     'sql' => 'ALTER TABLE {table} ADD COLUMN `product_recommendation_id` int(11) unsigned DEFAULT NULL AFTER `coupon_id`;'
+                )
+            ),
+            '1.4.18' => array(
+                'message' => array(
+                    'sql' =>
+                    "ALTER TABLE {table} ADD COLUMN `send_flags` int(3) unsigned DEFAULT NULL AFTER `send_type`;"
                 )
             )
         );

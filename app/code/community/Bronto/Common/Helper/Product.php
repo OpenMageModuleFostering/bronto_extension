@@ -103,6 +103,23 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
     }
 
     /**
+     * Gets the configurable product isf the product is a simple/configurable
+     *
+     * @param Mage_Catalog_Model_Product $product
+     * @return Mage_Catalog_Model_Product
+     */
+    public function getConfigurableProduct($product)
+    {
+        if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
+            $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
+            if (isset($parentIds[0])) {
+                return $this->getProduct($parentIds[0], $product->getStoreId());
+            }
+        }
+        return $product;
+    }
+
+    /**
      * Get Attributes for Product
      *
      * @param      $productId

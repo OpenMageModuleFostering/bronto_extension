@@ -120,26 +120,28 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
             Event.observe(window, 'load', function() {
                 triggerSendType($('template_send_type').value);
             });
-            
+
             function triggerSendType(sendType) {
                 if (sendType == 'magento') {
                     // Disable Some
                     $('bronto_message_id').disable();
+                    $('send_flags').disable();
                     $('sales_rule').disable();
-                    $('product_recommendation').disable();
+                    $$('#product_recommendation').each(function(elem) { elem.disable() });
+                    $$('#container_product_recommendation').each(function(elem) { elem.hide() } );
                     $('orig_template_text').disable();
                     $('container_bronto_message_id').hide();
+                    $('container_send_flags').hide();
                     $('container_sales_rule').hide();
-                    $('container_product_recommendation').hide();
                     $('container_orig_template_text').hide();
-                    
+
                     // Enable Others
                     $('template_subject').enable();
                     $('template_text').enable();
                     $('container_template_subject').show();
                     $('container_template_text').show();
                     $('insert_variable').show();
-                    
+
                     if ($('field_template_styles') != undefined) {
                         $('field_template_styles').show();
                         $('template_styles').enable();
@@ -147,35 +149,37 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                 } else {
                     // Enable Some
                     $('bronto_message_id').enable();
+                    $('send_flags').enable();
                     $('sales_rule').enable();
-                    $('product_recommendation').enable();
+                    $$('#product_recommendation').each(function(elem) { elem.enable() } );
+                    $$('#container_product_recommendation').each(function(elem) { elem.show() });
                     $('orig_template_text').enable();
                     $('container_bronto_message_id').show();
+                    $('container_send_flags').show();
                     $('container_sales_rule').show();
-                    $('container_product_recommendation').show();
                     $('container_orig_template_text').show();
-                    
+
                     // Disable Others
                     $('template_subject').disable();
                     $('template_text').disable();
                     $('container_template_subject').hide();
                     $('container_template_text').hide();
                     $('insert_variable').hide();
-                    
+
                     if ($('field_template_styles') != undefined) {
                         $('template_styles').disable();
                         $('field_template_styles').hide();
                     }
                 }
             }
-            
+
             function updateMessages(){
                  var storeId   = $('store_id').value;
                  var sendType  = $('template_send_type').value;
                  var template  = '{$templateId}';
-                    
+
                  triggerSendType(sendType);
-                 
+
                  if (sendType != 'magento') {
                     var reloadurl = '" . $this->getUrl('adminhtml/system_email_template/ajaxlist') . "template_id/'+template+'/id/'+storeId+'/type/'+sendType;
                     new Ajax.Request(reloadurl, {
@@ -189,10 +193,10 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                     });
                 }
             }
-            
+
             function syncHiddenValue(element) {
                 var fieldValue = element.value;
-                 
+
                 if ($(element.id + '_hidden') != undefined) {
                     $(element.id + '_hidden').value = fieldValue;
                 }
@@ -231,6 +235,15 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
             'onchange'     => "syncHiddenValue(this);",
             'values'       => Mage::helper('bronto_email/message')->getAllMessageOptions(),
             'required'     => true,
+        ));
+
+        $fieldset->addField('send_flags', 'select', array(
+            'name' => 'send_flags',
+            'label' => Mage::helper('adminhtml')->__('Send Flags'),
+            'title' => Mage::helper('adminhtml')->__('Send Flags'),
+            'container_id' => 'container_send_flags',
+            'values' => Mage::getModel('bronto_common/system_config_source_sendOptions')->toOptionArray(true),
+            'note' => $this->__("Send flags for this message. The options are: <br/> - <strong>Sender Authentication</strong>: Will sign your message with DomainKeys/DKIM, optimizing your message delivery to Hotmail, MSN, and Yahoo! email addresses. <br/> - <strong>Fatigue Override</strong>: The delivery can be sent even if it exceeds the frequency cap settings for a customer. <br/> - <strong>Reply Tracking</strong>: Will store a copy of all replies to your messages on the Replies page within the Bronto platform.")
         ));
 
         // Create field to allow selecting a sales rule to pull a coupon code from

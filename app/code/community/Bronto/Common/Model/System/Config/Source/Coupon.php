@@ -13,23 +13,27 @@ class Bronto_Common_Model_System_Config_Source_Coupon
     {
         $options = array();
         /** @var Mage_SalesRule_Model_Resource_Rule_Collection $rules */
-        $rules = Mage::getModel('salesrule/rule')->getCollection();
+        $now = Mage::getModel('core/date')->date('Y-m-d');
+        $rules = Mage::getModel('salesrule/rule')->getCollection()
+            ->addFieldToFilter('is_active', array('eq' => 1))
+            ->addFieldToFilter('coupon_type', array('in' => array(Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC, Mage_SalesRule_Model_Rule::COUPON_TYPE_AUTO)))
+            ->addFieldToFilter('from_date', array(
+                array('null' => true),
+                array('lteq' => $now)
+            ))
+            ->addFieldToFilter('to_date', array(
+                array('null' => true),
+                array('gteq' => $now)
+            ))
+            ->setOrder('sort_order');
+        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 6, 10, 11, array('major' => 9, 'edition' => 'Professional')))) {
+            $rules->addFieldToFilter('use_auto_generation', array('eq' => 0));
+        }
 
         // If there are any rules
-        if ($rules->count()) {
+        if ($rules->getSize()) {
             // Cycle Through Rules
             foreach ($rules as $rule) {
-                // If rule is not active, the from date or to date are invalid, or rule doesn't have a coupon just skip this rule
-                if (
-                    !$rule->getIsActive() ||
-                    (!is_null($rule->getFromDate()) && $rule->getFromDate() > Mage::getModel('core/date')->date('Y-m-d')) ||
-                    (!is_null($rule->getToDate()) && $rule->getToDate() < Mage::getModel('core/date')->date('Y-m-d')) ||
-                    ($rule->getCouponType() == Mage_SalesRule_Model_Rule::COUPON_TYPE_NO_COUPON) ||
-                    ($rule->getCouponType() == Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC && $rule->getUseAutoGeneration())
-                ) {
-                    continue;
-                }
-
                 // Handle Coupon Label
                 $couponLabel = '(Coupon: *Auto Generated*)';
                 if ($couponCode = $rule->getPrimaryCoupon()->getCode()) {

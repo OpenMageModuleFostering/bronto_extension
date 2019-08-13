@@ -13,6 +13,8 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     const XML_PATH_INSTALL_DATE  = 'bronto_order/settings/install_date';
     const XML_PATH_UPGRADE_DATE  = 'bronto_order/settings/upgrade_date';
     const XML_PATH_BULK_LIMIT    = 'bronto_order/settings/bulk_limit';
+    const XML_PATH_IMPORT_STATES = 'bronto_order/settings/import_states';
+    const XML_PATH_DELETE_STATES = 'bronto_order/settings/delete_states';
 
     const XML_PATH_PRICE         = 'bronto_order/import/price';
     const XML_PATH_DESCRIPTION   = 'bronto_order/import/description';
@@ -93,6 +95,34 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     public function canUseMageCron()
     {
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_MAGE_CRON, 'default', 0);
+    }
+
+    /**
+     * Gets the valid import states
+     *
+     * @return array
+     */
+    public function getImportStates($scope = 'default', $scopeId = 0)
+    {
+        $states = $this->getAdminScopedConfig(self::XML_PATH_IMPORT_STATES, $scope, $scopeId);
+        if (is_string($states)) {
+            $states = explode(',', $states);
+        }
+        return $states;
+    }
+
+    /**
+     * Gets the valid delete states
+     *
+     * @return array
+     */
+    public function getDeleteStates($scope = 'default', $scopeId = 0)
+    {
+        $states = $this->getAdminScopedConfig(self::XML_PATH_DELETE_STATES, $scope, $scopeId);
+        if (is_string($states)) {
+            $states = explode(',', $states);
+        }
+        return $states;
     }
 
     /**

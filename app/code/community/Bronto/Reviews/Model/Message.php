@@ -3,8 +3,10 @@
 class Bronto_Reviews_Model_Message extends Bronto_Common_Model_Email_Template
 {
     protected $_helper = 'bronto_reviews';
-
     protected $_apiLogFile = 'bronto_reviews_api.log';
+
+    protected $_additionalFields = array();
+    protected $_additionalData = array();
 
     /**
      * @see parent
@@ -15,13 +17,83 @@ class Bronto_Reviews_Model_Message extends Bronto_Common_Model_Email_Template
     }
 
     /**
+     * Set the send period for this message
+     *
+     * @param int $sendPeriod
+     * @return Bronto_Reviews_Model_Message
+     */
+    public function setSendTime($sendPeriod)
+    {
+        return $this->addParam('sendPeriod', max($sendPeriod, 0));
+    }
+
+    /**
+     * Set the time of day for this message
+     *
+     * @param int $timeOfDay
+     * @return Bronto_Reviews_Model_Message
+     */
+    public function setTimeOfDay($timeOfDay)
+    {
+        return $this->addParam('timeOfDay', $timeOfDay);
+    }
+
+    /**
+     * Sets some arbitrary param value to be serialized
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return Bronto_Reviews_Model_Message
+     */
+    public function addParam($key, $value)
+    {
+        $this->_additionalData[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * Gets all of the serialized values
+     *
+     * @return array
+     */
+    public function getAdditionalData()
+    {
+        return $this->_additionalData;
+    }
+
+    /**
+     * Sets some arbitrary delivery fields to be sent
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return Bronto_Reviews_Model_Message
+     */
+    public function addDeliveryField($key, $value)
+    {
+        $this->_additionalFields[$key] = $value;
+        return $this;
+    }
+
+    /**
      * @see parent
      */
     protected function _startTime($storeId)
     {
-        $helper = Mage::helper($this->_helper);
-        $sendPeriod = $helper->getReviewSendPeriod('store', $storeId);
-        return date('c', strtotime('+' . abs($sendPeriod) . ' days'));
+        $now = time();
+        $sendPeriod = $this->_additionalData['sendPeriod'];
+        $timeOfDay = $this->_additionalData['timeOfDay'];
+        $currentDays = strtotime('+' . abs($sendPeriod) . ' days', $now);
+        if ($timeOfDay > -1) {
+            $currentHour = (int)date('H', $now);
+            // Target time is in the future: add the diff
+            if ($currentHour < $timeOfDay) {
+                $currentDays += (($timeOfDay - $currentHour) * 60 * 60);
+            // Target time is earlier in the day: add one day, and sub diff
+            } else if ($timeOfDay < $currentHour) {
+                $currentDays += (24 * 60 * 60) - (($currentHour - $timeOfDay) * 60 * 60);
+            }
+        }
+        return date('c', $currentDays);
     }
 
     /**
@@ -29,26 +101,8 @@ class Bronto_Reviews_Model_Message extends Bronto_Common_Model_Email_Template
      */
     protected function _additionalFields($delivery, $variables)
     {
-        $order = $variables['order'];
-        $storeId = $order->getStoreId();
-        $helper = Mage::helper('bronto_common/product');
-        $reviewHelper = Mage::helper('bronto_reviews');
-        $urlSuffix = ltrim($reviewHelper->getProductUrlSuffix('store', $storeId), '/');
-
-        $index = 1;
-        foreach ($order->getAllItems() as $item) {
-          if (!$item->getParentItem()) {
-                $product = Mage::getModel('catalog/product')
-                    ->setStoreId($storeId)
-                    ->load($item->getProductId());
-
-                $productUrl = $helper->getProductAttribute($product, 'url', $storeId) . $urlSuffix;
-                $reviewUrl = $reviewHelper->getReviewsUrl($product, $storeId) . $urlSuffix;
-
-                $delivery->setField('reviewUrl_' . $index, $reviewUrl, 'html');
-                $delivery->setField('productUrl_' . $index, $productUrl, 'html');
-                $index++;
-            }
+        foreach ($this->_additionalFields as $key => $value) {
+            $delivery->setField($key, $value, 'html');
         }
     }
 
@@ -57,7 +111,17 @@ class Bronto_Reviews_Model_Message extends Bronto_Common_Model_Email_Template
      */
     protected function _additionalData()
     {
-        return array('order_id' => $this->getOrderId());
+        return $this->_additionalData;
+    }
+
+    /**
+     * @see parent
+     */
+    protected function setSendQueue($queue)
+    {
+        $this->_additionalData = $queue->getAdditionalData()->getData();
+        $this->setData('send_queue', $queue);
+        return $this;
     }
 
     /**
@@ -68,12 +132,19 @@ class Bronto_Reviews_Model_Message extends Bronto_Common_Model_Email_Template
         $helper = Mage::helper($this->_helper);
         if (!is_null($delivery)) {
             if ($success) {
-                $review = Mage::getModel('bronto_reviews/queue')
-                    ->load($this->getParams()->getOrderId())
-                    ->setDeliveryId($delivery->id);
-                if (!is_null($review->getDeliveryId())) {
-                    $review->save();
-                }
+                $queue = $this->getSendQueue();
+                $orderId = $queue->getAdditionalData()->getOrderId();
+                $log = Mage::getModel('bronto_reviews/log')
+                    ->loadByOrderAndDeliveryId($orderId, $queue->getId());
+                $logId = $log->getId();
+                $log->setData($queue->getAdditionalData()->getData());
+                $log->setId($logId)
+                    ->setDeliveryId($delivery->id)
+                    ->setMessageId($delivery->messageId)
+                    ->setMessageName($this->getBrontoMessageName())
+                    ->setFields(serialize($delivery->getFields()))
+                    ->setDeliveryDate(date('Y-m-d H:i:s', strtotime($delivery->start)));
+                $log->save();
             }
             $status = $success ? 'Successful' : 'Failed';
 

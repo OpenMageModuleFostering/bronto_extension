@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Common>
-            <version>2.3.0</version>
+            <version>2.4.0</version>
         </Bronto_Common>
     </modules>
     <global>
@@ -47,6 +47,26 @@
                 </connection>
             </bronto_common_setup>
         </resources>
+        <events>
+          <controller_action_predispatch>
+              <observers>
+                  <bronto_coupon_session_set>
+                      <type>singleton</type>
+                      <class>bronto_common/coupon_observer</class>
+                      <method>addCodeToSession</method>
+                  </bronto_coupon_session_set>
+              </observers>
+          </controller_action_predispatch>
+          <checkout_cart_product_add_after>
+              <observers>
+                  <bronto_coupon_session_add_product>
+                      <type>singleton</type>
+                      <class>bronto_common/coupon_observer</class>
+                      <method>addCodeToQuote</method>
+                  </bronto_coupon_session_add_product>
+              </observers>
+          </checkout_cart_product_add_after>
+        </events>
     </global>
     <frontend>
         <layout>
@@ -57,13 +77,13 @@
             </updates>
         </layout>
         <routers>
-            <bronto_common>
+            <bronto_coupon>
                 <use>standard</use>
                 <args>
                     <module>Bronto_Common</module>
-                    <frontName>bronto</frontName>
+                    <frontName>apply</frontName>
                 </args>
-            </bronto_common>
+            </bronto_coupon>
         </routers>
     </frontend>
     <admin>
@@ -142,6 +162,20 @@
                 <subscribe>0</subscribe>
             </settings>
         </bronto_popup>
+        <bronto_coupon>
+            <apply_coupon>
+                <enabled>0</enabled>
+                <use_observer>1</use_observer>
+                <coupon_code_param>coupon</coupon_code_param>
+                <error_message_param>invalid_coupon</error_message_param>
+                <success_message><![CDATA[Coupon {code} was successfully applied to your shopping session.]]></success_message>
+                <invalid><![CDATA[The Coupon {code} is invalid.]]></invalid>
+                <depleted><![CDATA[The Coupon {code} has been depleted.]]></depleted>
+                <expired><![CDATA[The Coupon {code} has expired.]]></expired>
+                <conflict><![CDATA[Your shopping session already has coupon {oldCode} applied. {link} to apply {newCode} instead.]]></conflict>
+                <link>Click here</link>
+            </apply_coupon>
+        </bronto_coupon>
         <bronto_api>
             <settings>
                 <enabled>0</enabled>

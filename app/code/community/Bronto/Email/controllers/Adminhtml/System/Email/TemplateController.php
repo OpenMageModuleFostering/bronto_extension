@@ -257,6 +257,11 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
                 $brontoTemplate->setProductRecommendation($rec);
             }
 
+            if ($request->has('send_flags')) {
+                $sendFlags = $request->getParam('send_flags', null);
+                $brontoTemplate->setSendFlags($sendFlags);
+            }
+
             $salesRule = $request->getParam('sales_rule', null);
             $brontoTemplate->setSalesRule($salesRule);
             $brontoTemplate->setTemplateSendType($sendType);

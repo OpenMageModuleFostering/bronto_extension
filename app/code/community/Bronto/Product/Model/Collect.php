@@ -26,19 +26,37 @@ class Bronto_Product_Model_Collect extends Bronto_Product_Model_Collect_Abstract
     protected function _invokeSource($target, $source, $product = null)
     {
         if (!empty($source)) {
+            $helper = Mage::helper('bronto_product');
             $method = $this->_method($source);
             if ($method) {
-                Mage::helper('bronto_product')->writeDebug("Invoking {$source} on collection of {$this->_recommendation->getName()} on store {$this->getStoreId()}");
-                $productIds = $method
-                    ->setStoreId($this->getStoreId())
-                    ->setRecommendation($this->_recommendation)
-                    ->setOriginalHash($this->_hash + $this->_products)
-                    ->setProduct($product)
-                    ->setSource($target)
-                    ->setRemainingCount($this->getRemainingCount())
-                    ->collect();
+                $helper->writeDebug("Invoking {$source} on collection of {$this->_recommendation->getName()} on store {$this->getStoreId()}");
+                try {
+                    $productHash = $method
+                        ->setStoreId($this->getStoreId())
+                        ->setRecommendation($this->_recommendation)
+                        ->setExcluded($this->_excluded + $this->_hash)
+                        ->setProduct($product)
+                        ->setSource($target)
+                        ->setRemainingCount($this->getRemainingCount())
+                        ->collect();
 
-                $this->_fillProducts($productIds);
+                    $result = new stdClass;
+                    $result->products = $productHash;
+                    Mage::dispatchEvent("bronto_product_collect_{$source}_result", array(
+                        'result' => $result,
+                        'collect' => $this,
+                        'source' => $target,
+                        'recommendation' => $this->_recommendation,
+                    ));
+
+                    $this->_excluded += $result->products;
+                    if ($target != Bronto_Product_Model_Recommendation::SOURCE_EXCLUSION) {
+                        $this->_products += $result->products;
+                        $this->_remainingCount -= count($result->products);
+                    }
+                } catch (Exception $e) {
+                    $helper->writeError("Failed to invoke {$source} on collection of {$this->_recommendation->getName()} on store {$this->getStoreId()}: {$e->getMessage()}");
+                }
             }
         }
     }
@@ -54,10 +72,14 @@ class Bronto_Product_Model_Collect extends Bronto_Product_Model_Collect_Abstract
             Mage::throwException('Product Recommendation is required for collecting recommended products');
         }
 
+        Mage::dispatchEvent("bronto_product_before_collect", array(
+            'collect' => $this,
+            'recommendation' => $this->_recommendation
+        ));
         foreach ($this->_recommendation->getSources() as $source => $method) {
             if ($this->_recommendation->isProductRelated($source)) {
-                if (is_null($this->_hash)) {
-                    Mage::helper('bronto_product')->writeInfo('originalHash cannot be null for a product related source. Skipping');
+                if (empty($this->_hash)) {
+                    Mage::helper('bronto_product')->writeInfo('originalHash cannot be empty for a product related source. Skipping');
                     continue;
                 }
                 foreach ($this->_hash as $productId => $product) {
@@ -70,6 +92,10 @@ class Bronto_Product_Model_Collect extends Bronto_Product_Model_Collect_Abstract
                 $this->_invokeSource($source, $method);
             }
         }
-        return array_keys($this->_products);
+        Mage::dispatchEvent("bronto_product_after_collect", array(
+            'collect' => $this,
+            'recommendation' => $this->_recommendation
+        ));
+        return $this->_products;
     }
 }

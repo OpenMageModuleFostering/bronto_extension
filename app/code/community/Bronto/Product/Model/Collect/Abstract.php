@@ -2,7 +2,8 @@
 
 abstract class Bronto_Product_Model_Collect_Abstract {
     protected $_products = array();
-    protected $_hash;
+    protected $_hash = array();
+    protected $_excluded = array();
     protected $_storeId;
     protected $_recommendation;
     protected $_remainingCount;
@@ -12,6 +13,7 @@ abstract class Bronto_Product_Model_Collect_Abstract {
 
     /**
      * Implementors override this specialized collection method
+     * Implementors should return a product hash table
      *
      * @return array
      */
@@ -47,7 +49,7 @@ abstract class Bronto_Product_Model_Collect_Abstract {
         if (!$this->isReachedMax()) {
             return $this->collect();
         }
-        return array_keys($this->_products);
+        return $this->_products;
     }
 
     /**
@@ -73,7 +75,7 @@ abstract class Bronto_Product_Model_Collect_Abstract {
     }
 
     /**
-     * Sets the original hash to be used to dedupe the collection
+     * Sets the original hash to be treated like shopping context
      *
      * @param array $originalHash
      * @return Bronto_Product_Model_Collect_Abstract
@@ -81,6 +83,18 @@ abstract class Bronto_Product_Model_Collect_Abstract {
     public function setOriginalHash($originalHash)
     {
         $this->_hash = $originalHash;
+        return $this;
+    }
+
+    /**
+     * Sets the excluded products hash to be used to dedupe the collection
+     *
+     * @param array $excluded
+     * return Bronto_Product_Model_Collect_Abstract
+     */
+    public function setExcluded($excluded)
+    {
+        $this->_excluded = $excluded;
         return $this;
     }
 
@@ -164,23 +178,27 @@ abstract class Bronto_Product_Model_Collect_Abstract {
     protected function _fillProducts($productsOrIds)
     {
         $products = array();
+        $helper = Mage::helper('bronto_common/product');
         foreach ($productsOrIds as $productOrId) {
-            if ($this->isReachedMax()) {
+            if ($this->_remainingCount - count($products) <= 0) {
                 break;
             }
-            if ($productOrId instanceof Mage_Catalog_Model_Product) {
-                $productId = $productOrId->getId();
-            } else if ($productOrId instanceof Mage_Reports_Model_Event) {
+            if ($productOrId instanceof Mage_Reports_Model_Event) {
                 $productId = $productOrId->getObjectId();
-            } else {
+            } else if (is_numeric($productOrId)) {
                 $productId = $productOrId;
+            } else {
+                $productId = $productOrId->getId();
             }
-            if (!$this->_isValidProduct($productId)) {
+            $product = $helper->getProduct($productId, $this->getStoreId());
+            if (!$product->getId()) {
                 continue;
             }
-            $this->_products[$productId] = 1;
-            $this->_remainingCount--;
-            $products[] = $productId;
+            $product = $helper->getConfigurableProduct($product);
+            if (!$this->_isValidProduct($product->getId())) {
+                continue;
+            }
+            $products[$product->getId()] = $product;
         }
         return $products;
     }
@@ -193,7 +211,7 @@ abstract class Bronto_Product_Model_Collect_Abstract {
      */
     protected function _isValidProduct($productId)
     {
-        if (array_key_exists($productId, $this->_hash)) {
+        if (array_key_exists($productId, $this->_excluded)) {
             return false;
         }
         if (array_key_exists($productId, $this->_products)) {

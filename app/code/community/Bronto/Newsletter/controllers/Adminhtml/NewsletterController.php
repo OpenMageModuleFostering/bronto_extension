@@ -105,6 +105,7 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
                 $resource->getTable('bronto_newsletter/queue'),
                 array('imported' => 1),
                 array('bronto_suppressed IS NULL' => ''));
+            $helper->writeInfo("Mark All Subscribers was explicitly pressed.");
         } catch (Exception $e) {
             $helper->writeError($e);
             $this->_getSession()->addError('Mark All failed: ' . $e->getMessage());
@@ -170,7 +171,11 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
             $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
         }
 
-        $this->_getSession()->addSuccess(sprintf("%d of %d Subscribers were added to the Queue", $imported, $waiting));
+        if ($imported == $waiting && $waiting == 0) {
+            $this->_getSession()->addSuccess($helper->__('All Subscribers are synced to the queue.'));
+        } else {
+            $this->_getSession()->addSuccess(sprintf("%d of %d Subscribers were added to the Queue", $imported, $waiting));
+        }
 
         $returnParams = array('section' => 'bronto_newsletter');
         $returnParams = array_merge($returnParams, $helper->getScopeParams());

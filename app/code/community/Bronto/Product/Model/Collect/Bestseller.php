@@ -12,8 +12,11 @@ class Bronto_Product_Model_Collect_Bestseller extends Bronto_Product_Model_Colle
             ->setStoreId($this->getStoreId())
             ->addStoreFilter($this->getStoreId())
             ->setOrder('ordered_qty', 'desc')
-            ->addIdFilter(array_keys($this->_hash), true)
             ->setPageSize($this->getRemainingCount());
+
+        if (!empty($this->_excluded)) {
+            $bestSellers->addIdFilter(array_keys($this->_excluded), true);
+        }
 
         Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($bestSellers);
         Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($bestSellers);

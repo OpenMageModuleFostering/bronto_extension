@@ -14,6 +14,7 @@ class Bronto_Email_Helper_Data
     const XML_PATH_LOG_FIELDS_ENABLED = 'bronto_email/settings/log_fields_enabled';
     const XML_PATH_DEFAULT_COUPON     = 'bronto_email/settings/default_coupon';
     const XML_PATH_DEFAULT_REC        = 'bronto_email/settings/default_recommendation';
+    const XML_PATH_DEFAULT_SEND_FLAG  = 'bronto_email/settings/default_send_flags';
 
     /**
      * Xml path to email template nodes
@@ -137,6 +138,18 @@ class Bronto_Email_Helper_Data
     }
 
     /**
+     * Gets the default send flags
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return int
+     */
+    public function getDefaultSendFlags($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_DEFAULT_SEND_FLAG, $scope, $scopeId);
+    }
+
+    /**
      * Get Config setting for sending through bronto
      *
      * @param string $scope
@@ -222,12 +235,12 @@ class Bronto_Email_Helper_Data
      *
      * @return array
      */
-    public function getCustomConfig()
+    public function getCustomConfig($scope = 'default', $scopeId = 0)
     {
         $emails    = array();
         $templates = Mage::getModel('bronto_email/template')->getCollection();
 
-        if ($this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
+        if ($this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Professional', 'major' => 9), 10))) {
             $templateTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/template');
             $brontoTable   = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
             $templates->getSelect()->joinLeft(
@@ -250,7 +263,7 @@ class Bronto_Email_Helper_Data
 
         $settings = array();
         foreach ($this->getTemplatePaths() as $configPath) {
-            $data = Mage::getStoreConfig($configPath);
+            $data = $this->getAdminScopedConfig($configPath, $scope, $scopeId);
             if (str_replace('/', '_', $configPath) == $data) {
                 $data = 'Default';
             }

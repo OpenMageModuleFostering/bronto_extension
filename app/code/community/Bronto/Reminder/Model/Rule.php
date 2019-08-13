@@ -34,8 +34,7 @@ class Bronto_Reminder_Model_Rule
         if (Mage::helper('bronto_verify')->isVersionMatch(
             Mage::getVersionInfo(),
             1,
-            array(array('<=', 6), array('edition' => 'Enterprise', 'major' => 9), 10, 11)
-        )
+            array(array('<=', 6), array('edition' => 'Professional', 'major' => 9), 10, 11))
         ) {
             $conditionsArr = unserialize($this->getConditionsSerialized());
             if (!empty($conditionsArr) && is_array($conditionsArr)) {
@@ -49,7 +48,8 @@ class Bronto_Reminder_Model_Rule
             $message  = (empty($data['message_id'])) ? null : $data['message_id'];
             $sendType = (empty($data['send_type'])) ? 'transactional' : $data['send_type'];
             $this->setData('store_message_' . $data['store_id'], $message)
-                ->setData('store_message_sendtype_' . $data['store_id'], $sendType);
+                ->setData('store_message_sendtype_' . $data['store_id'], $sendType)
+                ->setData('store_message_sendflags_' . $data['store_id'], $data['send_flags']);
         }
 
         return $this;
@@ -272,6 +272,7 @@ class Bronto_Reminder_Model_Rule
                     $store->getWebsiteId()
                 );
                 $mail->setTemplateSendType($messageData['send_type']);
+                $mail->setSendFlags($messageData['send_flags']);
                 $mail->setSalesRule($recipient['coupon_id']);
                 $mail->setProductRecommendation($recipient['product_recommendation_id']);
                 $mail->sendTransactional(

@@ -7,6 +7,8 @@
 class Bronto_Common_Helper_Data
     extends Mage_Core_Helper_Abstract
 {
+    const MAX_TOKEN_LENGTH = 36;
+
     /**
      * Common Settings
      */
@@ -315,7 +317,7 @@ class Bronto_Common_Helper_Data
         } else {
             $coreConfig->saveConfig($path, 0, $scope, $scopeId);
 
-            if (!$this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
+            if (!$this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Professional', 'major' => 9), 10))) {
                 list($module) = explode('/', $path);
 
                 $coreConfigData->setScope($scope)
@@ -490,8 +492,7 @@ class Bronto_Common_Helper_Data
             $token = $this->getApiToken($scope, $scopeId);
         }
 
-        // If token is not correct length, return false
-        if (strlen($token) != 36) {
+        if (strlen($token) < Bronto_Common_Helper_Data::MAX_TOKEN_LENGTH) {
             return false;
         }
 
@@ -745,8 +746,8 @@ class Bronto_Common_Helper_Data
         if ($this->isNoticesEnabled()) {
             if (Mage::getSingleton('admin/session')->isLoggedIn()) {
                 /* @var $message Mage_Core_Model_Message_Notice */
-                $message = Mage::getSingleton('core/message')->notice("[Bronto] {$message}");
-                Mage::getSingleton('adminhtml/session')->addMessage($message);
+                $sessionMessage = Mage::getSingleton('core/message')->notice("[Bronto] {$message}");
+                Mage::getSingleton('adminhtml/session')->addMessage($sessionMessage);
             } else {
                 Mage::getSingleton('core/session')->addNotice("[Bronto] {$message}");
             }
@@ -1049,7 +1050,7 @@ class Bronto_Common_Helper_Data
             $minor = $versionInfo['minor'];
 
             if (1 == $major) {
-                if ($minor < 9) {
+                if ($minor < 9 || ($minor == 9 && method_exists('Mage', 'getEdition'))) {
                     return 'Community';
                 } else if ($minor >= 9 && $minor < 11) {
                     return 'Professional';

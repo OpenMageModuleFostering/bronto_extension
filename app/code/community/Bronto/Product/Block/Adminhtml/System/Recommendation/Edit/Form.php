@@ -8,13 +8,14 @@ class Bronto_Product_Block_Adminhtml_System_Recommendation_Edit_Form extends Mag
      * Creates a select button used for choosing products manually
      *
      * @param string $field
+     * @param string $label
      * @return Mage_Adminhtml_Block_Widget_Button
      */
-    protected function _selectButton($field)
+    protected function _selectButton($field, $label = 'Select Products')
     {
         return $this->getLayout()->createBlock('adminhtml/widget_button')
             ->setData(array(
-                'label' => $this->__('Select Products'),
+                'label' => $this->__($label),
                 'onclick' => "selectProducts('{$field}', true);",
                 'class' => 'go'
               ));
@@ -53,6 +54,7 @@ class Bronto_Product_Block_Adminhtml_System_Recommendation_Edit_Form extends Mag
                 $model->setTagContent($this->getLayout()->createBlock('bronto_product/adminhtml_system_recommendation_default')->toHtml());
             }
         }
+        $model->setExclusionSource(Bronto_Product_Model_Recommendation::SOURCE_CUSTOM);
 
         $form = new Varien_Data_Form(array(
             'id' => 'edit_form',
@@ -160,6 +162,24 @@ class Bronto_Product_Block_Adminhtml_System_Recommendation_Edit_Form extends Mag
             'name' => 'fallback_source_hidden'
         ));
 
+        $exclusionSource = $fieldset->addField('exclusion_source', 'hidden', array(
+            'name' => 'exclusion_source',
+            'value' => 'custom',
+            'title' => $this->__('Excluded Source')
+        ));
+
+        $manualExl = $fieldset->addField('manual_exclusion_source', 'text', array(
+            'name' => 'manual_exclusion_source',
+            'label' => $this->_selectButton('manual_exclusion_source', 'Exclude Products')->toHtml(),
+            'title' => $this->__('Custom Products'),
+            'note' => $this->__('Selected Products will be excluded.'),
+        ));
+        $manualExl->setRenderer($this->_getButtonRenderer());
+
+        $manualExlHide = $fieldset->addField('exclusion_source_hidden', 'hidden', array(
+            'name' => 'exclusion_source_hidden',
+        ));
+
         if ($model->isContentTag()) {
             $this->_prepareContentTagBasedForm($fieldset);
         }
@@ -215,6 +235,10 @@ class Bronto_Product_Block_Adminhtml_System_Recommendation_Edit_Form extends Mag
                 </tr>
               </thead>
               <tbody>
+                <tr>
+                  <td>Related Product\'s ID</td>
+                  <td>relatedId_#</td>
+                </tr>
                 <tr>
                   <td>Related Product\'s name</td>
                   <td>relatedName_#</td>

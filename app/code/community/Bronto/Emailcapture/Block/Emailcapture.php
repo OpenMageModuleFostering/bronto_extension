@@ -13,8 +13,8 @@ class Bronto_Emailcapture_Block_Emailcapture extends Mage_Core_Block_Template
      */
     public function getTargetUrl()
     {
-        $store = Mage::app()->getStore();
-        return Mage::getUrl('emailcapture/index/capture', array('_secure' => $store->isCurrentlySecure()));
+        $secure = Mage::app()->getFrontController()->getRequest()->isSecure();
+        return Mage::getUrl('emailcapture/index/capture', array('_secure' => $secure));
     }
 
     /**

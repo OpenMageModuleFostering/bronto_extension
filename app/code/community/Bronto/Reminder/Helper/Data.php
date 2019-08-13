@@ -301,7 +301,7 @@ class Bronto_Reminder_Helper_Data extends Bronto_Common_Helper_Data implements B
      *
      * @return array
      */
-    public function getCustomConfig()
+    public function getCustomConfig($scope = 'default', $scopeId = 0)
     {
         $ruleMeta = Mage::getModel('bronto_reminder/rule');
         $rules    = $ruleMeta->getCollection()->getItems();

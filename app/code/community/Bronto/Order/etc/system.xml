@@ -145,6 +145,34 @@
                             <show_in_store>1</show_in_store>
                             <comment>Number of orders to send to Bronto at a time.</comment>
                         </bulk_limit>
+                        <import_states>
+                            <label>Order Import State</label>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>bronto_order/system_config_source_order_state</source_model>
+                            <sort_order>75</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Import orders that transition to these states.<br/>
+                              <strong>Default</strong>: New, Pending Payment,
+                              Processing, Complete, Payment Review]]></comment>
+                        </import_states>
+                        <delete_states>
+                            <label>Order Delete State</label>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>bronto_order/system_config_source_order_state</source_model>
+                            <sort_order>80</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Delete orders that transition to these states.<br/><strong>Default</strong>: Closed, Canceled, On Hold]]></comment>
+                        </delete_states>
                     </fields>
                 </settings>
                 <import>

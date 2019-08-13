@@ -80,6 +80,33 @@ class Bronto_Common_Model_Resource_Setup extends Bronto_Common_Model_Resource_Ab
         );
     }
 
+    /**
+     * Re-submits the registration information stored in core_config_data
+     *
+     * @return boolean
+     */
+    public function resubmitFormInfo()
+    {
+        $helper = Mage::helper('bronto_common/support');
+        $prefix = Bronto_Common_Helper_Support::XML_PATH_SUPPORT . '/';
+        $skippable = array(
+            Bronto_Common_Helper_Support::XML_PATH_LAST_RUN,
+            Bronto_Common_Helper_Support::XML_PATH_REGISTERED
+        );
+        $submittedData = Mage::getModel('core/config_data')->getCollection()
+            ->addFieldToFilter('scope', array('eq' => 'default'))
+            ->addFieldToFilter('path', array('like' => $prefix . '%'));
+        $formData = array();
+        foreach ($submittedData as $config) {
+            if (in_array($config->getKey(), $skippable)) {
+                continue;
+            }
+            $key = str_replace($prefix, '', $config->getPath());
+            $formData[$key] = $config->getValue();
+        }
+        return $helper->submitSupportForm($formData);
+    }
+
     public function handleOld()
     {
         // Look if Bronto folder exists in local codepool and recursively remove if it is

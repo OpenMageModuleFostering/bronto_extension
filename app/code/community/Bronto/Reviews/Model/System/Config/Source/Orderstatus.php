@@ -12,22 +12,12 @@ class Bronto_Reviews_Model_System_Config_Source_Orderstatus
     public function toOptionArray()
     {
         $statArray = array();
-        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('edition' => 'Enterprise', 'major' => 9)))) {
-            $status = Mage::getModel('sales/order_config')->getStatuses();
-            foreach ($status as $value => $label) {
-                $statArray[] = array(
-                    'value' => $value,
-                    'label' => $label
-                );
-            }
-        } else {
-            $status = Mage::getModel('sales/order_status')->getCollection();
-            foreach ($status as $stat) {
-                $statArray[] = array(
-                    'value' => $stat->getStatus(),
-                    'label' => $stat->getLabel()
-                );
-            }
+        $status = Mage::getModel('sales/order_config')->getStatuses();
+        foreach ($status as $value => $label) {
+            $statArray[] = array(
+                'value' => $value,
+                'label' => $label
+            );
         }
         return $statArray;
         

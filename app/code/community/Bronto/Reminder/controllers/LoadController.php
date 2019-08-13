@@ -62,13 +62,21 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
 
         // Check for persistent cookie
         $pCookie  = Mage::getModel('core/cookie')->get('persistent_shopping_cart', false);
+        $isClear  = (int)Mage::getStoreConfig('persistent/options/logout/clear');
         $persist  = (int)Mage::getStoreConfig('persistent/options/enabled');
         $loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
 
-        // Handle persistent cart issues 
-        if ($customerId && $persist && !$loggedIn && !$pCookie) {
-            Mage::getSingleton('customer/session')->setData('before_auth_url', $redirectUrl);
-            $redirectUrl = Mage::app()->getStore()->getUrl('customer/account/login');
+        if ($customerId && $persist) {
+            $session = Mage::getSingleton('customer/session');
+            $forceLogin = false;
+            if ($loggedIn && $customerId != Mage::getSingleton('customer/session')->getCustomer()->getId()) {
+                $session->logout()->renewSession();
+                $forceLogin = true;
+            }
+            if ($forceLogin || (!$loggedIn && (!$pCookie || ($pCookie && !$isClear)))) {
+                $session->setBeforeAuthUrl($redirectUrl);
+                $redirectUrl = Mage::app()->getStore()->getUrl('customer/account/login');
+            }
         }
 
         $this->_redirectUrl($redirectUrl);

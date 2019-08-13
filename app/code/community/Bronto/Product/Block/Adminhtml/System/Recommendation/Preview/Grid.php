@@ -131,10 +131,10 @@ class Bronto_Product_Block_Adminhtml_System_Recommendation_Preview_Grid extends 
      */
     public function getRelatedProductIds()
     {
-        return Mage::helper('bronto_product')->collectRecommendations(
+        return array_keys(Mage::helper('bronto_product')->collectRecommendations(
             $this->getSelectedRecommendation(),
             $this->_getStore()->getId(),
-            $this->getOptionalProducts());
+            $this->getOptionalProducts()));
     }
 
     /**

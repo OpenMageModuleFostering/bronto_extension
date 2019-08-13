@@ -12,11 +12,11 @@ class Bronto_Common_Model_System_Config_Source_Synclimit
     public function toOptionArray()
     {
         return array(
+            100   => 100,
             250   => 250,
             500   => 500,
             1000  => 1000,
             5000  => 5000,
-            10000 => 10000,
         );
     }
 }

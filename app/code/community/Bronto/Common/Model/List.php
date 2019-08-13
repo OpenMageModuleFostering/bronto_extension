@@ -5,10 +5,16 @@ class Bronto_Common_Model_List
     private $_helper;
     private $_path;
 
-    public function __construct($module)
+    public function __construct($params = array())
     {
-      $this->_path = "{$module}/settings/exclusion";
-      $this->_helper = Mage::helper($module);
+        if (count($params) >= 2) {
+            list($module, $settings) = $params;
+        } else {
+            $module = $params[0];
+            $settings = 'settings';
+        }
+        $this->_path = "{$module}/{$settings}/exclusion";
+        $this->_helper = Mage::helper($module);
     }
 
     /**
@@ -43,9 +49,6 @@ class Bronto_Common_Model_List
             try {
                   $lists = $listObject->readAll(array('id' => $listIds));
                   foreach ($lists->iterate() as $list) {
-                      if ($list->hasError()) {
-                          continue;
-                      }
                       $this->_helper->writeDebug("Excluding list: {$list->name} ({$list->id})");
                       $recipients[] = array(
                           'type' => 'list',

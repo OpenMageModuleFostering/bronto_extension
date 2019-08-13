@@ -13,7 +13,7 @@ class Bronto_Email_Model_Mysql4_Template_Collection extends Mage_Core_Model_Mysq
         parent::_construct();
         $this->_templateTable = $this->getResource()->getTable('bronto_email/template');
         $this->_brontoTable   = $this->getResource()->getTable('bronto_email/message');
-        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, array('edition' => 'Enterprise', 'major' => 9)))) {
+        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, array('edition' => 'Professional', 'major' => 9)))) {
             $this->_select->joinLeft(
                 array($this->_brontoTable),
                 "`{$this->_templateTable}`.`template_id` = `{$this->_brontoTable}`.`core_template_id`"

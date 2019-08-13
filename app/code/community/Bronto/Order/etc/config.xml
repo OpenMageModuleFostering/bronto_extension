@@ -102,14 +102,6 @@
         </events>
     </frontend>
     <admin>
-        <blocks>
-            <adminhtml>
-                <rewrite>
-                    <sales_order_view_tab_info>bronto_order/adminhtml_sales_order_view_tab_info
-                    </sales_order_view_tab_info>
-                </rewrite>
-            </adminhtml>
-        </blocks>
         <routers>
             <adminhtml>
                 <args>
@@ -131,6 +123,8 @@
                 <limit>250</limit>
                 <sync_limit>1000</sync_limit>
                 <bulk_limit>100</bulk_limit>
+                <import_states>new,pending_payment,processing,complete,payment_review</import_states>
+                <delete_states>closed,canceled,holded</delete_states>
             </settings>
             <import>
                 <description>short_description</description>

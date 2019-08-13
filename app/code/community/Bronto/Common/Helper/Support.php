@@ -25,6 +25,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
         'title',
         'using_solution_partner',
         'partner',
+        'terms',
         'magento_version',
         'magento_edition',
         'extension_version',
@@ -184,7 +185,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return array
      */
-    public function getDebugInformation()
+    public function getDebugInformation($scope = 'default', $scope = 0)
     {
         $currentDate   = Mage::getModel('core/date')->date('Y-m-d');
         $brontoModules = $this->getEnabledBrontoModules();
@@ -192,7 +193,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
         $request       = Mage::app()->getRequest();
 
         return array_merge(
-        // Form submission
+            // Form submission
             $formData,
             // Current Websites / Stores; Enabled Bronto Modules
             array(
@@ -211,7 +212,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
             ),
             array(
                 'bronto_modules' => $brontoModules,
-                'bronto_config'  => $this->getBrontoConfigs($brontoModules)
+                'bronto_config'  => $this->getBrontoConfigs($brontoModules, $scope, $scopeId)
             )
         );
     }
@@ -233,14 +234,14 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
         $formData['magento_edition']   = $this->getEdition();
 
         $yesNo         = Mage::getModel('adminhtml/system_config_source_yesno');
-        $selectedValue = $formData['using_solution_partner'];
-        foreach ($yesNo->toOptionArray() as $option) {
-            if ($option['value'] == $selectedValue) {
-                $label = $option['label'];
-                break;
+        foreach (array('using_solution_partner', 'terms') as $formKey) {
+            $selectedValue = $formData[$formKey];
+            foreach ($yesNo->toOptionArray() as $option) {
+                if ($option['value'] == $selectedValue) {
+                    $formData[$formKey] = $option['label'];
+                }
             }
         }
-        $formData['using_solution_partner'] = $label;
 
         return $this->_submitWebform(
             array_merge($this->getSupportInformation(), $formData)
@@ -277,10 +278,12 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Gets the Bronto configuration settings
      *
      * @param array $brontoModules
+     * @param string $scope
+     * @param int $scopeId
      *
      * @return array
      */
-    public function getBrontoConfigs($brontoModules)
+    public function getBrontoConfigs($brontoModules, $scope = 'default', $scopeId = 0)
     {
         $configs          = array();
         $processedConfigs = array();
@@ -300,7 +303,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
                 $settingNameParts = explode('/', $setting);
                 $settingName      = end($settingNameParts);
 
-                $value = Mage::getStoreConfig($setting);
+                $value = $this->getAdminScopedConfig($setting, $scope, $scopeId);
                 if (empty($settingName)) {
                     continue;
                 }
@@ -310,7 +313,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
             }
 
             if ($helper->hasCustomConfig()) {
-                $moduleConfig = array_merge($moduleConfig, $helper->getCustomConfig());
+                $moduleConfig = array_merge($moduleConfig, $helper->getCustomConfig($scope, $scopeId));
             }
 
             if ($moduleConfig) {

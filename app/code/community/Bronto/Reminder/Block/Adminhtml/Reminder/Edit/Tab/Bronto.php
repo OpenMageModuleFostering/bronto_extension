@@ -22,6 +22,8 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Bronto extends Mage_Admi
             'comment'     => Mage::helper('bronto_reminder')->__('Messages will be sent only for specified store views.'),
         ));
 
+        $sendOptions = Mage::getModel('bronto_common/system_config_source_sendOptions');
+
         foreach (Mage::app()->getWebsites() as $website) {
             $groups = $website->getGroups();
 
@@ -45,6 +47,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Bronto extends Mage_Admi
                 foreach ($stores as $key => $store) {
                     if (Mage::helper('bronto_reminder')->isEnabled('store', $store->getId())) {
                         $values = Mage::helper('bronto_reminder/message')->getMessagesOptionsArray($store->getId(), $website->getId());
+                        $disabled = count($values) == 1;
 
                         $fieldset->addField("store_message_{$store->getId()}", 'select', array(
                             'name'                => "store_messages[{$store->getId()}]",
@@ -52,7 +55,16 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Bronto extends Mage_Admi
                             'label'               => $store->getName(),
                             'values'              => $values,
                             'fieldset_html_class' => 'store',
-                            'disabled'            => count($values) == 1 ? true : false,
+                            'disabled'            => $disabled,
+                        ));
+
+                        $fieldset->addField("store_message_sendflags_{$store->getId()}", 'select', array(
+                            'name' => "store_message_sendflags[{$store->getId()}]",
+                            'required' => false,
+                            'label' => "Send Flags",
+                            'fieldset_html_class' => 'store',
+                            'values' => $sendOptions->toOptionArray(),
+                            'disabled' => $disabled
                         ));
 
                         $fieldset->addField("store_message_sendtype_{$store->getId()}", 'radios', array(
@@ -65,7 +77,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Bronto extends Mage_Admi
                                 array('value' => 'marketing', 'label' => ' Send as Marketing'),
                             ),
                             'fieldset_html_class' => 'store',
-                            'disabled'            => count($values) == 1 ? true : false,
+                            'disabled'            => $disabled
                         ));
 
                         //                        $fieldset->addField("store_message_salesrule_id_{$store->getId()}", 'select', array(

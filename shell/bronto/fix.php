@@ -17,6 +17,7 @@ class Bronto_Fix_Os_Script extends Mage_Shell_Abstract {
      * @var array
      */
     protected $_validTasks = array(
+        'common',
         'customer',
         'email',
         'emailcapture',
@@ -79,6 +80,7 @@ USAGE;
 Tasks:
 
   all           All Bronto Extension Modules
+  common        {$this->_getTaskName('common')}
   customer      {$this->_getTaskName('customer')}
   email         {$this->_getTaskName('email')}
   emailcapture  {$this->_getTaskName('emailcapture')}

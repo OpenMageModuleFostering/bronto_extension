@@ -41,15 +41,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
      */
     protected $_customer;
 
-    /**
-     * @var Bronto_Product_Model_Recommendation
-     */
-    protected $_recommendation;
-
-    /**
-     * @var Bronto_Product_Model_Collect
-     */
-    protected $_collector;
+    protected $_items = array();
 
     /**
      * Assigned template variables
@@ -93,32 +85,33 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     /**
      * @return Mage_Customer_Model_Customer
      */
-    protected function _getCustomer()
+    public function getCustomerId()
     {
-        return $this->_customer;
-    }
-
-    /**
-     * @return bool|Bronto_Product_Model_Recommendation
-     */
-    protected function _getRecommendation()
-    {
-        return $this->_recommendation;
-    }
-
-    /**
-     * @param mixed $items
-     * @return Bronto_Product_Model_Collect
-     */
-    protected function _getRecommendationCollector($items)
-    {
-        if (is_null($this->_collector)) {
-            $this->_collector = Mage::helper('bronto_product')->collector(
-                $this->_getRecommendation(),
-                $this->getStoreId(),
-                $items);
+        if ($this->_customer) {
+            return $this->_customer->getId();
         }
-        return $this->_collector;
+        return null;
+    }
+
+    /**
+     * Returns the item context
+     *
+     * @return mixed
+     */
+    public function getProductContext()
+    {
+        return $this->_items;
+    }
+
+    /**
+     * Adds an item to the item context
+     *
+     * @return mixed
+     */
+    public function addItemToContext($item)
+    {
+        $this->_items[] = $item;
+        return $this;
     }
 
     /**
@@ -361,8 +354,6 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
         }
 
-        // Back fill anything if necessary
-        $this->_populateRelatedContent();
         return $this->_delivery;
     }
 
@@ -443,7 +434,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             $this->setField('adminName', $user->getUsername());
             $this->setField('adminPassword', $user->getPlainPassword());
             $this->setField('adminLoginURL', Mage::helper('adminhtml')->getUrl('adminhtml/system_account/'));
-            if (version_compare(Mage::getVersion(), '1.6.1.0', '>=')) {
+            if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('>=', '6')))) {
                 $this->setField('adminPasswordResetLink', Mage::helper('adminhtml')->getUrl('adminhtml/index/resetpassword', array('_query' => array('id' => $user->getId(), 'token' => $user->getRpToken()))));
             }
 
@@ -461,7 +452,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     protected function _filterSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
     {
         if (!in_array('subscriber', $this->_filteredObjects)) {
-            $this->_filterCustomer($this->_getCustomer());
+            $this->_filterCustomer($this->_customer);
             $this->_filteredObjects[] = 'subscriber';
         }
 
@@ -490,12 +481,12 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             $this->setField('customerPassword', $customer->getPassword());
             if ($store = $customer->getStore()) {
                 $this->setField('confirmationLink', $store->getUrl('customer/account/confirm', array('_query' => array('id' => $customer->getId(), 'key' => $customer->getConfirmation()))));
-                if (version_compare(Mage::getVersion(), '1.6.1.0', '>=')) {
+                if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('>=', '6')))) {
                     $this->setField('passwordResetLink', $store->getUrl('customer/account/resetpassword', array('_query' => array('id' => $customer->getId(), 'token' => $customer->getRpToken()))));
                 }
             } else {
                 $this->setField('confirmationLink', Mage::getUrl('customer/account/confirm', array('_query' => array('id' => $customer->getId(), 'key' => $customer->getConfirmation()))));
-                if (version_compare(Mage::getVersion(), '1.6.1.0', '>=')) {
+                if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('>=', '6')))) {
                     $this->setField('passwordResetLink', Mage::getUrl('customer/account/resetpassword', array('_query' => array('id' => $customer->getId(), 'token' => $customer->getRpToken()))));
                 }
             }
@@ -526,7 +517,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
 
             // Add Related Content
-            $this->_populateRelatedContent($order->getAllItems());
+            $this->_items = $order->getAllItems();
 
             // Order may not be a shippable order
             $shipAddress     = 'N/A';
@@ -592,7 +583,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
 
             // Add Related Content
-            $this->_populateRelatedContent($invoice->getAllItems());
+            $this->_items = $invoice->getAllItems();
 
             $this->setField('invoiceIncrementId', $invoice->getIncrementId());
             $this->setField('invoiceItems', $this->_filterInvoiceItems($invoice));
@@ -628,7 +619,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
 
             // Add Related Content
-            $this->_populateRelatedContent($shipment->getAllItems());
+            $this->_items = $shipment->getAllItems();
 
             $this->setField('shipmentIncrementId', $shipment->getIncrementId());
             $this->setField('shipmentCreatedAt', Mage::helper('core')->formatDate($createdAt, 'long', true)); // TODO: needed?
@@ -665,7 +656,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
 
             // Add Related Content
-            $this->_populateRelatedContent($creditmemo->getAllItems());
+            $this->_items = $creditmemo->getAllItems();
 
             $this->setField('creditmemoIncrementId', $creditmemo->getIncrementId());
             $this->setField('creditmemoCreatedAt', Mage::helper('core')->formatDate($createdAt, 'long', true)); // TODO: needed?
@@ -706,7 +697,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
 
             // Add Related Content
-            $this->_populateRelatedContent($quote->getAllItems());
+            $this->_items = $quote->getAllItems();
 
             $queryParams       = $this->getQueryParams();
             $queryParams['id'] = urlencode(base64_encode(Mage::helper('core')->encrypt($quote->getId())));
@@ -757,7 +748,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             $this->setField("productTotal_{$index}", $this->formatPrice($checkout->getSubtotalInclTax($item)));
         } else {
             $this->setField("productPrice_{$index}", $this->formatPrice($item->getPrice()));
-            $this->setField("productTotal_{$index}", $this->formatPrice($item->calcRowTotal()->getRowTotal()));
+            $this->setField("productTotal_{$index}", $this->formatPrice($item->getRowTotal()));
         }
 
         $this->setField("productName_{$index}", $item->getName());
@@ -768,7 +759,8 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         /* @var $product Mage_Catalog_Model_Product */
         $product = $item->getProduct();
         if (!$product) {
-            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+            $product = Mage::helper('bronto_common/product')
+                ->getProduct($item->getProductId(), $this->getStoreId());
         }
         $this->_filterProduct($product, $index);
 
@@ -792,7 +784,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             }
 
             // Add Related Content
-            $this->_populateRelatedContent($wishlist->getItemCollection());
+            $this->_items = $wishlist->getItemCollection();
 
             $queryParams                = $this->getQueryParams();
             $queryParams['wishlist_id'] = urlencode(base64_encode(Mage::helper('core')->encrypt($wishlist->getId())));
@@ -846,7 +838,8 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         /* @var $product Mage_Catalog_Model_Product */
         $product = $item->getProduct();
         if (!$product) {
-            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+            $product = Mage::helper('bronto_common/product')
+                ->getProduct($item->getProductId(), $this->getStoreId() ? $this->getStoreId() : false);
         }
         $this->setField("productSku_{$index}", $product->getSku());
 
@@ -935,7 +928,8 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         /* @var $product Mage_Catalog_Model_Product */
         $product = $item->getProduct();
         if (!$product) {
-            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+            $product = Mage::helper('bronto_common/product')
+                ->getProduct($item->getProductId(), $this->getStoreId());
         }
         $this->_filterProduct($product, $index);
 
@@ -1024,7 +1018,8 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         /* @var $product Mage_Catalog_Model_Product */
         $product = $item->getProduct();
         if (!$product) {
-            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+            $product = Mage::getModel('bronto_common/product')
+                ->getProduct($item->getProductId(), $this->getStoreId());
         }
         $this->_filterProduct($product, $index);
 
@@ -1148,7 +1143,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         return $totals;
     }
 
-    /**
+/**
      * @param Mage_Catalog_Model_Product $product
      * @param int                        $index
      *
@@ -1157,19 +1152,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     protected function _filterProduct(Mage_Catalog_Model_Product $product, $index = null)
     {
         // Load full product
-        $product = Mage::getModel('catalog/product')
-            ->setStoreId($product->getStoreId())
-            ->load($product->getId());
+        $product = Mage::helper('bronto_common/product')
+            ->getProduct($product->getId(), $product->getStoreId());
 
         if ($index !== null) {
             try {
-                // Fix for SCP
-                if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
-                    $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
-                    if (isset($parentIds[0])) {
-                        $product = Mage::getModel('catalog/product')->setStoreId($product->getStoreId())->load($parentIds[0]);
-                    }
-                }
+                // Sets original product ID before pulling in parent
+                $this->setField("productId_{$index}", $product->getId());
+                $product = $this->_getSimpleProduct($product);
                 $imageUrl = Mage::helper('bronto_common')->getProductImageUrl($product);
                 $this->setField("productImgUrl_{$index}", $imageUrl);
                 $this->setField("productDescription_{$index}", $product->getDescription());
@@ -1177,11 +1167,43 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 Mage::log('Error loading image: ' . $e);
             }
         } else {
+            $this->setField('productId', $product->getId());
             $this->setField('productUrl', $product->getUrl());
             $this->setField('productName', $product->getName());
+            try {
+                $product = $this->_getSimpleProduct($product);
+                $this->setField('productImgUrl', Mage::helper('bronto_common')->getProductImageUrl($product));
+                $this->setField('productDescription', $product->getDescription());
+            } catch (Exception $e) {
+                Mage::log('Error loading image: ' . $e);
+            }
         }
 
         return $this;
+    }
+
+    /**
+     * Gets the visible configurable product for a simple product
+     * This is a fix for SCP
+     *
+     * @param Mage_Catalog_Model_Product $product
+     * @return Mage_Catalog_Model_Product
+     */
+    protected function _getSimpleProduct($product)
+    {
+        return Mage::helper('bronto_common/product')
+            ->getConfigurableProduct($product);
+    }
+
+    /**
+     * Gets the url for a Configurable product for this simple product
+     *
+     * @param Mage_Catalog_Model_Product $product
+     * @return string
+     */
+    protected function _getProductUrl($product)
+    {
+        return $this->_getSimpleProduct($product)->getProductUrl();
     }
 
     /**
@@ -1194,18 +1216,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         if ($item->getRedirectUrl()) {
             return $item->getRedirectUrl();
         }
-
-        // Fix for SCP
-        $product = $item->getProduct();
-        if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
-            $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
-            if (isset($parentIds[0])) {
-                $parentProduct = Mage::getModel('catalog/product')->setStoreId($item->getStoreId())->load($parentIds[0]);
-                return $parentProduct->getProductUrl();
-            }
-        }
-
-        return $item->getProduct()->getProductUrl();
+        return $this->_getProductUrl($item->getProduct());
     }
 
     /**
@@ -1218,8 +1229,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         if ($item->getRedirectUrl()) {
             return $item->getRedirectUrl();
         }
-
-        return $item->getProduct()->getProductUrl();
+        return $this->_getProductUrl($item->getProduct());
     }
 
     /**
@@ -1234,15 +1244,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         }
 
         if ($item->getProduct()) {
-            return $item->getProduct()->getProductUrl();
+            return $this->_getProductUrl($item->getProduct());
         }
 
-        $product = Mage::getModel('catalog/product')
-            ->setStoreId($this->getStoreId())
-            ->load($item->getProductId());
+        $product = Mage::helper('bronto_common/product')
+            ->getProduct($item->getProductId(), $this->getStoreId());
 
         if ($product->getId()) {
-            return $product->getProductUrl();
+            return $this->_getProductUrl($product);
         }
 
         return '';
@@ -1453,7 +1462,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
      *
      * @return string
      */
-    protected function formatPrice($price, $currencyCode = null)
+    public function formatPrice($price, $currencyCode = null)
     {
         $options = array(
             'precision' => 2,
@@ -1470,26 +1479,5 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         }
 
         return $this->_currency->formatTxt($price, $options);
-    }
-
-    /**
-     * Populates the recommendation content
-     *
-     * @param array $products (Optional)
-     */
-    protected function _populateRelatedContent($items = array())
-    {
-        $helper = Mage::helper('bronto_product');
-        $recommendation = $this->_getRecommendation();
-        if ($recommendation && $helper->isEnabled('store', $this->getStoreId())) {
-            $collect = $this->_getRecommendationCollector($items);
-            if ($collect->getRemainingCount() == $recommendation->getNumberOfItems()) {
-                $collect->setRecommendation($recommendation->setCustomer($this->_getCustomer()));
-                $helper->setRelatedFields(
-                    $this->_delivery,
-                    $collect->collect(),
-                    $this->getStoreId());
-            }
-        }
     }
 }

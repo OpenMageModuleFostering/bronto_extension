@@ -56,7 +56,7 @@ class Bronto_Product_Adminhtml_RecommendationsController extends Mage_Adminhtml_
         $head = $this->getLayout()->getBlock('head');
         $head->addItem('js_css', 'prototype/windows/themes/default.css');
         $enabled = Mage::getSingleton('cms/wysiwyg_config')->isEnabled();
-        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), '1', array('6', array('edition' => 'Enterprise', 'major' => '9'), '10', '11'))) {
+        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), '1', array('6', array('edition' => 'Professional', 'major' => '9'), '10', '11'))) {
             $head->addItem('js_css', 'prototype/windows/themes/magento.css');
             if ($enabled) {
                 $head->addItem('js_css', 'mage/adminhtml/wysiwyg/tiny_mce/setup.js');
@@ -308,23 +308,14 @@ class Bronto_Product_Adminhtml_RecommendationsController extends Mage_Adminhtml_
         }
 
         try {
-            $secondSource = $this->getRequest()->getParam('secondary_source');
-            $fallbackSource = $this->getRequest()->getParam('fallback_source');
-            $manualPri = $this->getRequest()->getParam('manual_primary_source');
-            $manualSec = $this->getRequest()->getParam('manual_secondary_source');
-            $manualFal = $this->getRequest()->getParam('manual_fallback_source');
-
-            $this
-                ->_validateRecommendation($recommendation)
-                ->setSecondarySource($secondSource)
-                ->setFallbackSource($fallbackSource)
-                ->setManualPrimarySource($manualPri)
-                ->setManualSecondarySource($manualSec)
-                ->setManualFallbackSource($manualFal)
-                ->save();
-
+            $this->_validateRecommendation($recommendation);
+            foreach ($this->getRequest()->getParams() as $name => $value) {
+                if (preg_match('/source$/', $name)) {
+                    $recommendation->setData($name, $value);
+                }
+            }
+            $recommendation->save();
             $session->addSuccess($this->__('The Product Recommendation has been saved.'));
-
             if ($this->getRequest()->getParam('continue')) {
                 return $this->_redirect('*/*/edit', array('id' => $recommendation->getId()));
             } else {

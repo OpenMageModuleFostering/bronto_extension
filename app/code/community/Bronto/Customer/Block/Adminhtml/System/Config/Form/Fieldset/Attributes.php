@@ -27,7 +27,7 @@ abstract class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attri
         // Render Existing elements
         foreach ($element->getSortedElements() as $field) {
             if ('select' == $field->getType()) {
-                $values[$field->getHtmlId() . '_new'] = $field->getLabel();
+                $values[$field->getHtmlId() . '_new'] = trim($field->getLabel());
             } else {
                 if (array_key_exists($field->getHtmlId(), $values)) {
                     $field->setValue($values[$field->getHtmlId()]);

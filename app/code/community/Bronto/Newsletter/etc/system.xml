@@ -217,7 +217,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                             <comment><![CDATA[Dynamic styling for the newly
-                              checkbox.<br/>Default: <pre>.col1-layout .billing_is_subscribed_box {
+                              created checkbox.<br/>Default: <pre>.col1-layout .billing_is_subscribed_box {
     margin-left: 240px !important;
     float:left;
     width:auto;
@@ -281,7 +281,7 @@
                     <frontend_model>bronto_newsletter/adminhtml_system_config_cron</frontend_model>
                     <sort_order>4</sort_order>
                     <show_in_default>1</show_in_default>
-                    <show_in_website>0</show_in_website>
+                    <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                 </cron_list>
                 <suppressed>

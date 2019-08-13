@@ -168,7 +168,8 @@ abstract class Bronto_Common_Model_Resource_Abstract extends Mage_Core_Model_Res
             try {
                 $this->_updateCallback('before', $table, $update);
                 if (isset($update['sql'])) {
-                    $this->run($this->_replaceName($table, $update['sql'], $extra));
+                    $sql = is_array($update['sql']) ? implode(';', $update['sql']) : $update['sql'];
+                    $this->run($this->_replaceName($table, $sql, $extra));
                 }
                 $this->_updateCallback('after', $table, $update);
             } catch (Exception $e) {

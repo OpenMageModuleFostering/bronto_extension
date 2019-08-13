@@ -69,6 +69,7 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
                     'bronto_imported IS NULL' => '',
                     'bronto_suppressed IS NULL' => ''
                 ));
+            $helper->writeInfo("Mark All Customers was explicitly pressed.");
         } catch (Exception $e) {
             $helper->writeError($e);
             $this->_getSession()->addError('Mark All failed: ' . $e->getMessage());
@@ -152,7 +153,11 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
             $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
         }
 
-        $this->_getSession()->addSuccess(sprintf("%d of %d Customers were added to the Queue", $imported, $waiting));
+        if ($imported == $waiting && $waiting == 0) {
+            $this->_getSession()->addSuccess($helper->__('All Customers are synced to the queue.'));
+        } else {
+            $this->_getSession()->addSuccess(sprintf("%d of %d Customers were added to the Queue", $imported, $waiting));
+        }
         $returnParams = array('section' => 'bronto_customer');
         $returnParams = array_merge($returnParams, $helper->getScopeParams());
         $this->_redirect('*/system_config/edit', $returnParams);

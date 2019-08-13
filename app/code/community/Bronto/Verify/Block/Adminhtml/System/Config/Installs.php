@@ -32,9 +32,11 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Installs
         'bronto_newsletter',
         'bronto_customer',
         'bronto_order',
+        'bronto_product',
         'bronto_reviews',
         'bronto_reminder',
         'bronto_email',
+        'bronto_coupon',
         'bronto_api',
     );
 
@@ -305,6 +307,8 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Installs
             $section = $module;
             if ($module == 'bronto_api') {
                 $module = 'bronto_common/api';
+            } else if ($module == 'bronto_coupon') {
+                $module = 'bronto_common/coupon';
             } else {
                 if (!in_array($module, $modules)) {
                     continue;

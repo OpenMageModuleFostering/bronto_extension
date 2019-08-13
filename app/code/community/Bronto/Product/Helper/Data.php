@@ -32,6 +32,14 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
     }
 
     /**
+     * @see parent
+     */
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
+    {
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
+    }
+
+    /**
      * Gets the character truncation limit for the description attr
      *
      * @param string $scope
@@ -80,7 +88,7 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function getName()
     {
-        return 'Bronto Product Recommendations';
+        return $this->__('Bronto Product Recommendations');
     }
 
     /**
@@ -113,7 +121,7 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
     {
         return Mage::getModel('bronto_product/collect')
             ->setRecommendation($recommendation)
-            ->setOriginalHash($this->itemsToProductHash($originalItems))
+            ->setOriginalHash($this->itemsToProductHash($originalItems, is_null($storeId) ? false : $storeId))
             ->setStoreId($storeId);
     }
 
@@ -123,12 +131,13 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
      * @param mixed $items
      * @return array
      */
-    public function itemsToProductHash($items)
+    public function itemsToProductHash($items, $storeId = false)
     {
         $hash = array();
+        $helper = Mage::helper('bronto_common/product');
         foreach ($items as $item) {
             if (is_numeric($item)) {
-                $item = Mage::getModel('catalog/product')->load($item);
+                $item = $helper->getProduct($item, $storeId);
             }
             if ($item->getParentItem()) {
                 continue;
@@ -139,11 +148,12 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
                 }
                 $product = $item->getProduct();
                 if (!$product) {
-                    $product = Mage::getModel('catalog/product')->load($item->getProductId());
+                    $product = $helper->getProduct($item->getProductId(), $storeId);
                 }
             } else {
                 $product = $item;
             }
+            $product = $helper->getConfigurableProduct($product);
             $hash[$product->getId()] = $product;
         }
         return $hash;
@@ -219,24 +229,19 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
     /**
      * Creates the fields to process by products and store
      *
-     * @param array $productIds
+     * @param array $productHash
      * @param int $storeId (Optional)
      * @return array
      */
-    public function relatedFields($productIds, $storeId = null)
+    public function relatedFields($productHash, $storeId = null)
     {
         $fieldsByIndex = array();
         list($base, $currency, $options) = $this->currencyAndOptions($storeId);
         $attr = $this->getDescriptionAttr('store', $storeId);
         $limit = $this->getCharLimit('store', $storeId);
-        foreach ($productIds as $key => $productId) {
-            $index = $key + 1;
-
-            /** @var Mage_Catalog_Model_Product $relatedProduct */
-            $relatedProduct = Mage::getModel('catalog/product')
-                ->setStore($storeId)
-                ->load($productId);
-
+        $index = 0;
+        foreach ($productHash as $productId => $relatedProduct) {
+            $index++;
             $price = $relatedProduct->getPrice();
             // Only convert the price if the current price is different from the display
             if ($base != $currency) {
@@ -244,6 +249,11 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
             }
             $imageUrl = $this->getProductImageUrl($relatedProduct);
             $fields = array(
+                array(
+                    "name" => "relatedId_{$index}",
+                    "content" => $relatedProduct->getId(),
+                    "type" => "html"
+                ),
                 array(
                     "name" => "relatedName_{$index}",
                     "content" => $relatedProduct->getName(),
@@ -275,7 +285,13 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
                     'type' => 'html'
                 )
             );
-            $fieldsByIndex[] = $fields;
+            $context = new stdClass;
+            $context->fields = $fields;
+            $context->product = $relatedProduct;
+            Mage::dispatchEvent("bronto_product_related_fields", array(
+                'context' => $context
+            ));
+            $fieldsByIndex[] = $context->fields;
         }
         return $fieldsByIndex;
     }
@@ -285,17 +301,17 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
      * in a delivery as relatedXxx_# API fields
      *
      * @param Bronto_Api_Delivery_Row $delivery
-     * @param array $productIds
+     * @param array $productHash
      * @param int $storeId
      * @return void
      */
-    public function setRelatedFields($delivery, $productIds, $storeId = null)
+    public function setRelatedFields($delivery, $productHash, $storeId = null)
     {
         $currentData = $delivery->getData();
         if (empty($currentData['fields'])) {
             $currentData['fields'] = array();
         }
-        foreach ($this->relatedFields($productIds, $storeId) as $fields) {
+        foreach ($this->relatedFields($productHash, $storeId) as $fields) {
             $currentData['fields'] = array_merge($currentData['fields'], $fields);
         }
         // By passing the setField call on the API is far more efficient
@@ -311,8 +327,8 @@ class Bronto_Product_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function processTagContent($rec, $storeId = null)
     {
-        $productIds = $this->collectRecommendations($rec, $storeId);
-        $fields = $this->relatedFields($productIds, $storeId);
+        $productHash = $this->collectRecommendations($rec, $storeId);
+        $fields = $this->relatedFields($productHash, $storeId);
         return $rec->processContent($fields);
     }
 

@@ -7,6 +7,15 @@
 class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 {
     private $_fieldMap = array();
+    private $_blackList = array();
+    private $_rewardsInfo = array(
+        'reward_points' => array('Reward Points', 'getPointsBalance'),
+        'reward_points_dollars' => array('Reward Curreny Amount', 'getFormatedCurrencyAmount')
+    );
+    private $_expandedfields = array(
+        'country_id' => array('getCountryId', 'Country Code', 'country_code_id'),
+        'region' => array('getRegionCode', 'Region Code', 'region_code_id')
+    );
 
     /**
      * Observes module becoming enabled and displays message warning user to configure settings
@@ -74,6 +83,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         $customerAttributes = Mage::getModel('customer/entity_attribute_collection');
         /** @var Mage_Customer_Model_Entity_Address_Attribute_Collection $addressAttributes */
         $addressAttributes = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
+        $this->_buildValidFieldMapForStore($store, $customerAttributes, $addressAttributes);
         $customerCache     = array();
 
         // For each Customer...
@@ -92,11 +102,11 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                     $brontoContact = $this->_processAttributes($brontoContact, $customer, $customerAttributes, $store, 'customer');
                     $brontoContact = $this->_processRewardPoints($brontoContact, $customer, $store);
                     $brontoContact = $this->_processStoreCredit($brontoContact, $customer, $store);
-
-                    /* Process Address Attributes */
-                    $primaryAddress = $customer->getPrimaryShippingAddress();
-                    if (!empty($primaryAddress)) {
-                        $brontoContact = $this->_processAttributes($brontoContact, $primaryAddress, $addressAttributes, $store, 'address');
+                    foreach (Mage::helper('bronto_customer')->getAddressTypes() as $prefix => $methodName) {
+                        $address = $customer->$methodName();
+                        if (!empty($address)) {
+                            $brontoContact = $this->_processAttributes($brontoContact, $address, $addressAttributes, $store, $prefix);
+                        }
                     }
 
                     $brontoContact->persist();
@@ -136,6 +146,136 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Convenience method for checking availability
+     *
+     * @param string $token
+     * @param string $fieldId
+     * @return boolean
+     */
+    protected function _skippableAttribute($token, $fieldId)
+    {
+        if (empty($fieldId) || '_none_' == $fieldId) {
+            return true;
+        }
+        if (isset($this->_blackList[$fieldId])) {
+            return true;
+        }
+        if (!empty($token)) {
+            if (isset($this->_fieldMap[$token][$fieldId])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Convenience method for checking value availabiility
+     *
+     * @param string $fieldId
+     * @param string $value
+     * @return boolean
+     */
+    protected function _skippableProcessValue($fieldId, $value)
+    {
+        if ($this->_skippableAttribute('', $fieldId)) {
+            return true;
+        }
+        if ('' === $value || is_null($value)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Build internal field mapping for a token for a given store
+     *
+     * @param Mage_Core_Model_Store $store
+     * @param Iterable $attributes
+     * @param Iterable $addressAttrs
+     * @return void
+     */
+    protected function _buildValidFieldMapForStore($store, $attributes, $addressAttrs)
+    {
+        $helper = Mage::helper('bronto_customer');
+        $token = $helper->getApiToken('store', $store->getId());
+        if (!isset($this->_fieldMap[$token])) {
+            $this->_fieldMap[$token] = array();
+        }
+        $fieldsToCheck = array();
+        // Dynamic attrs
+        $pathPrefix = Bronto_Customer_Helper_Data::XML_PREFIX_CUSTOMER_ATTR;
+        foreach ($attributes as $attribute) {
+            if ('' == $attribute->getFrontendLabel()) {
+                continue;
+            }
+            $fieldId = $helper->getCustomerAttributeField($attribute->getAttributeCode(), 'store', $store->getId());
+            if ($this->_skippableAttribute($token, $fieldId)) {
+                continue;
+            }
+            $xmlPath = "{$pathPrefix}{$attribute->getAttributeCode()}";
+            $fieldsToCheck[$fieldId] = array($xmlPath, $attribute->getFrontendLabel());
+        }
+        // Reward Points / Store Credit
+        foreach ($this->_rewardsInfo + array('store_credit' => array('Store Credit', '_')) as $key => $labelMethodTuple) {
+            list($label, $method) = $labelMethodTuple;
+            $fieldId = $helper->getCustomerAttributeField($key, 'store', $store->getId());
+            if ($this->_skippableAttribute($token, $fieldId)) {
+                continue;
+            }
+            $xmlPath = "{$pathPrefix}{$key}";
+            $fieldsToCheck[$fieldId] = array($xmlPath, $helper->__($label));
+        }
+        // Address related
+        foreach ($helper->getAddressTypes() as $prefix => $methodName) {
+            $pathPrefix = "bronto_customer/{$prefix}_attributes/";
+            foreach ($addressAttrs as $attribute) {
+                if ('' == $attribute->getFrontendLabel()) {
+                    continue;
+                }
+                $code = $attribute->getAttributeCode();
+                if (isset($this->_expandedfields[$code])) {
+                    list($method, $label, $field) = $this->_expandedfields[$code];
+                    $fieldId = $helper->getPrefixedAttributeField($field, $prefix, 'store', $store->getId());
+                    if (!$this->_skippableAttribute($token, $fieldId)) {
+                        $fieldsToCheck[$fieldId] = array("{$pathPrefix}{$field}", $helper->__($label));
+                    }
+                }
+                $fieldId = $helper->getPrefixedAttributeField($code, $prefix, 'store', $store->getId());
+                if ($this->_skippableAttribute($token, $fieldId)) {
+                    continue;
+                }
+                $xmlPath = "{$pathPrefix}{$attribute->getAttributeCode()}";
+                $fieldsToCheck[$fieldId] = array($xmlPath, $attribute->getFrontendLabel());
+            }
+        }
+        // Do a read call, diff and warn
+        if (!empty($fieldsToCheck)) {
+            $configData = Mage::getModel('core/config_data');
+            $fieldIds = array_keys($fieldsToCheck);
+            $api = $helper->getApi($token, 'store', $store->getId());
+            $fieldObject = $api->getFieldObject();
+            $filter = array('id' => $fieldIds, 'type' => 'OR');
+            foreach ($fieldObject->readAll($filter)->iterate() as $field) {
+                $this->_fieldMap[$token][$field->id] = $field->label;
+                unset($fieldsToCheck[$field->id]);
+            }
+            // These contain fieldIds that no longer exist in this account
+            foreach ($fieldsToCheck as $fieldId => $codeLabelTuple) {
+                list($xmlPath, $label) = $codeLabelTuple;
+                $helper->writeError("Field mapping for store {$store->getId()} no longer exists: {$fieldId}: {$label}");
+                $collection = $configData->getCollection()
+                    ->addFieldToFilter('scope_id', array('eq' => $store->getId()))
+                    ->addFieldToFilter('path', array('eq' => $xmlPath));
+                // Remove from config data
+                foreach ($collection as $config) {
+                    $config->delete();
+                    $this->_blackList[$fieldId] = $store->getId();
+                }
+            }
+        }
+    }
+
+    /**
      * @param Bronto_Api_Contact_Row       $brontoContact
      * @param Mage_Customer_Model_Customer $customer
      * @param Mage_Core_Model_Store        $store
@@ -146,29 +286,19 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
     {
         // If Reward Points is installed
         if (Mage::helper('bronto_common')->isModuleInstalled('Enterprise_Reward')) {
-            $_fieldName = Mage::helper('bronto_customer')->getCustomerAttributeField('reward_points', 'store', $store->getId());
-
             /** @var Enterprise_Reward_Model_Reward $reward */
             $reward          = Mage::getModel('enterprise_reward/reward')->setCustomerId($customer->getId())->setWebsiteId($store->getWebsiteId())->loadByCustomer();
-            $_attributeValue = $reward->getPointsBalance();
+            foreach ($this->_rewardsInfo as $key => $labelMethodTuple) {
+                list($label, $methodName) = $labelMethodTuple;
+                $_fieldName = Mage::helper('bronto_customer')->getCustomerAttributeField($key, 'store', $store->getId());
+                $_attributeValue = $reward->$methodName();
+                // Skip un-mapped or empty attributes
+                if ($this->_skippableProcessValue($_fieldName, $_attributeValue)) {
+                    continue;
+                }
 
-            // Skip un-mapped or empty attributes
-            if (empty($_fieldName) || '_none_' == $_fieldName || !$_attributeValue || '' == $_attributeValue) {
-                return $brontoContact;
+                $brontoContact->setField($_fieldName, $_attributeValue);
             }
-
-            // Add Formatted Currency Amount to value
-            if ($reward->getCurrencyAmount() > 0) {
-                $formattedValue = $reward->getFormatedCurrencyAmount();
-                $_attributeValue .= " ({$formattedValue})";
-            }
-
-            // Store Bronto Key => Magento field label for errors
-            if (!array_key_exists($_fieldName, $this->_fieldMap)) {
-                $this->_fieldMap[$_fieldName] = 'Reward Points';
-            }
-
-            $brontoContact->setField($_fieldName, $_attributeValue);
         }
 
         return $brontoContact;
@@ -193,13 +323,8 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 ->toCurrency($balance->getAmount());
 
             // Skip un-mapped or empty attributes
-            if (empty($_fieldName) || '_none_' == $_fieldName || !$_attributeValue || '' == $_attributeValue) {
+            if ($this->_skippableProcessValue($_fieldName, $_attributeValue)) {
                 return $brontoContact;
-            }
-
-            // Store Bronto Key => Magento field label for errors
-            if (!array_key_exists($_fieldName, $this->_fieldMap)) {
-                $this->_fieldMap[$_fieldName] = 'Store Credit';
             }
 
             $brontoContact->setField($_fieldName, $_attributeValue);
@@ -221,6 +346,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
      */
     protected function _processAttributes(Bronto_Api_Contact_Row $brontoContact, $source, $attributes, Mage_Core_Model_Store $store, $type = 'customer')
     {
+        $helper = Mage::helper('bronto_customer');
         // For each Customer attribute
         foreach ($attributes as $attribute) {
             if ('' == $attribute->getFrontendLabel()) {
@@ -230,8 +356,18 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
             // Get Attribute Field
             switch ($type) {
+                case 'billing_address':
                 case 'address':
-                    $_fieldName = Mage::helper('bronto_customer')->getAddressAttributeField($_attributeCode, 'store', $store->getId());
+                    $_fieldName = $helper->getPrefixedAttributeField($_attributeCode, $type, 'store', $store->getId());
+                    // Backward compatibility for country name and codes
+                    if (array_key_exists($_attributeCode, $this->_expandedfields)) {
+                        list($method, $label, $field) = $this->_expandedfields[$_attributeCode];
+                        $_attributeValue = strtolower($source->$method());
+                        $_brontoField = $helper->getPrefixedAttributeField($field, $type, 'store', $store->getId());
+                        if (!$this->_skippableProcessValue($_brontoField, $_attributeValue)) {
+                            $brontoContact->setField($_brontoField, $_attributeValue);
+                        }
+                    }
                     break;
                 default:
                     $_fieldName = Mage::helper('bronto_customer')->getCustomerAttributeField($_attributeCode, 'store', $store->getId());
@@ -242,13 +378,8 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
             $_attributeValue = $this->_getReadableValue($attribute, $source->getData($_attributeCode));
 
             // Skip un-mapped or empty attributes
-            if (empty($_fieldName) || '_none_' == $_fieldName || !$_attributeValue || '' == $_attributeValue) {
+            if ($this->_skippableProcessValue($_fieldName, $_attributeValue)) {
                 continue;
-            }
-
-            // Store Bronto Key => Magento field label for errors
-            if (!array_key_exists($_fieldName, $this->_fieldMap)) {
-                $this->_fieldMap[$_fieldName] = $attribute->getFrontendLabel();
             }
 
             $brontoContact->setField($_fieldName, $_attributeValue);
@@ -308,9 +439,10 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         // Format Attribute Values
         switch ($_attributeType) {
             case 'select':
-            case 'boolean':
                 return strtolower(Mage::helper('bronto_customer')->getAttributeAdminLabel($attribute, $value));
                 break;
+            case 'boolean':
+                return $value == 1 ? 'true' : 'false';
             case 'multiselect':
                 $values = array();
                 if (!is_array($value)) {
@@ -396,19 +528,6 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
             }
 
             if ($hasError) {
-                // Catch Error and Replace Field ID with Field Name
-                if (preg_match_all("/([a-zA-Z0-9\-]){36}/", $errorMessage, $matches)) { // Grab field id if exists
-                    foreach ($matches[0] as $match) {
-                        $fieldObject = $fieldModel->getFieldObjectById($match);
-                        if ($fieldObject) {
-                            $errorMessage = str_replace($match, $fieldObject->name, $errorMessage);
-                        } elseif (array_key_exists($match, $this->_fieldMap)) {
-                            $mageLabel    = $this->_fieldMap[$match];
-                            $errorMessage = "Bronto field mapped for {$mageLabel} no longer exists in your bronto account";
-                        }
-                    }
-                }
-
                 // If Error Code In specified Array, suppress contact
                 if (in_array($errorCode, array(302, 303, 314, 315, 317))) {
                     $customerRow->setBrontoSuppressed($errorMessage);
@@ -526,10 +645,13 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
             $groups['attributes']['fields'] = $attrFieldsCustomer;
         }
 
-        // Process Dynamic Address Attribute Fields
-        if (array_key_exists('address_attributes', $groups)) {
-            $attrFieldsAddress                      = $this->_processDynamicAttributes($groups['address_attributes']['fields'], $section, 'address_attributes');
-            $groups['address_attributes']['fields'] = $attrFieldsAddress;
+        foreach (Mage::helper('bronto_customer')->getAddressTypes() as $prefix => $methodName) {
+            $key = "{$prefix}_attributes";
+            // Process Dynamic Address Attribute Fields
+            if (array_key_exists($key, $groups)) {
+                $attrFieldsAddress      = $this->_processDynamicAttributes($groups[$key]['fields'], $section, $key);
+                $groups[$key]['fields'] = $attrFieldsAddress;
+            }
         }
 
         // Return Updated Groups Data
@@ -605,7 +727,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                     Mage::helper('bronto_customer')->writeError("Unable to save new field: {$value}");
                 }
             } // Save Dynamic Fields
-            elseif (!in_array($fieldId, $ignore[$group])) {
+            elseif (array_key_exists('value', $field) && !in_array($fieldId, $ignore[$group])) {
                 $scope = $scopeParams['scope'];
                 if ($scope != 'default') {
                     $scope .= 's';
@@ -614,7 +736,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 // Save Field To Config
                 $config->saveConfig(
                     $section . '/' . $group . '/' . $fieldId,
-                    $field['value'],
+                    array_key_exists('value', $field) ? $field['value'] : '',
                     $scope,
                     $scopeParams[$scopeParams['scope'] . '_id']
                 );

@@ -14,6 +14,7 @@ class Bronto_Product_Model_Recommendation extends Mage_Core_Model_Abstract
     const SOURCE_PRIMARY           = 'primary';
     const SOURCE_SECONDARY         = 'secondary';
     const SOURCE_FALLBACK          = 'fallback';
+    const SOURCE_EXCLUSION         = 'exclusion';
 
     const TYPE_API                 = 'api';
     const TYPE_CONTENT_TAG         = 'content_tag';
@@ -25,6 +26,13 @@ class Bronto_Product_Model_Recommendation extends Mage_Core_Model_Abstract
     private $_customSources;
     private $_sources;
     private $_customer;
+
+    private static $_sourceOrder = array(
+        self::SOURCE_EXCLUSION => 0,
+        self::SOURCE_PRIMARY => 10,
+        self::SOURCE_SECONDARY => 20,
+        self::SOURCE_FALLBACK => 30
+    );
 
     /**
      * @see parent
@@ -149,7 +157,8 @@ class Bronto_Product_Model_Recommendation extends Mage_Core_Model_Abstract
         $productRelated = array(
           self::SOURCE_RELATED_PRODUCT,
           self::SOURCE_UPSELL_PRODUCT,
-          self::SOURCE_CROSSSELL_PRODUCT);
+          self::SOURCE_CROSSSELL_PRODUCT
+        );
         if ($source) {
             return in_array($this->getData("{$source}_source"), $productRelated);
         } else {
@@ -176,8 +185,29 @@ class Bronto_Product_Model_Recommendation extends Mage_Core_Model_Abstract
                     $this->_sources[$matches[1]] = $value;
                 }
             }
+            uksort($this->_sources, array($this, 'compareSources'));
         }
         return $this->_sources;
+    }
+
+    /**
+     * Comparator callback for sources
+     *
+     * @param string $sourceA
+     * @param string $sourceB
+     * @return int
+     */
+    public function compareSources($sourceA, $sourceB)
+    {
+        $sortValueA = self::$_sourceOrder[$sourceA];
+        $sortValueB = self::$_sourceOrder[$sourceB];
+        if ($sortValueA == $sortValueB) {
+            return 0;
+        } else if ($sortValueA < $sortValueB) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
 
     /**

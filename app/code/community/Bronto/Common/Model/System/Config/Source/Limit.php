@@ -19,9 +19,6 @@ class Bronto_Common_Model_System_Config_Source_Limit
             250   => 250,
             500   => 500,
             1000  => 1000,
-            5000  => 5000,
-            10000 => 10000,
-            20000 => 20000,
         );
     }
 }

@@ -153,6 +153,7 @@ class Bronto_Reminder_Model_Mysql4_Rule
         $labels       = $rule->getStoreLabels();
         $descriptions = $rule->getStoreDescriptions();
         $sendTypes    = $rule->getStoreMessageSendtypes();
+        $sendFlags    = $rule->getStoreMessageSendflags();
         //        $salesruleIds = $rule->getStoreSalesruleIds();
 
         foreach ($rule->getStoreMessages() as $storeId => $messageId) {
@@ -167,6 +168,7 @@ class Bronto_Reminder_Model_Mysql4_Rule
                     'store_id'    => $storeId,
                     'message_id'  => $messageId,
                     'send_type'   => $sendType,
+                    'send_flags'  => $sendFlags[$storeId],
                     'label'       => $labels[$storeId],
                     'description' => $descriptions[$storeId],
                     //                    'salesrule_id' => $salesruleIds[$storeId],
@@ -188,7 +190,7 @@ class Bronto_Reminder_Model_Mysql4_Rule
     {
         $messageTable = $this->getTable('bronto_reminder/message');
         $select       = $this->createSelect()
-            ->from($messageTable, array('store_id', 'message_id', 'label', 'description', 'send_type'))
+            ->from($messageTable, array('store_id', 'message_id', 'label', 'description', 'send_type', 'send_flags'))
             ->where('rule_id = ?', $ruleId);
 
         return $this->_getReadAdapter()->fetchAll($select);
@@ -213,7 +215,8 @@ class Bronto_Reminder_Model_Mysql4_Rule
             'm.message_id,
             IF(m.label != \'\', m.label, r.default_label) as label,
             IF(m.description != \'\', m.description, r.default_description) as description,
-            m.send_type'
+            m.send_type,
+            m.send_flags'
         );
 
         $select->join(

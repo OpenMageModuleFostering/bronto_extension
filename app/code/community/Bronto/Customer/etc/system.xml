@@ -475,7 +475,7 @@
                         </store_credit_new>
                         <reward_points>
                             <sort_order>65</sort_order>
-                            <label>Reward Points</label>
+                            <label>Reward Points Balance</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_customer/adminhtml_system_config_form_field_rewardpoints
                             </frontend_model>
@@ -496,10 +496,33 @@
                                 <reward_points>_new_</reward_points>
                             </depends>
                         </reward_points_new>
+                        <reward_points_dollars>
+                            <sort_order>70</sort_order>
+                            <label>Reward Points Currency Amount</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_customer/adminhtml_system_config_form_field_rewardpoints
+                            </frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </reward_points_dollars>
+                        <reward_points_dollars_new>
+                            <sort_order>71</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <reward_points_dollars>_new_</reward_points_dollars>
+                            </depends>
+                        </reward_points_dollars_new>
                     </fields>
                 </attributes>
                 <address_attributes>
-                    <label>Address Attributes</label>
+                    <label>Default Shipping Address</label>
                     <frontend_type>text</frontend_type>
                     <frontend_model>bronto_customer/adminhtml_system_config_form_fieldset_attributes_address
                     </frontend_model>
@@ -557,7 +580,7 @@
                         <!-- region -->
                         <region>
                             <sort_order>10</sort_order>
-                            <label>State/Province</label>
+                            <label>State/Province Name</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
                             <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
@@ -577,6 +600,28 @@
                                 <region>_new_</region>
                             </depends>
                         </region_new>
+                        <region_code_id>
+                            <sort_order>12</sort_order>
+                            <label>State/Province Code</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </region_code_id>
+                        <region_code_id_new>
+                            <sort_order>13</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <region_code_id>_new_</region_code_id>
+                            </depends>
+                        </region_code_id_new>
                         <!-- postcode -->
                         <postcode>
                             <sort_order>15</sort_order>
@@ -603,7 +648,7 @@
                         <!-- country_id -->
                         <country_id>
                             <sort_order>20</sort_order>
-                            <label>Country</label>
+                            <label>Country Name</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
                             <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
@@ -623,6 +668,28 @@
                                 <country_id>_new_</country_id>
                             </depends>
                         </country_id_new>
+                        <country_code_id>
+                            <sort_order>22</sort_order>
+                            <label>Country Code</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </country_code_id>
+                        <country_code_id_new>
+                            <sort_order>23</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <country_code_id>_new_</country_code_id>
+                            </depends>
+                        </country_code_id_new>
                         <!-- company -->
                         <company>
                             <sort_order>25</sort_order>
@@ -694,6 +761,246 @@
                         </fax_new>
                     </fields>
                 </address_attributes>
+                <billing_address_attributes>
+                    <label>Default Billing Address</label>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_customer/adminhtml_system_config_form_fieldset_attributes_address
+                    </frontend_model>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <!-- street -->
+                        <street>
+                            <sort_order>1</sort_order>
+                            <label>Street Address</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </street>
+                        <street_new>
+                            <sort_order>2</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <street>_new_</street>
+                            </depends>
+                        </street_new>
+                        <!-- city -->
+                        <city>
+                            <sort_order>5</sort_order>
+                            <label>City</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </city>
+                        <city_new>
+                            <sort_order>6</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <city>_new_</city>
+                            </depends>
+                        </city_new>
+                        <!-- region -->
+                        <region>
+                            <sort_order>10</sort_order>
+                            <label>State/Province Name</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </region>
+                        <region_new>
+                            <sort_order>11</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <region>_new_</region>
+                            </depends>
+                        </region_new>
+                        <region_code_id>
+                            <sort_order>12</sort_order>
+                            <label>State/Province Code</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </region_code_id>
+                        <region_code_id_new>
+                            <sort_order>13</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <region_code_id>_new_</region_code_id>
+                            </depends>
+                        </region_code_id_new>
+                        <!-- postcode -->
+                        <postcode>
+                            <sort_order>15</sort_order>
+                            <label>Zip/Postal Code</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </postcode>
+                        <postcode_new>
+                            <sort_order>16</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <postcode>_new_</postcode>
+                            </depends>
+                        </postcode_new>
+                        <!-- country_id -->
+                        <country_id>
+                            <sort_order>20</sort_order>
+                            <label>Country Name</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </country_id>
+                        <country_id_new>
+                            <sort_order>21</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <country_id>_new_</country_id>
+                            </depends>
+                        </country_id_new>
+                        <country_code_id>
+                            <sort_order>22</sort_order>
+                            <label>Country Code</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </country_code_id>
+                        <country_code_id_new>
+                            <sort_order>23</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <country_code_id>_new_</country_code_id>
+                            </depends>
+                        </country_code_id_new>
+                        <!-- company -->
+                        <company>
+                            <sort_order>25</sort_order>
+                            <label>Company</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </company>
+                        <company_new>
+                            <sort_order>26</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <company>_new_</company>
+                            </depends>
+                        </company_new>
+                        <!-- telephone -->
+                        <telephone>
+                            <sort_order>30</sort_order>
+                            <label>Telephone</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </telephone>
+                        <telephone_new>
+                            <sort_order>31</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <telephone>_new_</telephone>
+                            </depends>
+                        </telephone_new>
+                        <!-- fax -->
+                        <fax>
+                            <sort_order>35</sort_order>
+                            <label>Fax</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
+                            <source_model>bronto_common/system_config_source_field</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </fax>
+                        <fax_new>
+                            <sort_order>36</sort_order>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <fax>_new_</fax>
+                            </depends>
+                        </fax_new>
+                    </fields>
+                </billing_address_attributes>
             </groups>
         </bronto_customer>
     </sections>

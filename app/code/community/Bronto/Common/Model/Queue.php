@@ -2,6 +2,8 @@
 
 class Bronto_Common_Model_Queue extends Mage_Core_Model_Abstract
 {
+    protected $_eventPrefix = 'bronto_common_queue';
+
     /**
      * @var Bronto_Api
      */
@@ -75,7 +77,7 @@ class Bronto_Common_Model_Queue extends Mage_Core_Model_Abstract
     protected function _api()
     {
         if (is_null($this->_api)) {
-            $this->_api = Mage::helper('bronto_contact')->getApi(null, 'store',  $this->getStoreId());
+            $this->_api = Mage::helper('bronto_common')->getApi(null, 'store',  $this->getStoreId());
         }
         return $this->_api;
     }
@@ -104,6 +106,7 @@ class Bronto_Common_Model_Queue extends Mage_Core_Model_Abstract
      */
     public function setUnserializedEmailData($data)
     {
+        $this->_unserializedData = $data;
         return $this->setEmailData(serialize($data));
     }
 
@@ -160,15 +163,29 @@ class Bronto_Common_Model_Queue extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Gets the Recommendation info supplied by the email model
+     *
+     * @return Varien_Object
+     */
+    public function getRecommendationInfo()
+    {
+        return new Varien_Object($this->getUnserializedEmailData()->getRecommendation());
+    }
+
+    /**
      * Creates a Bronto_Api_Delivery_Row from internals
      *
+     * @param array $additionalFields
      * @return Bronto_Api_Delivery_Row
      */
-    public function prepareDelivery()
+    public function prepareDelivery($additionalFields = array())
     {
         $delivery = $this->_deliveryObject()->createRow();
-        $deliveryData =  $this->getUnserializedEmailData()->getDelivery();
+        $deliveryData = $this->getUnserializedEmailData()->getDelivery();
         foreach ($deliveryData as $field => $value) {
+            if ($field == 'fields' && !empty($additionalFields)) {
+                $value = array_merge($value, $additionalFields);
+            }
             $delivery->{$field} = $value;
         }
         return $delivery;

@@ -28,7 +28,7 @@
                     <show_in_store>1</show_in_store>
                     <expanded>1</expanded>
                     <comment><![CDATA[Module configuration is located at:
-                      <strong>Promotions</strong> &rsaquo; <a
+                      <strong>Promotions &rsaquo; <a
                         href="{url}">Bronto Product
                         Recommendations</a></strong><br/>
                     <div class="bronto-with-help">
@@ -44,6 +44,10 @@
                               </tr>
                             </thead>
                             <tbody>
+                              <tr>
+                                <td>Related Product's ID</td>
+                                <td>relatedId_#</td>
+                              </tr>
                               <tr>
                                 <td>Related Product's name</td>
                                 <td>relatedName_#</td>
@@ -76,7 +80,7 @@
                      ]]></comment>
                      <fields>
                          <enabled>
-                           <label>Enable Recommendations</label>
+                           <label>Enable Module</label>
                            <frontend_type>select</frontend_type>
                            <backend_model>bronto_common/system_config_backend_enable</backend_model>
                            <source_model>adminhtml/system_config_source_yesno</source_model>

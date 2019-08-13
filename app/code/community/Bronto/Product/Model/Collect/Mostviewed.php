@@ -9,7 +9,7 @@ class Bronto_Product_Model_Collect_Mostviewed extends Bronto_Product_Model_Colle
      */
     public function collect()
     {
-        $mostViewed = Mage::getResourceModel('reports/product_viewed_collection')
+        $mostViewed = Mage::getResourceModel('reports/product_collection')
             ->addStoreFilter($this->getStoreId())
             ->setPageSize($this->getRemainingCount())
             ->addViewsCount(date('Y-m-d', strtotime('-' . self::DAYS_THRESHOLD . ' days')), date('Y-m-d'));

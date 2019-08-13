@@ -63,6 +63,17 @@ class Bronto_Common_Helper_Api extends Bronto_Common_Helper_Data
     }
 
     /**
+     * @see parent
+     */
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
+    {
+        return (
+            $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig) &&
+            $this->_disableModule(self::XML_PATH_QUEUE_ENABLED, $scope, $scopeId, $deleteConfig)
+        );
+    }
+
+    /**
      * Checked if the send queue is enabled
      *
      * @param string $scope

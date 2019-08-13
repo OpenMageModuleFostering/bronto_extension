@@ -42,7 +42,7 @@ class Bronto_Common_Model_Observer
         $sentry->disableModules($scope, $scopeId, true);
 
         // Unlink all Emails
-        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('edition' => 'Enterprise', 'major' => 9)))) {
+        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('edition' => 'Professional', 'major' => 9)))) {
             $sentry->unlinkEmails(
                 Mage::getModel('bronto_email/message')->getCollection(),
                 $scope,
@@ -278,12 +278,13 @@ class Bronto_Common_Model_Observer
                 continue;
             }
 
-            if (empty($values['value'])) {
+            if (array_key_exists('value', $values) && empty($values['value'])) {
                 $errors[] = $helper->__("Please enter your $label.");
             }
         }
 
-        if (!empty($groups['support']['fields']['using_solution_partner']['value'])) {
+        $usingPartner = $groups['support']['fields']['using_solution_partner'];
+        if (array_key_exists('value', $usingPartner) && !empty($usingPartner['value'])) {
             if (array_key_exists('inherit', $groups['support']['fields']['partner']) && $groups['support']['fields']['partner']['inherit']) {
                 return;
             }
@@ -320,16 +321,16 @@ class Bronto_Common_Model_Observer
         ) {
 
             $groups  = $action->getRequest()->getParam('groups');
-            $enabled = $groups['settings']['fields']['enabled']['value'];
+            $enabled = $groups['settings']['fields']['enabled'];
 
             // If Module is not enabled, don't proceed
-            if ($enabled == '0') {
+            if (array_key_exists('value', $enabled) && $enabled['value'] == '0') {
                 return false;
             }
 
-            $apiToken = $groups['settings']['fields']['api_token']['value'];
+            $apiToken = $groups['settings']['fields']['api_token'];
 
-            if (empty($apiToken)) {
+            if (!array_key_exists('value', $apiToken) || (array_key_exists('value', $apiToken) && empty($apiToken['value']))) {
                 return false;
             }
 

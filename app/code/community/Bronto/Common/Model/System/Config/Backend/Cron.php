@@ -52,7 +52,7 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
     {
         $cronExprString = '';
 
-        $useMageCron = $this->getFieldsetDataValue($this->_xml_path_mage_cron); //bronto_verify/cron_settings/
+        $useMageCron = $this->getFieldsetOrInheritedValue($this->_xml_path_mage_cron); //bronto_verify/cron_settings/
 
         $pathParts  = explode('/', $this->getPath());
         $pathValues = array_values($pathParts);
@@ -66,20 +66,20 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
             $minutely  = Bronto_Common_Model_System_Config_Source_Cron_Frequency::CRON_MINUTELY;
             $hourly    = Bronto_Common_Model_System_Config_Source_Cron_Frequency::CRON_HOURLY;
             $daily     = Bronto_Common_Model_System_Config_Source_Cron_Frequency::CRON_DAILY;
-            $frequency = $this->getFieldsetDataValue('frequency');
+            $frequency = $this->getFieldsetOrInheritedValue('frequency');
 
             if ($frequency == $minutely) {
-                $interval       = (int)$this->getFieldsetDataValue('interval');
+                $interval       = (int)$this->getFieldsetOrInheritedValue('interval');
                 $cronExprString = "*/{$interval} * * * *";
             } elseif ($frequency == $hourly) {
-                $minutes = (int)$this->getFieldsetDataValue('minutes');
+                $minutes = (int)$this->getFieldsetOrInheritedValue('minutes');
                 if ($minutes >= 0 && $minutes <= 59) {
                     $cronExprString = "{$minutes} * * * *";
                 } else {
                     Mage::throwException(Mage::helper('bronto_common')->__('Please, specify correct minutes of hour.'));
                 }
             } elseif ($frequency == $daily) {
-                $time        = $this->getFieldsetDataValue('time');
+                $time        = $this->getFieldsetOrInheritedValue('time');
                 $timeMinutes = $time[1];
                 $timeHours   = $time[0];
                 // Fix Midnight Issue
@@ -112,6 +112,23 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
         } catch (Exception $e) {
             Mage::throwException(Mage::helper('adminhtml')->__('Unable to save Cron expression'));
         }
+    }
+
+    /**
+     * Gets the fieldsetform key or an inherited value
+     *
+     * @param string key
+     * @return mixed
+     */
+    public function getFieldsetOrInheritedValue($key)
+    {
+        $fieldSetValue = $this->getFieldsetDataValue($key);
+        if (empty($fieldSetValue)) {
+            $helper = Mage::helper('bronto_common');
+            $path = preg_replace('|/[^/]+$|', '/' . $key, $this->getPath());
+            return $helper->getAdminScopedConfig($path, 'default');
+        }
+        return $fieldSetValue;
     }
 
     /**

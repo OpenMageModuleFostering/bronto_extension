@@ -96,7 +96,7 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
         $select->from(
             array('order' => $resource->getTable('sales/order')), array(new Zend_Db_Expr('COUNT(entity_id) as count'))
         )
-            ->where('NOT EXISTS (?)', $this->_getSubselect($resource, $adapter));
+            ->where('`order`.`entity_id` NOT IN (?)', $this->_getSubselect($resource, $adapter));
 
         // Get Results
         $result = $adapter->query($select)->fetch();
@@ -121,9 +121,8 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
         // Build Sub-Select Statement
         $subselect = $adapter->select()
             ->from(
-                array('queue' => $resource->getTable('bronto_order/queue')), array(new Zend_Db_Expr(1))
-            )
-            ->where('queue.order_id = order.entity_id');
+                array('queue' => $resource->getTable('bronto_order/queue')), array('order_id')
+            );
 
         return $subselect;
     }
@@ -147,7 +146,7 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
             ->from(
                 array('order' => $resource->getTable('sales/order')), array('entity_id', 'store_id', 'quote_id', 'created_at')
             )
-            ->where('NOT EXISTS (?)', $this->_getSubselect($resource, $adapter))
+            ->where('`order`.`entity_id` NOT IN (?)', $this->_getSubselect($resource, $adapter))
             ->limit($count);
 
         // Get Results

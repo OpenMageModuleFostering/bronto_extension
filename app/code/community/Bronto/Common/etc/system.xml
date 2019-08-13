@@ -64,7 +64,7 @@
                     <expanded>1</expanded>
                     <fields>
                         <enabled>
-                            <label>Enable API Send Queuing</label>
+                            <label>Enabled</label>
                             <frontend_type>select</frontend_type>
                             <backend_model>bronto_common/system_config_backend_enable</backend_model>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
@@ -185,7 +185,7 @@
                     <expanded>1</expanded>
                     <fields>
                         <enabled>
-                            <label>Enable API Retry</label>
+                            <label>Enabled</label>
                             <frontend_type>select</frontend_type>
                             <backend_model>bronto_common/system_config_backend_enable</backend_model>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
@@ -419,7 +419,7 @@
             </groups>
         </bronto_api>
         <bronto_coupon module="bronto_common">
-            <label>Coupon Manager</label>
+            <label>Coupon Management</label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
             <sort_order>899</sort_order>
@@ -436,36 +436,204 @@
                     <show_in_store>1</show_in_store>
                 </about>
                 <settings>
-                    <label>Settings</label>
+                    <label>Coupon Manager Integration</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>10</sort_order>
+                    <sort_order>5</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <expanded>1</expanded>
-                    <comment><![CDATA[The Bronto Coupon Manager gives you more control
-                      and flexibility to coupons and redemption throughout their
-                      lifecycle.<br/>If interested, please request info on the
-                      App site: <a
-                        href="https://appcenter.bronto.com/apps/coupon-manager">Coupon
-                        Manager</a>
+                    <comment><![CDATA[With the Bronto Coupon Manager, you can easily edit, manage and distribute unique coupon codes via email marketing or SMS messaging for highly targeted, revenue-generating campaigns. Adding your account ID will enable the automatic redemption of coupons in Coupon Manager to report on valuable metrics such as: redemption rate, average redemption time, and revenue/discount per coupon. To learn more, please visit the <a target="_blank"
+                        href="https://appcenter.bronto.com/apps/coupon-manager">Bronto AppCenter</a> and contact your account manager.
                   <br /><br/>]]></comment>
                     <fields>
                         <site_hash>
-                            <label>Coupon Manager Account ID</label>
+                            <label>Account ID</label>
                             <frontend_type>text</frontend_type>
                             <comment>Found in the settings dialog of the Coupon Manager.</comment>
-                            <sort_order>0</sort_order>
+                            <sort_order>80</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </site_hash>
                     </fields>
                 </settings>
+                <apply_coupon>
+                    <label>Auto-Apply Coupons</label>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_common/adminhtml_system_config_form_coupon</frontend_model>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <expanded>1</expanded>
+                    <comment><![CDATA[When enabled, coupon codes can be applied
+                      to a customer's shopping session with one of two methods. There is
+                      a controller that listens to the store front route
+                      <strong>/apply/coupon/</strong>. You can pass the coupon
+                      code in the designated <em>Coupon Code Query
+                        Parameter</em>, and a redirect URL. For example:
+                      the URL <strong>{baseUrl}apply/coupon/?{code}={example}&redirect_path=%2Fcheckout%2Fcart</strong>
+                      will apply coupon <strong>{example}</strong> to the customer's
+                      shopping session, and redirect them to
+                      <strong>{baseUrl}checkout/cart/</strong>. The second method applies a
+                      coupon code by using an observer with <em>Use Event Observer</em> that
+                      will scan any store front URL for the
+                      <em>Coupon Code Query Parameter</em>. This method is optional, as
+                      it can be disabled. If the module is disabled, the controller will
+                      still perform redirects, but it will no longer apply coupons.<br/><br/>]]></comment>
+                    <fields>
+                        <enabled>
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_common/system_config_backend_enable</backend_model>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>0</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enabled>
+                        <use_observer>
+                            <label>Use Event Observer</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </use_observer>
+                        <coupon_code_param>
+                            <label>Coupon Code Query Parameter</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>The value associated with this key will be
+                              the coupon code to be appiled to the shopping
+                              cart.
+                              </comment>
+                        </coupon_code_param>
+                        <error_message_param>
+                            <label>Invalid Coupon Query Parameter</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[The value associated with this key
+                              will cause the corresponding message to be
+                              displayed.<br/>Valid values are:<br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>invalid</strong>: The Invalid Message
+                              will be used.<br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>depleted</strong>: The Depleted Message
+                              will be used.<br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>expired</strong>: The Expired Message
+                              will be used.]]></comment>
+                        </error_message_param>
+                        <success_message>
+                            <label>Success Message</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Displayed when the coupon code in the URL was
+                              successfully applied to the session. The coupon code can be
+                              replaced in the message dynamically by using the
+                              <em>{code}</em> tag.]]></comment>
+                        </success_message>
+                        <invalid>
+                            <label>Invalid Message</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Displayed when the coupon code is
+                              not applicable to the customer, does not exist, or
+                              if the <strong>invalid</strong> value is
+                              used. The coupon code can be replaced in the message
+                              dynamically by using the <em>{code}</em> tag.]]></comment>
+                        </invalid>
+                        <depleted>
+                            <label>Depleted Message</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>45</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Displayed when there are no
+                              more uses for this coupon code or if the
+                              <strong>depleted</strong> value is used. The
+                              coupon code can be replaced in the message by using the
+                              <em>{code}</em> tag.]]></comment>
+                        </depleted>
+                        <expired>
+                            <label>Expired Message</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Displayed when the coupon code has
+                              expired or if the <strong>expired</strong>
+                              value is used. The coupon code can be replaced in the
+                              message by using the <em>{code}</em>
+                              tag.]]></comment>
+                        </expired>
+                        <conflict>
+                            <label>Conflict Message</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>55</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Displayed when a coupon code is
+                              currently applied in the session and it does not
+                              match the coupon code to be applied. There are
+                              three tags that can be replaced in the message
+                              dynamically:
+                              <br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>{oldCode}</strong>: Coupon
+                              currently in the session.
+                              <br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>{newCode}</strong>: Coupon to
+                              be applied to the session.
+                              <br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>{link}</strong>: The link to apply the new coupon code.]]></comment>
+                        </conflict>
+                        <link>
+                            <label>Link Text</label>
+                            <depends><enabled>1</enabled></depends>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[The link to apply the new coupon
+                              code instead, which can only be used by the
+                              <em>Conflict Message</em>. Two tags are
+                              available for dynamic replacement:<br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>{oldCode}</strong>: Coupon currently in
+                              the session.<br/>
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>{newCode}</strong>: Coupon to be applied to the session.]]></comment>
+                        </link>
+                    </fields>
+                </apply_coupon>
             </groups>
         </bronto_coupon>
         <bronto_popup module="bronto_common">
-            <label>Pop-up Manager</label>
+            <label>Pop-up Manager Integration</label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
             <sort_order>898</sort_order>
@@ -489,12 +657,9 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <expanded>1</expanded>
-                    <comment><![CDATA[The Bronto Pop-up Manager gives you more control
-                      and flexibility to manage pop-up sign-ups throughout their
-                      lifecycle.<br/>If interested, please request info on the
-                      App site: <a
-                        href="https://appcenter.bronto.com/apps/pop-up-manager">Pop-Up
-                        Manager</a>
+                    <comment><![CDATA[With Pop-Up Manager, you can create, test and manage pop-up sign-ups with minimal involvement from Bronto or your developer, and watch your email marketing list skyrocket! To learn more, visit the
+                      <a target="_blank"
+                        href="https://appcenter.bronto.com/apps/pop-up-manager">Bronto AppCenter</a> and contact your account manager.
                   <br /><br/>]]></comment>
                     <fields>
                         <code>
@@ -523,6 +688,7 @@
             <label>General</label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
+            <frontend_model>bronto_common/adminhtml_system_config_form</frontend_model>
             <sort_order>100</sort_order>
             <show_in_default>1</show_in_default>
             <show_in_website>1</show_in_website>
@@ -746,6 +912,19 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </partner>
+                        <terms>
+                          <label><![CDATA[Agree to Terms of Service?]]></label>
+                          <source_model>adminhtml/system_config_source_yesno</source_model>
+                          <frontend_model>bronto_common/adminhtml_system_config_form_field_support</frontend_model>
+                          <frontend_type>select</frontend_type>
+                          <sort_order>9</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>1</show_in_store>
+                          <comment>
+                            <![CDATA[If <em>Yes</em>, you certify the contacts you will be importing as active subscribers via the Newsletter Opt-In Module of this extension have been collected in compliance with the <a href="http://hosting-source.bm23.com/30245/public/Bronto_PMPolicy.html" target="_blank">Bronto Permission Marketing Policy</a>; specifically, the contacts have provided explicit and deliberate permission to receive email from you and have been emailed within the last 24 months. For more information, please contact Bronto Support.]]>
+                          </comment>
+                        </terms>
                     </fields>
                 </support>
                 <format>

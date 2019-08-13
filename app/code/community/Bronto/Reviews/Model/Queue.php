@@ -7,19 +7,40 @@
  */
 class Bronto_Reviews_Model_Queue extends Mage_Core_Model_Abstract
 {
-    public function _construct()
+    /**
+     * @see parent
+     */
+    protected function _construct()
     {
         parent::_construct();
         $this->_init('bronto_reviews/queue');
     }
 
-    public function load($id, $column = null)
+    /**
+     * Loads the delivery entry by order and delivery ID
+     *
+     * @param int $orderId
+     * @param mixed $deliveryId
+     * @return Bronto_Reviews_Model_Queue
+     */
+    public function loadByOrderAndDeliveryId($orderId, $deliveryId = null)
     {
-        parent::load($id, 'order_id');
-        if (!$this->getId()) {
-            $this->setId($id);
-        }
-
+        $this->setOrderId($orderId);
+        $this->setDeliveryId($deliveryId);
+        $this->_getResource()->loadByOrderAndDeliveryId($this, $orderId, $deliveryId);
         return $this;
+    }
+
+    /**
+     * Removes old deliveries from the table
+     *
+     * @param datetime $date
+     */
+    public function flushDeliveries($date = null)
+    {
+        if (is_null($date)) {
+            $date = date('Y-m-d H:i:s');
+        }
+        $this->_getResource()->flushDeliveries($date);
     }
 }

@@ -116,6 +116,7 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
                 array('bronto_imported' => $date),
                 $where
             );
+            $helper->writeInfo("Mark All Orders was explicitly pressed.");
         } catch (Exception $e) {
             $helper->writeError($e);
             $this->_getSession()->addError('Mark failed: ' . $e->getMessage());
@@ -135,11 +136,9 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
         $imported = 0;
 
         try {
-            $orders  = $helper->getMissingOrders();
-            $waiting = count($orders);
-
-            if ($waiting > 0) {
-                foreach ($orders as $order) {
+            $waiting = $helper->getMissingOrdersCount();
+            if ($waiting) {
+                foreach ($helper->getMissingOrders() as $order) {
                     Mage::getModel('bronto_order/queue')->getOrderRow($order['entity_id'], null, $order['store_id'])
                         ->setQuoteId($order['quote_id'])
                         ->setCreatedAt($order['created_at'])
@@ -155,7 +154,11 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
             $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
         }
 
-        $this->_getSession()->addSuccess(sprintf("%d of %d Orders were added to the Queue", $imported, $waiting));
+        if ($imported == $waiting && $waiting == 0) {
+            $this->_getSession()->addSuccess($helper->__('All Orders are synced to the queue.'));
+        } else {
+            $this->_getSession()->addSuccess(sprintf("%d of %d Orders were added to the Queue", $imported, $waiting));
+        }
 
         $returnParams = array('section' => 'bronto_order');
         $returnParams = array_merge($returnParams, $helper->getScopeParams());

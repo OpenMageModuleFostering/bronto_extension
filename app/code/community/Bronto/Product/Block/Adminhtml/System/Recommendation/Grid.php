@@ -3,7 +3,7 @@
 class Bronto_Product_Block_Adminhtml_System_Recommendation_Grid extends Mage_Adminhtml_Block_Widget_Grid
 {
     /**
-     * Override paretn constructor for some grid specific things
+     * Override parent constructor for some grid specific things
      *
      * @param array $attributes (Optional)
      * @see parent
