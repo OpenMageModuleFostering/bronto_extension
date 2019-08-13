@@ -33,9 +33,9 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Couponcode extends Bronto_Remind
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Shopping cart %s a coupon applied',
-                $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Shopping cart %s a coupon applied',
+            $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

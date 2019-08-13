@@ -8,7 +8,7 @@ $installer->startSetup();
 //
 // Customer Attributes
 $installer->addAttribute('customer', 'bronto_imported', array(
-    'type'     => 'datetime',
+    'type' => 'datetime',
     'required' => false,
 ));
 

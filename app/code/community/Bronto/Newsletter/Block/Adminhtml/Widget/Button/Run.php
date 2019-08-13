@@ -12,15 +12,11 @@ class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Run extends Mage_Adminhtml
      */
     protected function _construct()
     {
-        $params = array(
-            'section' => Mage::app()->getRequest()->getParam('section'),
-            'website' => Mage::app()->getRequest()->getParam('website'),
-            'store'   => Mage::app()->getRequest()->getParam('store'),
-        );
         $this->setLabel('Run Now');
-        $this->setOnClick("setLocation('" . Mage::helper('adminhtml')->getUrl('*/newsletter/run', $params) . "'); return false;");
+        $this->setOnClick("setLocation('" . Mage::helper('bronto_newsletter')->getScopeUrl('*/newsletter/run') . "'); return false;");
 
-        if (!extension_loaded('soap') || !extension_loaded('openssl') || !Mage::helper('bronto_common')->getApiToken() || !Mage::helper('bronto_newsletter')->isEnabled()) {
+        // Check to see if this module meets requirements
+        if (!Mage::helper('bronto_newsletter')->isModuleActive()) {
             $this->setDisabled(true)->setClass('disabled');
         }
     }

@@ -10,9 +10,9 @@ class Bronto_Order_Model_Mysql4_Setup extends Mage_Sales_Model_Mysql4_Setup
 
     /**
      * Get column definition for attribute
-     * 
-     * @param string    $code Parameter description (if any) ...
-     * @param unknown   $data Parameter description (if any) ...
+     *
+     * @param string $code Parameter description (if any) ...
+     * @param unknown $data Parameter description (if any) ...
      * @return string   Return description (if any) ...
      * @access protected
      */
@@ -26,7 +26,7 @@ class Bronto_Order_Model_Mysql4_Setup extends Mage_Sales_Model_Mysql4_Setup
 
         return $definition;
     }
-    
+
     /**
      * Remove entity attribute. Overwritten for flat entities support
      *
@@ -38,8 +38,8 @@ class Bronto_Order_Model_Mysql4_Setup extends Mage_Sales_Model_Mysql4_Setup
     public function removeAttribute($entityTypeId, $code)
     {
         if (isset($this->_flatEntityTables[$entityTypeId]) &&
-            $this->_flatTableExist($this->_flatEntityTables[$entityTypeId]))
-        {
+            $this->_flatTableExist($this->_flatEntityTables[$entityTypeId])
+        ) {
             $this->_removeFlatAttribute($this->_flatEntityTables[$entityTypeId], $code);
             $this->_removeGridAttribute($this->_flatEntityTables[$entityTypeId], $code, $entityTypeId);
         } else {
@@ -47,7 +47,7 @@ class Bronto_Order_Model_Mysql4_Setup extends Mage_Sales_Model_Mysql4_Setup
         }
         return $this;
     }
-     
+
     /**
      * Remove an attribute as separate column in the table
      * The sales setup class doesn't support it by default
@@ -62,7 +62,7 @@ class Bronto_Order_Model_Mysql4_Setup extends Mage_Sales_Model_Mysql4_Setup
         $this->getConnection()->dropColumn($this->getTable($table), $attribute);
         return $this;
     }
- 
+
     /**
      * Remove attribute from grid
      *

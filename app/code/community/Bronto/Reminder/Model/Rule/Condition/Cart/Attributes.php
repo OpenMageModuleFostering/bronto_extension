@@ -55,9 +55,9 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Item %s %s %s:',
-                $this->getAttributeElementHtml(), $this->getOperatorElementHtml(), $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Item %s %s %s:',
+            $this->getAttributeElementHtml(), $this->getOperatorElementHtml(), $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

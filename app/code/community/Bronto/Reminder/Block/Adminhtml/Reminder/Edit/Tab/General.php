@@ -13,7 +13,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
         $model = Mage::registry('current_reminder_rule');
 
         $fieldset = $form->addFieldset('base_fieldset', array(
-            'legend'  => Mage::helper('bronto_reminder')->__('General'),
+            'legend' => Mage::helper('bronto_reminder')->__('General'),
             'comment' => Mage::helper('bronto_reminder')->__('Reminder emails may promote a shopping cart price rule with or without coupon. If a shopping cart price rule defines an auto-generated coupon, this reminder rule will generate a random coupon code for each customer.'),
         ));
 
@@ -24,13 +24,13 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
         }
 
         $fieldset->addField('name', 'text', array(
-            'name'     => 'name',
-            'label'    => Mage::helper('bronto_reminder')->__('Rule Name'),
+            'name' => 'name',
+            'label' => Mage::helper('bronto_reminder')->__('Rule Name'),
             'required' => true,
         ));
 
         $fieldset->addField('description', 'textarea', array(
-            'name'  => 'description',
+            'name' => 'description',
             'label' => Mage::helper('bronto_reminder')->__('Description'),
             'style' => 'width: 98%; height: 100px;',
         ));
@@ -38,11 +38,11 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
         if (class_exists('Mage_Adminhtml_Block_Promo_Widget_Chooser', false)) {
 
             $field = $fieldset->addField('salesrule_id', 'note', array(
-                'name'  => 'salesrule_id',
+                'name' => 'salesrule_id',
                 'label' => Mage::helper('bronto_reminder')->__('Shopping Cart Price Rule'),
                 'class' => 'widget-option',
                 'value' => $model->getSalesruleId(),
-                'note'  => Mage::helper('bronto_reminder')->__('Promotion rule this reminder will advertise.'),
+                'note' => Mage::helper('bronto_reminder')->__('Promotion rule this reminder will advertise.'),
             ));
 
             $model->unsSalesruleId();
@@ -58,20 +58,20 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
         }
 
         if (!Mage::app()->isSingleStoreMode()) {
-            $fieldset->addField('website_ids','multiselect',array(
-                'name'     => 'website_ids',
+            $fieldset->addField('website_ids', 'multiselect', array(
+                'name' => 'website_ids',
                 'required' => true,
-                'label'    => Mage::helper('newsletter')->__('Assigned to Websites'),
-                'values'   => Mage::getSingleton('adminhtml/system_store')->getWebsiteValuesForForm(),
-                'value'    => $model->getWebsiteIds()
+                'label' => Mage::helper('newsletter')->__('Assigned to Websites'),
+                'values' => Mage::getSingleton('adminhtml/system_store')->getWebsiteValuesForForm(),
+                'value' => $model->getWebsiteIds()
             ));
         }
 
         $fieldset->addField('is_active', 'select', array(
-            'label'    => Mage::helper('bronto_reminder')->__('Status'),
-            'name'     => 'is_active',
+            'label' => Mage::helper('bronto_reminder')->__('Status'),
+            'name' => 'is_active',
             'required' => true,
-            'options'  => array(
+            'options' => array(
                 '1' => Mage::helper('bronto_reminder')->__('Active'),
                 '0' => Mage::helper('bronto_reminder')->__('Inactive'),
             ),
@@ -84,21 +84,21 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
         $dateFormatIso = Mage::app()->getLocale()->getDateFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
 
         $fieldset->addField('active_from', 'date', array(
-            'name'   => 'active_from',
-            'label'  => Mage::helper('bronto_reminder')->__('Active From'),
-            'title'  => Mage::helper('bronto_reminder')->__('Active From'),
-            'image'  => $this->getSkinUrl('images/grid-cal.gif'),
+            'name' => 'active_from',
+            'label' => Mage::helper('bronto_reminder')->__('Active From'),
+            'title' => Mage::helper('bronto_reminder')->__('Active From'),
+            'image' => $this->getSkinUrl('images/grid-cal.gif'),
             'input_format' => Varien_Date::DATE_INTERNAL_FORMAT,
-            'format'       => $dateFormatIso
+            'format' => $dateFormatIso
         ));
 
         $fieldset->addField('active_to', 'date', array(
-            'name'   => 'active_to',
-            'label'  => Mage::helper('bronto_reminder')->__('Active To'),
-            'title'  => Mage::helper('bronto_reminder')->__('Active To'),
-            'image'  => $this->getSkinUrl('images/grid-cal.gif'),
+            'name' => 'active_to',
+            'label' => Mage::helper('bronto_reminder')->__('Active To'),
+            'title' => Mage::helper('bronto_reminder')->__('Active To'),
+            'image' => $this->getSkinUrl('images/grid-cal.gif'),
             'input_format' => Varien_Date::DATE_INTERNAL_FORMAT,
-            'format'       => $dateFormatIso
+            'format' => $dateFormatIso
         ));
 
 //        $subfieldset = $form->addFieldset('sub_fieldset', array(
@@ -129,7 +129,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
     public function getChooserConfig()
     {
         return array(
-            'button' => array('open'=>'Select Rule...'),
+            'button' => array('open' => 'Select Rule...'),
             'type' => 'adminhtml/promo_widget_chooser_rule'
         );
     }

@@ -8,19 +8,19 @@ $installer->startSetup();
 //
 // Quote Attributes
 $installer->addAttribute('quote', 'bronto_tid', array(
-    'type'     => 'varchar',
+    'type' => 'varchar',
     'required' => false,
 ));
 
 //
 // Order Attributes
 $installer->addAttribute('order', 'bronto_tid', array(
-    'type'     => 'varchar',
+    'type' => 'varchar',
     'required' => false,
 ));
 
 $installer->addAttribute('order', 'bronto_imported', array(
-    'type'     => 'datetime',
+    'type' => 'datetime',
     'required' => false,
 ));
 

@@ -13,15 +13,24 @@ class Bronto_Order_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstract
      * @var bool
      */
     protected $_isPkAutoIncrement = false;
-    
+
     /**
      * Initialize Model
-     * 
-     * @return void  
+     *
+     * @return void
      * @access public
      */
     public function _construct()
     {
         $this->_init('bronto_order/queue', 'queue_id');
+    }
+
+    /**
+     * Get Write adapter instance
+     * @return type
+     */
+    public function getWriteAdapter()
+    {
+        return $this->_getWriteAdapter();
     }
 }

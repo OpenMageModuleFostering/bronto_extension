@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Newsletter>
-            <version>1.4.4</version>
+            <version>1.4.5</version>
         </Bronto_Newsletter>
     </modules>
     <global>
@@ -24,7 +24,9 @@
             <bronto_newsletter_mysql4>
                 <class>Bronto_Newsletter_Model_Mysql4</class>
                 <entities>
-                    <queue><table>bronto_newsletter_queue</table></queue>
+                    <queue>
+                        <table>bronto_newsletter_queue</table>
+                    </queue>
                 </entities>
             </bronto_newsletter_mysql4>
         </models>
@@ -94,6 +96,7 @@
                 <interval>15</interval>
                 <minutes>0</minutes>
                 <limit>250</limit>
+                <sync_limit>1000</sync_limit>
             </settings>
             <checkout>
                 <show_to_guests>1</show_to_guests>
@@ -108,9 +111,18 @@
                 <update_status>1</update_status>
             </contacts>
         </bronto_newsletter>
-    </default>    
+    </default>
     <adminhtml>
         <events>
+            <bronto_newsletter_enable>
+                <observers>
+                    <bronto_newsletter_enable>
+                        <type>singleton</type>
+                        <class>bronto_newsletter/observer</class>
+                        <method>watchEnableAction</method>
+                    </bronto_newsletter_enable>
+                </observers>
+            </bronto_newsletter_enable>
             <controller_action_predispatch>
                 <observers>
                     <bronto_newsletter_controller_action_predispatch>
@@ -120,25 +132,6 @@
                 </observers>
             </controller_action_predispatch>
         </events>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <bronto_newsletter module="bronto_newsletter">
-                                            <title>Bronto Newsletter Section</title>
-                                        </bronto_newsletter>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-                    </children>
-                </admin>
-            </resources>
-        </acl>
     </adminhtml>
     <admin>
         <routers>
@@ -152,13 +145,15 @@
         </routers>
         <fieldsets>
             <customer_account>
-                <bronto_contact_id><create>1</create></bronto_contact_id>
+                <bronto_contact_id>
+                    <create>1</create>
+                </bronto_contact_id>
             </customer_account>
         </fieldsets>
     </admin>
     <crontab>
         <jobs>
-            <bronto_newsletter_import>                
+            <bronto_newsletter_import>
                 <run>
                     <model>bronto_newsletter/observer::processSubscribers</model>
                 </run>
@@ -167,10 +162,10 @@
     </crontab>
 
     <phpunit>
-    <suite>
-        <modules>
-        <Bronto_Newsletter />
-        </modules>
-    </suite>
+        <suite>
+            <modules>
+                <Bronto_Newsletter/>
+            </modules>
+        </suite>
     </phpunit>
 </config>

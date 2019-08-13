@@ -79,7 +79,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
      */
     public function hasDebugEnabled()
     {
-        return (bool) Mage::helper($this->_module)->isDebugEnabled();
+        return (bool)Mage::helper($this->_module)->isDebugEnabled();
     }
 
     /**
@@ -90,6 +90,16 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
     public function logFileExists()
     {
         $logFile = Mage::getBaseDir('log') . DIRECTORY_SEPARATOR . "{$this->_module}.log";
-        return (bool) @file_exists($logFile);
+        return (bool)@file_exists($logFile);
+    }
+
+    /**
+     * Forwards call to helper from view
+     *
+     * @return boolean
+     */
+    public function isValidApiToken()
+    {
+        return Mage::helper('bronto_common')->validApiToken();
     }
 }

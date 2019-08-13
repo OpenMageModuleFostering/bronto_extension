@@ -39,7 +39,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_Cata
         if (!is_object($this->getAttributeObject())) {
             return 'string';
         }
-        if ($this->getAttributeObject()->getAttributeCode()=='category_ids') {
+        if ($this->getAttributeObject()->getAttributeCode() == 'category_ids') {
             return 'category';
         }
         $input = $this->getAttributeObject()->getFrontendInput();
@@ -115,8 +115,8 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_Cata
     /**
      * Apply product attribute subfilter to parent/base condition query
      *
-     * @param string   $fieldName    base query field name
-     * @param bool     $requireValid strict validation flag
+     * @param string $fieldName    base query field name
+     * @param bool $requireValid strict validation flag
      * @param $website
      * @return string
      */
@@ -144,9 +144,9 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_Cata
         } else {
             $select->where('main.attribute_id = ?', $attribute->getId());
             $select->join(
-                    array('store' => $this->getResource()->getTable('core/store')),
-                    'main.store_id=store.store_id',
-                    array())
+                array('store' => $this->getResource()->getTable('core/store')),
+                'main.store_id=store.store_id',
+                array())
                 ->where('store.website_id IN(?)', array(0, $website));
             $condition = $this->getResource()->createConditionSql(
                 'main.value', $this->getOperator(), $this->getValue()

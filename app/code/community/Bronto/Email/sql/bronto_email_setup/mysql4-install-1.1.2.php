@@ -68,7 +68,7 @@ try {
     ");
 
 } catch (Exception $e) {
-     Mage::log($e->getMessage());
+    Mage::log($e->getMessage());
 }
 
 $installer->endSetup();

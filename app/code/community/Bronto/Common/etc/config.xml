@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Common>
-            <version>2.0.4.2</version>
+            <version>2.1.0</version>
         </Bronto_Common>
     </modules>
     <global>
@@ -44,7 +44,25 @@
             </bronto_common>
         </routers>
     </frontend>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <bronto_common before="Mage_Adminhtml">Bronto_Common_Adminhtml</bronto_common>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
     <adminhtml>
+    	<layout>
+	        <updates>
+	            <bronto_common>
+	                <file>bronto/common.xml</file>
+	            </bronto_common>
+	        </updates>
+    	</layout>
         <events>
             <controller_action_predispatch>
                 <observers>
@@ -54,27 +72,25 @@
                     </bronto_common_controller_action_predispatch>
                 </observers>
             </controller_action_predispatch>
+            <controller_action_predispatch_adminhtml>
+                <observers>
+                    <bronto_common_registration_form_submit>
+                        <class>bronto_common/observer</class>
+                        <method>registerExtension</method>
+                    </bronto_common_registration_form_submit>
+                </observers>
+            </controller_action_predispatch_adminhtml>
         </events>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <bronto>
-                                            <title>Bronto General Section</title>
-                                        </bronto>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-                    </children>
-                </admin>
-            </resources>
-        </acl>
     </adminhtml>
+    <crontab>
+        <jobs>
+            <bronto_common_delete_archives>
+                <!-- Run once a day -->
+                <schedule><cron_expr>0 0 * * *</cron_expr></schedule>
+                <run><model>bronto_common/observer::clearArchives</model></run>
+            </bronto_common_delete_archives>
+        </jobs>
+    </crontab>
     <default>
         <bronto>
             <settings>
@@ -83,12 +99,21 @@
                 <test>0</test>
                 <notices>0</notices>
             </settings>
+            <format>
+                <image_type>small_image</image_type>
+                <image_width>88</image_width>
+                <image_height>77</image_height>
+            </format>
+            <support>
+                <registered>0</registered>
+                <using_solution_partner>1</using_solution_partner>
+            </support>
         </bronto>
     </default>
     <phpunit>
         <suite>
             <modules>
-                <Bronto_Common />
+                <Bronto_Common/>
             </modules>
         </suite>
     </phpunit>

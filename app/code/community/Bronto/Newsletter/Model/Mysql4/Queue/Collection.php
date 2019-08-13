@@ -1,44 +1,28 @@
 <?php
 
 /**
- * Short description for file
- * 
- * Long description (if any) ...
- * 
- * PHP version 5
- * 
- * The license text...
- * 
- * @category  Bronto
- * @package   Newsletter
- * @author    Jeff Lambert <jeff.lambert@atlanticbt.com>
- * @copyright 2012 Atlantic BT
- * @license   http://www.atlanticbt.com/ Atlantic BT 
- * @version   CVS: $Id:$
- * @link      <>
- * @see       References to other sections (if any)...
+ * @package   Bronto\Newsletter
+ * @copyright 2011-2013 Bronto Software, Inc.
+ * @version   1.3.5
  */
-/**
- * @author Jeff Lambert <jeff.lambert@atlanticbt.com>
- *         */
-class Bronto_Newsletter_Model_Mysql4_Queue_Collection 
-	extends Mage_Core_Model_Mysql4_Collection_Abstract
-{    
+class Bronto_Newsletter_Model_Mysql4_Queue_Collection
+    extends Mage_Core_Model_Mysql4_Collection_Abstract
+{
     /**
      * Short description for function
-     * 
+     *
      * Long description (if any) ...
-     * 
-     * @return void  
+     *
+     * @return void
      * @access public
      */
-    public function _construct() {
+    public function _construct()
+    {
         parent::_construct();
         $this->_init('bronto_newsletter/queue');
     }
-    
-    
-    
+
+
     /**
      * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
      */
@@ -49,11 +33,29 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
     }
 
     /**
+     * @return Bronto_Order_Model_Mysql4_Queue_Collection
+     */
+    public function addBrontoSuppressedFilter()
+    {
+        $this->addFieldToFilter('bronto_suppressed', array('notnull' => true));
+        return $this;
+    }
+
+    /**
+     * @return Bronto_Order_Model_Mysql4_Queue_Collection
+     */
+    public function addBrontoNotSuppressedFilter()
+    {
+        $this->addFieldToFilter('bronto_suppressed', array('null' => true));
+        return $this;
+    }
+
+    /**
      * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
      */
     public function addBrontoNotImportedFilter()
     {
-        $this->addFieldToFilter('imported', array('eq' => '0'));
+        $this->addFieldToFilter('imported', array('neq' => '1'));
         return $this;
     }
 
@@ -71,12 +73,10 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
 
         $storeIds = array_unique($storeIds);
 
-        if ($index = array_search(null, $storeIds)) {
+        if ($index = array_search(null, $storeIds, true)) {
             unset($storeIds[$index]);
             $nullCheck = true;
         }
-
-        $storeIds[0] = ($storeIds[0] == '') ? 0 : $storeIds[0];
 
         if ($nullCheck) {
             $this->getSelect()->where('store IN(?) OR store IS NULL', $storeIds);

@@ -52,9 +52,15 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     public function indexAction()
     {
         $this->_title($this->__('Promotions'))->_title($this->__('Reminder Rules'));
-        $this->_initAction()
-             ->_addContent($this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder'))
-             ->renderLayout();
+        if (Mage::helper('bronto_reminder')->isEnabledForAny()) {
+            $this->_initAction()
+                ->_addContent($this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder'))
+                ->renderLayout();
+        } else {
+            Mage::getSingleton('adminhtml/session')->addNotice('This module is currently disabled.  Please see ' . Mage::helper('bronto_reminder')->getConfigLink() . ' to enable.');
+            $this->_initAction()->renderLayout();
+        }
+
     }
 
     /**
@@ -80,10 +86,10 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             return $this->_redirect('*/*/');
         }
 
-        if (!Mage::helper('bronto_reminder')->isAllowSend()) {
+        if (!Mage::helper('bronto_reminder')->isAllowSendForAny()) {
             Mage::getSingleton('adminhtml/session')->addNotice(Mage::helper('bronto_reminder')->getNotAllowedText());
         }
-        
+
         $this->_title($model->getId() ? $model->getName() : $this->__('New Rule'));
 
         // set entered data if was error when we do save
@@ -94,7 +100,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
 
         $model->getConditions()->setJsFormObject('rule_conditions_fieldset');
 
-        $block =  $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit')
+        $block = $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit')
             ->setData('form_action_url', $this->getUrl('*/*/save'));
 
         $this->_initAction();
@@ -107,8 +113,8 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             ->addItem('js_css', 'prototype/windows/themes/magento.css');
 
         $this->_addBreadcrumb(
-                $model->getId() ? $this->__('Edit Rule') : $this->__('New Rule'),
-                $model->getId() ? $this->__('Edit Rule') : $this->__('New Rule'))
+            $model->getId() ? $this->__('Edit Rule') : $this->__('New Rule'),
+            $model->getId() ? $this->__('Edit Rule') : $this->__('New Rule'))
             ->_addContent($block)
             ->_addLeft($this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tabs'))
             ->renderLayout();
@@ -144,6 +150,56 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     }
 
     /**
+     * Massages the POST data for Rule submission
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function _prepareRuleFormData($data)
+    {
+        $data['conditions'] = $data['rule']['conditions'];
+
+        if (!isset($data['website_ids'])) {
+            $data['website_ids'] = array(Mage::app()->getStore(true)->getWebsiteId());
+        }
+
+        $data = $this->_filterDates($data, array('active_from', 'active_to'));
+
+        return $data;
+    }
+
+    /**
+     * Runs a form validation before attempting to save
+     */
+    public function validateAction()
+    {
+        $json = array();
+        if ($data = $this->getRequest()->getPost()) {
+            try {
+                $this->_initRule('rule_id')
+                    ->loadPost($this->_prepareRuleFormData($data))
+                    ->getConditions()
+                    ->getConditionsSql(null, new Zend_Db_Expr(':website_id'));
+            } catch (Mage_Core_Exception $e) {
+                $json['message'] = $e->getMessage();
+            } catch (Exception $e) {
+                $json['message'] = $this->__('Failed to validate reminder rule.');
+            }
+        }
+
+        if (isset($json['message'])) {
+            $json['error'] = true;
+            $json['message'] = Mage::getBlockSingleton('core/messages')
+                ->addError($json['message'])
+                ->getGroupedHtml();
+        }
+
+        $this->getResponse()
+            ->setHeader('Content-Type', 'application/json')
+            ->setBody(Mage::helper('core')->jsonEncode($json));
+    }
+
+    /**
      * Save reminder rule
      *
      * @return void
@@ -155,16 +211,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
                 $redirectBack = $this->getRequest()->getParam('back', false);
 
                 $model = $this->_initRule('rule_id');
-                $data['conditions'] = $data['rule']['conditions'];
-
-                unset($data['rule']);
-
-                if (!isset($data['website_ids'])) {
-                    $data['website_ids'] = array(Mage::app()->getStore(true)->getWebsiteId());
-                }
-
-                $data = $this->_filterDates($data, array('active_from', 'active_to'));
-                $model->loadPost($data);
+                $model->loadPost($this->_prepareRuleFormData($data));
                 Mage::getSingleton('adminhtml/session')->setPageData($model->getData());
                 $model->save();
 
@@ -175,7 +222,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
                     return $this->_redirect(
                         '*/*/edit',
                         array(
-                            'id'       => $model->getId(),
+                            'id' => $model->getId(),
                             '_current' => true,
                         )
                     );
@@ -227,9 +274,9 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             $model = $this->_initRule();
             $result = $model->sendReminderEmails();
             if ($result) {
-                $total   = $result['total'];
+                $total = $result['total'];
                 $success = $result['success'];
-                $error   = $result['error'];
+                $error = $result['error'];
                 Mage::getSingleton('adminhtml/session')->addSuccess(sprintf("Processed %d Reminders (%d Error / %d Success)", $total, $error, $success));
             } else {
                 Mage::getSingleton('adminhtml/session')->addError('Reminder rule sending failed.');
@@ -247,7 +294,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     /**
      * Match reminder rule
      *
-     * @return voice
+     * @return void
      */
     public function matchAction()
     {

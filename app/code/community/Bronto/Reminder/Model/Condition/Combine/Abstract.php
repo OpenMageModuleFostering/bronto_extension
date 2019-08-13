@@ -55,7 +55,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
     /**
      * Get filter by customer condition for rule matching sql
      *
-     * @param string           $fieldName
+     * @param string $fieldName
      * @return string
      */
     protected function _createCustomerFilter($fieldName)
@@ -101,10 +101,10 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
         /**
          * Build base SQL
          */
-        $select         = $this->_prepareConditionsSql($rule, $website);
-        $required       = $this->_getRequiredValidation();
-        $whereFunction  = ($this->getAggregator() == 'all') ? 'where' : 'orWhere';
-        $operator       = $required ? '=' : '<>';
+        $select = $this->_prepareConditionsSql($rule, $website);
+        $required = $this->_getRequiredValidation();
+        $whereFunction = ($this->getAggregator() == 'all') ? 'where' : 'orWhere';
+        $operator = $required ? '=' : '<>';
         //$operator       = '=';
 
         $gotConditions = false;
@@ -161,9 +161,9 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
     /**
      * Limit select by website with joining to store table
      *
-     * @param Zend_Db_Select                           $select
-     * @param int|Zend_Db_Expr                         $website
-     * @param string                                   $storeIdField
+     * @param Zend_Db_Select $select
+     * @param int|Zend_Db_Expr $website
+     * @param string $storeIdField
      * @return Bronto_Reminder_Model_Condition_Abstract
      */
     protected function _limitByStoreWebsite(Zend_Db_Select $select, $website, $storeIdField)

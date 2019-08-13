@@ -18,7 +18,7 @@ class Bronto_Email_Helper_Contact extends Bronto_Common_Helper_Contact
     }
 
     /**
-     * @param string                 $email
+     * @param string $email
      * @return Bronto_Api_Contact_Row
      */
     public function getContactByEmail($email, $customSource = 'bronto_email', $store = null)

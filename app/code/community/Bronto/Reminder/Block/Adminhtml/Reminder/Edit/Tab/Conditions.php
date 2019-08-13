@@ -16,7 +16,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Conditions extends Mage_
             ->setTemplate('promo/fieldset.phtml')
             ->setNewChildUrl($this->getUrl('*/*/newConditionHtml/form/rule_conditions_fieldset'));
         $fieldset = $form->addFieldset('rule_conditions_fieldset', array(
-            'legend'  => Mage::helper('bronto_reminder')->__('Conditions'),
+            'legend' => Mage::helper('bronto_reminder')->__('Conditions'),
             'comment' => Mage::helper('bronto_reminder')->__('Rule will work only if at least one condition is specified.'),
         ))->setRenderer($renderer);
 

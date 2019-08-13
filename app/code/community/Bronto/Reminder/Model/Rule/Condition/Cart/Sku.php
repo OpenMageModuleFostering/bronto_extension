@@ -33,9 +33,9 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Sku extends Bronto_Reminder_Mode
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Item SKU %s %s ',
-                $this->getOperatorElementHtml(), $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Item SKU %s %s ',
+            $this->getOperatorElementHtml(), $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

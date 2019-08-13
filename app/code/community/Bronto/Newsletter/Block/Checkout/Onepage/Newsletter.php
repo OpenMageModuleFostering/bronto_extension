@@ -46,7 +46,7 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
     {
         return Mage::helper('bronto_newsletter')->isEnabledForRegisterCheckout();
     }
-    
+
     /**
      * @return bool
      */
@@ -69,11 +69,11 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
      */
     public function getCheckboxLabelText()
     {
-        return Mage::helper('bronto_newsletter')->getCheckboxLabelText();
+        return addslashes(Mage::helper('bronto_newsletter')->getCheckboxLabelText());
     }
-    
+
     /**
-     * 
+     *
      * @param string $method
      * @return string
      */
@@ -81,37 +81,37 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
     {
         $js = "";
         $methodName = 'isEnabledFor' . ucfirst($method) . 'Checkout';
-        
+
         // Default Values
-        $action  = 'hide';
+        $action = 'hide';
         $checked = 'false';
-        $value   = 'null';
-        
+        $value = 'null';
+
         // If function exists, use it, otherwise we hide and disable values
         if (method_exists($this, $methodName)) {
             if ($this->$methodName()) {
-                $action  = 'show';
+                $action = 'show';
                 if ($this->isSubscribed() || $this->isEnabledCheckedByDefault()) {
                     $checked = 'true';
-                    $value   = '1';
+                    $value = '1';
                 }
             }
         }
-        
+
         // If user is subscribed and enabled if already subscribed is not allowed,
         // Hide it, but set the values to true
         if ($this->isSubscribed() && !$this->isEnabledIfAlreadySubscribed()) {
-            $action  = 'hide';
+            $action = 'hide';
             $checked = 'true';
-            $value   = '1';
+            $value = '1';
         }
-        
+
         // Create JS
-        $js.= "Element.{$action}('register-customer-newsletter');\r\n";
-        $js.= "$('billing:is_subscribed_box').checked    = {$checked};\r\n";
-        $js.= "$('billing:is_subscribed').value          = {$value};\r\n";
-        $js.= "$('billing:is_subscribed').value          = {$value};\r\n";
-        
+        $js .= "Element.{$action}('register-customer-newsletter');\r\n";
+        $js .= "$('billing:is_subscribed_box').checked    = {$checked};\r\n";
+        $js .= "$('billing:is_subscribed').value          = {$value};\r\n";
+        $js .= "$('billing:is_subscribed').value          = {$value};\r\n";
+
         return $js;
     }
 }

@@ -28,17 +28,17 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tabs extends Mage_Adminhtml_
     protected function _beforeToHtml()
     {
         $this->addTab('general_section', array(
-            'label'   => Mage::helper('bronto_reminder')->__('Rule Information'),
+            'label' => Mage::helper('bronto_reminder')->__('Rule Information'),
             'content' => $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tab_general')->toHtml(),
         ));
 
         $this->addTab('conditions_section', array(
-            'label'   => Mage::helper('bronto_reminder')->__('Conditions'),
+            'label' => Mage::helper('bronto_reminder')->__('Conditions'),
             'content' => $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tab_conditions')->toHtml()
         ));
 
         $this->addTab('bronto_section', array(
-            'label'   => Mage::helper('bronto_reminder')->__('Bronto Settings'),
+            'label' => Mage::helper('bronto_reminder')->__('Bronto Settings'),
             'content' => $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tab_bronto')->toHtml()
         ));
 
@@ -46,7 +46,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tabs extends Mage_Adminhtml_
         if ($rule && $rule->getId()) {
             $this->addTab('matched_customers', array(
                 'label' => Mage::helper('bronto_reminder')->__('Matched Customers'),
-                'url'   => $this->getUrl('*/*/customerGrid', array('rule_id' => $rule->getId())),
+                'url' => $this->getUrl('*/*/customerGrid', array('rule_id' => $rule->getId())),
                 'class' => 'ajax'
             ));
         }

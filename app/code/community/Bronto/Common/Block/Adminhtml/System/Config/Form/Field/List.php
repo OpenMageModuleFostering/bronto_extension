@@ -20,8 +20,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_List extends Bronto
             if (!$request->getParam('store') && !$request->getParam('website') && !$request->getParam('group')) {
                 $element->setCanUseDefaultValue(false)
                     ->setDisabled('disabled')
-                    ->setValue(null)
-                ;
+                    ->setValue(null);
             }
         }
 

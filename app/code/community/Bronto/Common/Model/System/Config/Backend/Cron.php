@@ -5,7 +5,8 @@
  * @copyright 2011-2012 Bronto Software, Inc.
  * @version   1.6.7
  */
-abstract class Bronto_Common_Model_System_Config_Backend_Cron extends Mage_Core_Model_Config_Data
+abstract class Bronto_Common_Model_System_Config_Backend_Cron
+    extends Mage_Core_Model_Config_Data
 {
     /**
      * @var string
@@ -38,19 +39,27 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron extends Mage_Core_
             $frequency = $this->getFieldsetDataValue('frequency');
 
             if ($frequency == $minutely) {
-                $interval = (int) $this->getFieldsetDataValue('interval');
+                $interval       = (int) $this->getFieldsetDataValue('interval');
                 $cronExprString = "*/{$interval} * * * *";
-            } elseif ($frequency == $hourly) {
+            }
+            elseif ($frequency == $hourly) {
                 $minutes = (int) $this->getFieldsetDataValue('minutes');
                 if ($minutes >= 0 && $minutes <= 59) {
                     $cronExprString = "{$minutes} * * * *";
-                } else {
+                }
+                else {
                     Mage::throwException(Mage::helper('bronto_common')->__('Please, specify correct minutes of hour.'));
                 }
-            } elseif ($frequency == $daily) {
-                $time = $this->getFieldsetDataValue('time');
-                $timeMinutes = intval($time[1]);
-                $timeHours = intval($time[0]);
+            }
+            elseif ($frequency == $daily) {
+                $time           = $this->getFieldsetDataValue('time');
+                $timeMinutes    = $time[1];
+                $timeHours      = $time[0];
+                // Fix Midnight Issue
+                if ('00' == $timeMinutes && '00' == $timeHours) {
+                    $timeMinutes = '59';
+                    $timeHours   = '23';
+                }
                 $cronExprString = "{$timeMinutes} {$timeHours} * * *";
             }
         }
@@ -60,9 +69,13 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron extends Mage_Core_
                 $this->_saveConfigData($this->_cron_string_path, $cronExprString);
             }
             if (!empty($this->_cron_model_path)) {
-                $this->_saveConfigData($this->_cron_model_path, (string) Mage::getConfig()->getNode($this->_cron_model_path));
+                $this->_saveConfigData(
+                    $this->_cron_model_path,
+                    (string) Mage::getConfig()->getNode($this->_cron_model_path)
+                );
             }
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             Mage::throwException(Mage::helper('adminhtml')->__('Unable to save Cron expression'));
         }
     }
@@ -85,7 +98,7 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron extends Mage_Core_
         }
 
         $data    = $this->getData();
-        $groups  = isset($data['groups'])  ? $data['groups']  : array();
+        $groups  = isset($data['groups']) ? $data['groups'] : array();
         $groupId = isset($data['group_id']) ? $data['group_id'] : array();
         foreach ($groups as $group => $fields) {
             $fields = isset($fields['fields']) ? $fields['fields'] : $fields;
@@ -96,21 +109,22 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron extends Mage_Core_
             }
         }
 
-        return null;
+        return NULL;
     }
 
     /**
-     * @param type                                           $path
-     * @param type                                           $value
+     * @param type $path
+     * @param type $value
+     *
      * @return Bronto_Common_Model_System_Config_Backend_Cron
      */
     protected function _saveConfigData($path, $value)
     {
         Mage::getModel('core/config_data')
-            ->load($path, 'path')
-            ->setValue($value)
-            ->setPath($path)
-            ->save();
+        ->load($path, 'path')
+        ->setValue($value)
+        ->setPath($path)
+        ->save();
 
         return $this;
     }

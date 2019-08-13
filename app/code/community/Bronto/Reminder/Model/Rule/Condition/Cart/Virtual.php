@@ -33,9 +33,9 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Virtual extends Bronto_Reminder_
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Shopping cart %s only virtual items',
-                $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Shopping cart %s only virtual items',
+            $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

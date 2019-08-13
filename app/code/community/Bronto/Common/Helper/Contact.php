@@ -8,9 +8,9 @@
 class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
 {
     /**
-     * @param string                 $email
-     * @param string                 $customSource
-     * @param int                    $store
+     * @param string $email
+     * @param string $customSource
+     * @param int $store
      * @return Bronto_Api_Contact_Row
      */
     public function getContactByEmail($email, $customSource = null, $store = null)
@@ -24,7 +24,7 @@ class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
         $contactObject = $api->getContactObject();
 
         // Load Contact
-        $contact = $contactObject->createRow();
+        $contact = $contactObject->createRow(array('email' => $email));
         $contact->email = $email;
         try {
             $contact = $contact->read();
@@ -42,7 +42,7 @@ class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
 
     /**
      * @param Bronto_Api_Contact_Row $contact
-     * @param bool                   $persistOnly
+     * @param bool $persistOnly
      * @return Bronto_Api_Contact_Row
      */
     public function saveContact(Bronto_Api_Contact_Row $contact, $persistOnly = false)

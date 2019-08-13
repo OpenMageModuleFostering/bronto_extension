@@ -8,8 +8,8 @@
 class Bronto_Common_Helper_Field extends Bronto_Common_Helper_Data
 {
     /**
-     * @param string               $name
-     * @param array                $options
+     * @param string $name
+     * @param array $options
      * @return Bronto_Api_Field_Row
      */
     public function getFieldByName($name, $options)
@@ -19,9 +19,9 @@ class Bronto_Common_Helper_Field extends Bronto_Common_Helper_Data
 
         if (!($field = $fieldObject->getFromCache($name))) {
             $field = $fieldObject->createRow();
-            $field->name  = $name;
+            $field->name = $name;
             $field->label = $options['label'];
-            $field->type  = $options['type'];
+            $field->type = $options['type'];
             if (!empty($options['options'])) {
                 $field->options = $options['options'];
             }

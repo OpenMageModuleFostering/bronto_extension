@@ -17,8 +17,8 @@ class Bronto_Common_Model_Api extends Bronto_Api
     //  {{{ getInstance()
 
     /**
-     * @param string                  $token
-     * @param bool                    $debug
+     * @param string $token
+     * @param bool $debug
      *
      * @return Bronto_Common_Model_Api
      * @access public
@@ -31,7 +31,7 @@ class Bronto_Common_Model_Api extends Bronto_Api
             Mage::helper('bronto_common')->writeDebug("Initiating API for token: {$token}");
             self::$_instances[$token] = new self($token, array(
                 'retry_limit' => 2,
-                'debug'       => $debug,
+                'debug' => $debug,
             ));
         }
 
@@ -43,8 +43,8 @@ class Bronto_Common_Model_Api extends Bronto_Api
 
     /**
      * @param string|Exception $exception
-     * @param string           $message
-     * @param string           $code
+     * @param string $message
+     * @param string $code
      *
      * @return void
      * @access public

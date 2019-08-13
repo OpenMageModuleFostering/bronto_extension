@@ -27,43 +27,43 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Grid extends Mage_Adminhtml_Block
     protected function _prepareColumns()
     {
         $this->addColumn('rule_id', array(
-            'header'    => Mage::helper('bronto_reminder')->__('ID'),
-            'align'     => 'right',
-            'width'     => '50px',
-            'index'     => 'rule_id',
+            'header' => Mage::helper('bronto_reminder')->__('ID'),
+            'align' => 'right',
+            'width' => '50px',
+            'index' => 'rule_id',
         ));
 
         $this->addColumn('name', array(
-            'header'    => Mage::helper('bronto_reminder')->__('Rule Name'),
-            'align'     => 'left',
-            'index'     => 'name',
+            'header' => Mage::helper('bronto_reminder')->__('Rule Name'),
+            'align' => 'left',
+            'index' => 'name',
         ));
 
         $this->addColumn('from_date', array(
-            'header'    => Mage::helper('bronto_reminder')->__('Active From'),
-            'align'     => 'left',
-            'width'     => '120px',
-            'type'      => 'date',
-            'default'   => '--',
-            'index'     => 'active_from',
+            'header' => Mage::helper('bronto_reminder')->__('Active From'),
+            'align' => 'left',
+            'width' => '120px',
+            'type' => 'date',
+            'default' => '--',
+            'index' => 'active_from',
         ));
 
         $this->addColumn('to_date', array(
-            'header'    => Mage::helper('bronto_reminder')->__('Active To'),
-            'align'     => 'left',
-            'width'     => '120px',
-            'type'      => 'date',
-            'default'   => '--',
-            'index'     => 'active_to',
+            'header' => Mage::helper('bronto_reminder')->__('Active To'),
+            'align' => 'left',
+            'width' => '120px',
+            'type' => 'date',
+            'default' => '--',
+            'index' => 'active_to',
         ));
 
         $this->addColumn('is_active', array(
-            'header'    => Mage::helper('bronto_reminder')->__('Status'),
-            'align'     => 'left',
-            'width'     => '80px',
-            'index'     => 'is_active',
-            'type'      => 'options',
-            'options'   => array(
+            'header' => Mage::helper('bronto_reminder')->__('Status'),
+            'align' => 'left',
+            'width' => '80px',
+            'index' => 'is_active',
+            'type' => 'options',
+            'options' => array(
                 1 => 'Active',
                 0 => 'Inactive',
             ),
@@ -71,13 +71,13 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Grid extends Mage_Adminhtml_Block
 
         if (!Mage::app()->isSingleStoreMode()) {
             $this->addColumn('rule_website', array(
-                'header'    => Mage::helper('bronto_reminder')->__('Website'),
-                'align'     =>'left',
-                'index'     => 'website_ids',
-                'type'      => 'options',
-                'sortable'  => false,
-                'options'   => Mage::getSingleton('adminhtml/system_store')->getWebsiteOptionHash(),
-                'width'     => 200,
+                'header' => Mage::helper('bronto_reminder')->__('Website'),
+                'align' => 'left',
+                'index' => 'website_ids',
+                'type' => 'options',
+                'sortable' => false,
+                'options' => Mage::getSingleton('adminhtml/system_store')->getWebsiteOptionHash(),
+                'width' => 200,
             ));
         }
         return parent::_prepareColumns();

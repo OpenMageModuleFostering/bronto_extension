@@ -17,8 +17,8 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log_Grid_Renderer_Customer exten
             $customerEditUrl = $this->getUrl('*/customer/edit', array('id' => $row->getCustomerId()));
             return sprintf(
                 '<a href="%s">%s</a>',
-                    $customerEditUrl,
-                    parent::render($row)
+                $customerEditUrl,
+                parent::render($row)
             );
         }
 

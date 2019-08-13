@@ -38,9 +38,9 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Quantity extends Bronto_Remi
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Number of wishlist items %s %s ',
-                $this->getOperatorElementHtml(), $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Number of wishlist items %s %s ',
+            $this->getOperatorElementHtml(), $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

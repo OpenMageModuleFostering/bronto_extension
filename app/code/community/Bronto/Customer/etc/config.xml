@@ -29,7 +29,9 @@
             <bronto_customer_mysql4>
                 <class>Bronto_Customer_Model_Mysql4</class>
                 <entities>
-                    <queue><table>bronto_customer_queue</table></queue>
+                    <queue>
+                        <table>bronto_customer_queue</table>
+                    </queue>
                 </entities>
             </bronto_customer_mysql4>
         </models>
@@ -64,38 +66,17 @@
                     </bronto_customer_sales_customer_save_after>
                 </observers>
             </customer_save_after>
-            <model_config_data_save_before>
+            <controller_action_predispatch_adminhtml_system_config_save>
                 <observers>
-                    <bronto_customer_config_data_save_before>
+                    <bronto_customer_controller_action_postdispatch_adminhtml_system_config_save>
                         <type>singleton</type>
                         <class>bronto_customer/observer</class>
                         <method>saveDynamicField</method>
-                    </bronto_customer_config_data_save_before>
+                    </bronto_customer_controller_action_postdispatch_adminhtml_system_config_save>
                 </observers>
-            </model_config_data_save_before>
+            </controller_action_predispatch_adminhtml_system_config_save>
         </events>
     </global>
-    <adminhtml>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <bronto_customer>
-                                            <title>Bronto Customer Import Section</title>
-                                        </bronto_customer>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-                    </children>
-                </admin>
-            </resources>
-        </acl>
-    </adminhtml>
     <admin>
         <routers>
             <adminhtml>
@@ -107,6 +88,19 @@
             </adminhtml>
         </routers>
     </admin>
+    <adminhtml>
+        <events>
+            <bronto_customer_enable>
+                <observers>
+                    <bronto_customer_enable>
+                        <type>singleton</type>
+                        <class>bronto_customer/observer</class>
+                        <method>watchEnableAction</method>
+                    </bronto_customer_enable>
+                </observers>
+            </bronto_customer_enable>
+        </events>
+    </adminhtml>
     <default>
         <bronto_customer>
             <settings>
@@ -115,6 +109,7 @@
                 <interval>15</interval>
                 <minutes>0</minutes>
                 <limit>100</limit>
+                <sync_limit>1000</sync_limit>
             </settings>
             <attributes>
                 <prefix>_none_</prefix>
@@ -144,15 +139,17 @@
     </default>
     <crontab>
         <jobs>
-            <bronto_customer_import>                
-                <run><model>bronto_customer/observer::processCustomers</model></run>
+            <bronto_customer_import>
+                <run>
+                    <model>bronto_customer/observer::processCustomers</model>
+                </run>
             </bronto_customer_import>
         </jobs>
     </crontab>
     <phpunit>
         <suite>
             <modules>
-                <Bronto_Customer />
+                <Bronto_Customer/>
             </modules>
         </suite>
     </phpunit>

@@ -10,15 +10,15 @@ class Bronto_Order_Block_Adminhtml_System_Config_About extends Bronto_Common_Blo
 
     /**
      * Description for protected
-     * @var string   
+     * @var string
      * @access protected
      */
     protected $_module = 'bronto_order';
 
     /**
      * Description for protected
-     * @var string   
+     * @var string
      * @access protected
      */
-    protected $_name   = 'Bronto Order Import for Magento';
+    protected $_name = 'Bronto Order Import for Magento';
 }

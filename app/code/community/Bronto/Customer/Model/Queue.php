@@ -12,7 +12,7 @@ class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
         parent::_construct();
         $this->_init('bronto_customer/queue');
     }
-    
+
     /**
      * Retrieve Customer Queue Row
      * @param int $customerId
@@ -25,53 +25,90 @@ class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
         $collection = $this->getCollection()
             ->addFieldToFilter('customer_id', $customerId)
             ->addFieldToFilter('store_id', $storeId);
-        
+
         // Handle Results
         if ($collection->count() == 1) {
             return $collection->getFirstItem();
         } else {
             $this->setCustomerId($customerId)
-                 ->setStoreId($storeId);
+                ->setStoreId($storeId);
         }
-        
+
         return $this;
     }
-    
-    public function getExistingIds()
-    {
-        $collection = $this->getCollection();
-        $collection->getSelect()
-            ->reset(Zend_Db_Select::COLUMNS)
-            ->columns('customer_id')
-            ->group(array('customer_id'));
-        
-        return $collection->getColumnValues('customer_id');
-    }
-    
+
     /**
-     * Get collection of customers who aren't already in the queue, but should be
-     * @param array $existingIds
-     * @return Mage_Customer_Model_Resource_Customer_Collection
+     * Get Count of missing customers
+     * @return int
      */
-    public function getMissingCustomers($existingIds = array(), $count = 250)
+    public function getMissingCustomersCount()
     {
-        $customers = Mage::getModel('customer/customer')
-            ->getCollection()
-            ->addAttributeToSelect('bronto_imported');
-        
-        // Only pull active users
-        $customers->getSelect()->where('is_active = 1');
-        
-        // If there are existing IDs, don't pull those customers
-        if (count($existingIds) > 0) {
-            $customers->addFieldToFilter('entity_id', array('nin' => $existingIds));
+        // Get Resources
+        $resource = $this->getResource();
+        $adapter = $resource->getWriteAdapter();
+
+        // Build Select Statement
+        $select = $adapter->select();
+        $select->from(
+            array('customer' => $resource->getTable('customer/entity')),
+            array(new Zend_Db_Expr('COUNT(entity_id) as count'))
+        )
+            ->where('NOT EXISTS (?)', $this->_getSubselect($resource, $adapter));
+
+        // Get Results
+        $result = $adapter->query($select)->fetch();
+
+        if (array_key_exists('count', $result)) {
+            return (int) $result['count'];
+        } else {
+            return 0;
         }
-        
-        // If there is a count limit, limit to that many results
-        if ($count) {
-            $customers->getSelect()->limit($count);
-        }
-        
-        return $customers;
+    }
+
+    /**
+     * Get Sub-Select Statement that limits results
+     * @param Bronto_Customer_Model_Mysql4_Queue $resource
+     * @param type $adapter
+     * @return Varien_Db_Select
+     */
+    private function _getSubselect($resource, $adapter)
+    {
+        // Build Sub-Select Statement
+        $subselect = $adapter->select()
+            ->from(
+                array('queue' => $resource->getTable('bronto_customer/queue')),
+                array(new Zend_Db_Expr(1))
+            )
+            ->where('queue.customer_id = customer.entity_id');
+
+        return $subselect;
+    }
+
+    /**
+     * Get collection of customers which aren't already in the queue, but should be
+     * @return array
+     */
+    public function getMissingCustomers()
+    {
+        // Get Resources
+        $resource = $this->getResource();
+        $adapter = $resource->getWriteAdapter();
+
+        // Get Sync Limit Value
+        $count = Mage::helper('bronto_customer')->getSyncLimit();
+
+        // Build Select Statement
+        $select = $adapter->select();
+        $select->from(
+            array('customer' => $resource->getTable('customer/entity')),
+            array('entity_id', 'created_at', 'store_id')
+        )
+            ->where('NOT EXISTS (?)', $this->_getSubselect($resource, $adapter))
+            ->limit($count);
+
+        // Get Results
+        $result = $adapter->query($select)->fetchAll();
+
+        return $result;
     }
 }

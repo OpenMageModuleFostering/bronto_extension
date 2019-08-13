@@ -31,59 +31,59 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log_Grid extends Mage_Adminhtml_
     {
         $this->addColumn('log_id', array(
             'header' => Mage::helper('bronto_email')->__('ID'),
-            'align'  => 'left',
-            'index'  => 'log_id',
-            'type'   => 'number',
+            'align' => 'left',
+            'index' => 'log_id',
+            'type' => 'number',
             'filter' => false,
         ));
 
         $this->addColumn('message_name', array(
             'header' => Mage::helper('bronto_email')->__('Message Name'),
-            'align'  => 'left',
-            'index'  => 'message_name',
+            'align' => 'left',
+            'index' => 'message_name',
             'filter' => false,
         ));
 
         $this->addColumn('sent_at', array(
             'header' => Mage::helper('bronto_email')->__('Sent At'),
-            'align'  => 'left',
-            'index'  => 'sent_at',
-            'type'   => 'datetime'
+            'align' => 'left',
+            'index' => 'sent_at',
+            'type' => 'datetime'
         ));
 
         $this->addColumn('customer_email', array(
-            'header'   => Mage::helper('customer')->__('Email'),
-            'index'    => 'customer_email',
+            'header' => Mage::helper('customer')->__('Email'),
+            'index' => 'customer_email',
             'renderer' => 'bronto_email/adminhtml_system_email_log_grid_renderer_customer',
         ));
 
         $this->addColumn('success', array(
-            'header'   => Mage::helper('bronto_email')->__('Success'),
-            'align'    => 'left',
-            'index'    => 'success',
+            'header' => Mage::helper('bronto_email')->__('Success'),
+            'align' => 'left',
+            'index' => 'success',
             'sortable' => false,
-            'type'     => 'options',
-            'options'  => array(
+            'type' => 'options',
+            'options' => array(
                 0 => 'No',
                 1 => 'Yes',
             ),
         ));
 
         $this->addColumn('error', array(
-            'header'   => Mage::helper('bronto_email')->__('Error'),
-            'align'    => 'left',
-            'index'    => 'error',
+            'header' => Mage::helper('bronto_email')->__('Error'),
+            'align' => 'left',
+            'index' => 'error',
             'sortable' => false,
-            'filter'   => false,
+            'filter' => false,
         ));
 
         $this->addColumn('data', array(
-            'header'   => Mage::helper('bronto_email')->__('Fields'),
-            'align'    => 'left',
-            'index'    => 'data',
+            'header' => Mage::helper('bronto_email')->__('Fields'),
+            'align' => 'left',
+            'index' => 'data',
             'renderer' => 'bronto_email/adminhtml_system_email_log_grid_renderer_fields',
             'sortable' => false,
-            'filter'   => false,
+            'filter' => false,
         ));
 
         return parent::_prepareColumns();

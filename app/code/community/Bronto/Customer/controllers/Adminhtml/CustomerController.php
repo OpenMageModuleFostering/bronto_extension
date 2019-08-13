@@ -11,17 +11,25 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
      */
     public function runAction()
     {
-        try {
-            $result = array('total' => 0, 'success' => 0, 'error' => 0);
-            $model  = Mage::getModel('bronto_customer/observer');
-            $helper = Mage::helper('bronto_customer');
+        $result = array('total' => 0, 'success' => 0, 'error' => 0);
+        $model = Mage::getModel('bronto_customer/observer');
+        $helper = Mage::helper('bronto_customer');
+        $limit = $helper->getLimit();
 
+        try {
             if ($storeIds = $helper->getStoreIds()) {
+                if (!is_array($storeIds)) {
+                    $storeIds = array($storeIds);
+                }
                 foreach ($storeIds as $storeId) {
-                    $storeResult = $model->processCustomersForStore($storeId);
-                    $result['total']   += $storeResult['total'];
+                    if ($limit <= 0) {
+                        continue;
+                    }
+                    $storeResult = $model->processCustomersForStore($storeId, $limit);
+                    $result['total'] += $storeResult['total'];
                     $result['success'] += $storeResult['success'];
-                    $result['error']   += $storeResult['error'];
+                    $result['error'] += $storeResult['error'];
+                    $limit = $limit - $storeResult['total'];
                 }
             } else {
                 $result = $model->processCustomers();
@@ -35,10 +43,12 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
 
         } catch (Exception $e) {
             $this->_getSession()->addError($e->getMessage());
-            Mage::helper('bronto_customer')->writeError($e);
+            $helper->writeError($e);
         }
 
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_customer'));
+        $returnParams = array('section' => 'bronto_customer');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
 
     /**
@@ -46,45 +56,53 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
      */
     public function resetAction()
     {
-        $helper   = Mage::helper('bronto_customer');
+        $helper = Mage::helper('bronto_customer');
         $storeIds = $helper->getStoreIds();
-        
-        $collection = Mage::getModel('bronto_customer/queue')->getCollection();
+        $resource = Mage::getResourceModel('bronto_customer/queue');
+        $adapter = $resource->getWriteAdapter();
 
+        $where = array();
         if ($storeIds) {
-            $collection->addStoreFilter($storeIds);
-        }
-        
-        foreach ($collection->getItems() as $customerRow) {
-            try {
-                $customerRow->setBrontoImported(null)->setBrontoSuppressed(null)->save();
-            } catch (Exception $e) {
-                Mage::helper('bronto_customer')->writeError($e);
-                $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
-            }
+            $where = array('store_id IN (?)' => $storeIds);
         }
 
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_customer'));
+        try {
+            $adapter->update(
+                $resource->getTable('bronto_customer/queue'),
+                array(
+                    'bronto_imported' => null,
+                    'bronto_suppressed' => null,
+                ),
+                $where
+            );
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
+        }
+
+        $returnParams = array('section' => 'bronto_customer');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
-    
+
     /**
      * Pull Customers from Customer Table if not in queue
      */
     public function syncAction()
     {
+        $helper = Mage::helper('bronto_customer');
         $imported = 0;
-        $waiting  = 0;
-        
+
         try {
-            $customers = Mage::helper('bronto_customer')->getMissingCustomers();             
-            $waiting   = $customers->count();
-            
+            $customers = Mage::helper('bronto_customer')->getMissingCustomers();
+            $waiting = count($customers);
+
             if ($waiting > 0) {
                 foreach ($customers as $customer) {
-                    Mage::getModel('bronto_customer/queue')->getCustomerRow($customer->getEntityId(), $customer->getStoreId())
-                        ->setCreatedAt($customer->getCreatedAt())
+                    Mage::getModel('bronto_customer/queue')->getCustomerRow($customer['entity_id'], $customer['store_id'])
+                        ->setCreatedAt($customer['created_at'])
                         ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
-                        ->setBrontoImported($customer->getBrontoImported())
+                        ->setBrontoImported(0)
                         ->save();
 
                     $imported++;
@@ -94,9 +112,11 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
             Mage::helper('bronto_customer')->writeError($e);
             $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
         }
-        
+
         $this->_getSession()->addSuccess(sprintf("%d of %d Customers were added to the Queue", $imported, $waiting));
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_customer'));
+        $returnParams = array('section' => 'bronto_customer');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
 
     /**

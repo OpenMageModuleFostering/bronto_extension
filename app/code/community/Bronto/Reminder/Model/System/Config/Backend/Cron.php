@@ -15,5 +15,5 @@ class Bronto_Reminder_Model_System_Config_Backend_Cron extends Bronto_Common_Mod
     /**
      * @var string
      */
-    protected $_cron_model_path  = 'crontab/jobs/bronto_reminder_send_notification/run/model';
+    protected $_cron_model_path = 'crontab/jobs/bronto_reminder_send_notification/run/model';
 }

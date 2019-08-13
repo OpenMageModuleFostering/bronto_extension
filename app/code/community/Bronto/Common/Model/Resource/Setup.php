@@ -10,7 +10,7 @@ class Bronto_Common_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
     public function handleOld()
     {
         // Look if Bronto folder exists in local codepool and recursively remove if it is
-        $source      = Mage::getBaseDir('base') . DS . 'app' . DS . 'code' . DS . 'local' . DS . 'Bronto' . DS;
+        $source = Mage::getBaseDir('base') . DS . 'app' . DS . 'code' . DS . 'local' . DS . 'Bronto' . DS;
         $destination = Mage::getBaseDir('base') . DS . 'var' . DS . 'bronto_backup' . DS;
         if (file_exists($source)) {
             $this->rcopy($source, $destination);

@@ -7,6 +7,7 @@
  */
 class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
 {
+
     /**
      * @var array
      */
@@ -23,9 +24,9 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
      *
      * @link https://github.com/leek/zf-components/blob/master/library/Leek/Config.php
      * @param string $subject            Template string
-     * @param array  $map                Key / value pairs to substitute with
+     * @param array $map                Key / value pairs to substitute with
      * @param string $delimiter Template parameter delimiter (must be valid without escaping in a regular expression)
-     * @param bool   $blankIfNone        Set to blank if none found
+     * @param bool $blankIfNone        Set to blank if none found
      * @return string
      * @static
      */
@@ -48,7 +49,7 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
     /**
      * @param string $subject
      * @param string $delimiter
-     * @param mixed  $index
+     * @param mixed $index
      * @return array
      */
     public function getTemplateVariables($subject, $delimiter = '%')
@@ -69,11 +70,13 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
      * @param int $productId
      * @return boolean|Mage_Catalog_Model_Product
      */
-    public function getProduct($productId)
+    public function getProduct($productId, $storeId = false)
     {
         if (is_int($productId) || is_string($productId)) {
-            if (isset($this->_productCache[$productId])) {
-                return $this->_productCache[$productId];
+            if (isset($this->_productCache[$storeId][$productId])) {
+                return $this->_productCache[$storeId][$productId];
+            } elseif ($storeId) {
+                $product = Mage::getModel('catalog/product')->setStoreId($storeId)->load($productId);
             } else {
                 $product = Mage::getModel('catalog/product')->load($productId);
             }
@@ -87,18 +90,18 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
             $productId = $product->getId();
         }
 
-        $this->_productCache[$productId] = $product;
+        $this->_productCache[$storeId][$productId] = $product;
         return $product;
     }
 
     /**
      * @param Mage_Catalog_Model_Product $product
-     * @param string                     $name
+     * @param string $name
      * @return mixed
      */
-    public function getProductAttribute($productId, $name)
+    public function getProductAttribute($productId, $name, $storeId = false)
     {
-        if ($product = $this->getProduct($productId)) {
+        if ($product = $this->getProduct($productId, $storeId)) {
             try {
                 switch ($name) {
                     case 'img':
@@ -135,4 +138,5 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
 
         return false;
     }
+
 }

@@ -16,7 +16,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Customers extends Mage_A
         $this->setId('customerGrid');
         $this->setUseAjax(true);
         $this->setDefaultSort('email');
-        $this->setDefaultDir('ASC');        
+        $this->setDefaultDir('ASC');
         $this->setDefaultFilter(array('grid_is_active' => 1));
     }
 
@@ -42,36 +42,36 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Customers extends Mage_A
     protected function _prepareColumns()
     {
         $this->addColumn('grid_entity_id', array(
-            'header'   => Mage::helper('bronto_reminder')->__('ID'),
-            'align'    => 'center',
-            'width'    => 50,
-            'index'    => 'entity_id',
+            'header' => Mage::helper('bronto_reminder')->__('ID'),
+            'align' => 'center',
+            'width' => 50,
+            'index' => 'entity_id',
             'renderer' => 'bronto_reminder/adminhtml_widget_grid_column_renderer_id'
         ));
 
         $this->addColumn('grid_email', array(
-            'header'   => Mage::helper('bronto_reminder')->__('Email'),
-            'type'     => 'text',
-            'align'    => 'left',
-            'index'    => 'email',
+            'header' => Mage::helper('bronto_reminder')->__('Email'),
+            'type' => 'text',
+            'align' => 'left',
+            'index' => 'email',
             'renderer' => 'bronto_reminder/adminhtml_widget_grid_column_renderer_email'
         ));
 
         $this->addColumn('grid_associated_at', array(
-            'header'   => Mage::helper('bronto_reminder')->__('Matched At'),
-            'align'    => 'left',
-            'width'    => 150,
-            'type'     => 'datetime',
-            'default'  => '--',
-            'index'    => 'associated_at'
+            'header' => Mage::helper('bronto_reminder')->__('Matched At'),
+            'align' => 'left',
+            'width' => 150,
+            'type' => 'datetime',
+            'default' => '--',
+            'index' => 'associated_at'
         ));
 
         $this->addColumn('grid_is_active', array(
-            'header'   => Mage::helper('bronto_reminder')->__('Thread Active'),
-            'align'    => 'left',
-            'type'     => 'options',
-            'index'    => 'is_active',
-            'options'  => array(
+            'header' => Mage::helper('bronto_reminder')->__('Thread Active'),
+            'align' => 'left',
+            'type' => 'options',
+            'index' => 'is_active',
+            'options' => array(
                 '0' => Mage::helper('bronto_reminder')->__('No'),
                 '1' => Mage::helper('bronto_reminder')->__('Yes')
             )
@@ -80,48 +80,48 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Customers extends Mage_A
         if (class_exists('Mage_SalesRule_Model_Coupon', false)) {
 
             $this->addColumn('grid_code', array(
-                'header'   => Mage::helper('bronto_reminder')->__('Coupon'),
-                'align'    => 'left',
-                'default'  => Mage::helper('bronto_reminder')->__('N/A'),
-                'index'    => 'code'
+                'header' => Mage::helper('bronto_reminder')->__('Coupon'),
+                'align' => 'left',
+                'default' => Mage::helper('bronto_reminder')->__('N/A'),
+                'index' => 'code'
             ));
 
             $this->addColumn('grid_usage_limit', array(
-                'header'   => Mage::helper('bronto_reminder')->__('Coupon Usage Limit'),
-                'align'    => 'left',
-                'default'  => '0',
-                'index'    => 'usage_limit'
+                'header' => Mage::helper('bronto_reminder')->__('Coupon Usage Limit'),
+                'align' => 'left',
+                'default' => '0',
+                'index' => 'usage_limit'
             ));
 
             $this->addColumn('grid_usage_per_customer', array(
-                'header'   => Mage::helper('bronto_reminder')->__('Coupon Usage per Customer'),
-                'align'    => 'left',
-                'default'  => '0',
-                'index'    => 'usage_per_customer'
+                'header' => Mage::helper('bronto_reminder')->__('Coupon Usage per Customer'),
+                'align' => 'left',
+                'default' => '0',
+                'index' => 'usage_per_customer'
             ));
 
         }
 
         $this->addColumn('grid_emails_sent', array(
-            'header'   => Mage::helper('bronto_reminder')->__('Emails Sent'),
-            'align'    => 'left',
-            'default'  => '0',
-            'index'    => 'emails_sent'
+            'header' => Mage::helper('bronto_reminder')->__('Emails Sent'),
+            'align' => 'left',
+            'default' => '0',
+            'index' => 'emails_sent'
         ));
 
         $this->addColumn('grid_emails_failed', array(
-            'header'   => Mage::helper('bronto_reminder')->__('Emails Failed'),
-            'align'    => 'left',
-            'index'    => 'emails_failed'
+            'header' => Mage::helper('bronto_reminder')->__('Emails Failed'),
+            'align' => 'left',
+            'index' => 'emails_failed'
         ));
 
         $this->addColumn('grid_last_sent', array(
-            'header'   => Mage::helper('bronto_reminder')->__('Last Sent At'),
-            'align'    => 'left',
-            'width'    => 150,
-            'type'     => 'datetime',
-            'default'  => '--',
-            'index'    => 'last_sent'
+            'header' => Mage::helper('bronto_reminder')->__('Last Sent At'),
+            'align' => 'left',
+            'width' => 150,
+            'type' => 'datetime',
+            'default' => '--',
+            'index' => 'last_sent'
         ));
 
         return parent::_prepareColumns();

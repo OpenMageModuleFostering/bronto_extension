@@ -22,10 +22,7 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
      */
     protected function _prepareLayout()
     {
-        $missingOrders = $this->helper('bronto_order')->getMissingOrders(true);   
-        if ($missingOrders > 0) {
-            $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_sync'));
-        }
+        $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_sync'));
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_reset'));
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_run'));
 
@@ -38,7 +35,6 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     protected function getProgressBarTotal()
     {
         return $this->getOrderResourceCollection()
-            ->addBrontoNotSuppressedFilter()
             ->addBrontoHasOrderFilter()
             ->getSize();
     }
@@ -56,17 +52,56 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     }
 
     /**
+     * @return int
+     */
+    protected function getProgressBarSuppressed()
+    {
+        return $this->getOrderResourceCollection()
+            ->addBrontoNotImportedFilter()
+            ->addBrontoSuppressedFilter()
+            ->getSize();
+    }
+
+    /**
+     * Get number of customers not imported from stores that don't have module enabled
+     * @return int
+     */
+    protected function getProgressBarDisabled()
+    {
+        $collection = Mage::getModel('bronto_order/queue')->getCollection();
+        $storeIds = Mage::helper('bronto_order')->getStoreIds();
+
+        if ($storeIds) {
+            if (!is_array($storeIds)) {
+                $storeIds = array($storeIds);
+            }
+            foreach ($storeIds as $key => $storeId) {
+                if (Mage::getStoreConfig(Bronto_Order_Helper_Data::XML_PATH_ENABLED, $storeId)) {
+                    unset($storeIds[$key]);
+                }
+            }
+            $collection->addStoreFilter($storeIds);
+
+            return $collection->addBrontoNotImportedFilter()
+                ->addBrontoNotSuppressedFilter()
+                ->getSize();
+
+        }
+        return 0;
+    }
+
+    /**
      * @return Bronto_Order_Model_Mysql4_Queue_Collection
      */
     protected function getOrderResourceCollection()
     {
         $collection = Mage::getModel('bronto_order/queue')->getCollection();
-        $storeIds   = Mage::helper('bronto_order')->getStoreIds();
-        
+        $storeIds = Mage::helper('bronto_order')->getStoreIds();
+
         if ($storeIds) {
             $collection->addStoreFilter($storeIds);
         }
-        
+
         return $collection;
     }
 }

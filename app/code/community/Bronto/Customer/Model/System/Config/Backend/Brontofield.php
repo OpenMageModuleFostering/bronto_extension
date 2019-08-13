@@ -16,12 +16,12 @@ class Bronto_Customer_Model_System_Config_Backend_Brontofield extends Mage_Core_
         /* @var $fieldObject Bronto_Api_Field */
         $fieldObject = Mage::getModel('bronto_common/system_config_source_field')->getFieldObjectById($this->getValue());
 
-            if ($fieldObject) {
-                if ('attributes' == $this->group_id) {
-                    $attributes = Mage::getModel('customer/entity_attribute_collection');
-                } elseif ('address_attributes' == $this->group_id) {
-                    $attributes  = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
-                }
+        if ($fieldObject) {
+            if ('attributes' == $this->group_id) {
+                $attributes = Mage::getModel('customer/entity_attribute_collection');
+            } elseif ('address_attributes' == $this->group_id) {
+                $attributes = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
+            }
 
             if ($attributes) {
                 foreach ($attributes as $attribute) {

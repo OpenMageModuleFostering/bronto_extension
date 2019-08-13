@@ -22,5 +22,15 @@ class Bronto_Reminder_Block_Adminhtml_Reminder extends Mage_Adminhtml_Block_Widg
         $this->_headerText = Mage::helper('bronto_reminder')->__('Bronto Reminder Email Rules');
         $this->_addButtonLabel = Mage::helper('bronto_reminder')->__('Add New Rule');
         parent::__construct();
+        $this->setTemplate('bronto/reminder/grid/container.phtml');
+    }
+
+    /**
+     * Get link to transactional email configuration
+     * @return type
+     */
+    public function getConfigLink()
+    {
+        return Mage::helper($this->_blockGroup)->getConfigLink();
     }
 }

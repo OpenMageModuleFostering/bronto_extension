@@ -24,7 +24,9 @@
             <bronto_order_mysql4>
                 <class>Bronto_Order_Model_Mysql4</class>
                 <entities>
-                    <queue><table>bronto_order_queue</table></queue>
+                    <queue>
+                        <table>bronto_order_queue</table>
+                    </queue>
                 </entities>
             </bronto_order_mysql4>
         </models>
@@ -103,7 +105,8 @@
         <blocks>
             <adminhtml>
                 <rewrite>
-                    <sales_order_view_tab_info>bronto_order/adminhtml_sales_order_view_tab_info</sales_order_view_tab_info>
+                    <sales_order_view_tab_info>bronto_order/adminhtml_sales_order_view_tab_info
+                    </sales_order_view_tab_info>
                 </rewrite>
             </adminhtml>
         </blocks>
@@ -125,14 +128,17 @@
                 <interval>15</interval>
                 <minutes>0</minutes>
                 <limit>250</limit>
+                <sync_limit>1000</sync_limit>
                 <description_attribute>short_description</description_attribute>
             </settings>
         </bronto_order>
     </default>
     <crontab>
         <jobs>
-            <bronto_order_import>                
-                <run><model>bronto_order/observer::processOrders</model></run>
+            <bronto_order_import>
+                <run>
+                    <model>bronto_order/observer::processOrders</model>
+                </run>
             </bronto_order_import>
         </jobs>
     </crontab>
@@ -147,30 +153,11 @@
                 </observers>
             </controller_action_predispatch>
         </events>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <bronto_order module="bronto_order">
-                                            <title>Bronto Order Import Section</title>
-                                        </bronto_order>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-                    </children>
-                </admin>
-            </resources>
-        </acl>
     </adminhtml>
     <phpunit>
         <suite>
             <modules>
-                <Bronto_Order />
+                <Bronto_Order/>
             </modules>
         </suite>
     </phpunit>

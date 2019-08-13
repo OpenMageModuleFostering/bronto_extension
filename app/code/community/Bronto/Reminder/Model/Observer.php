@@ -27,6 +27,15 @@ class Bronto_Reminder_Model_Observer
     }
 
     /**
+     * Observes module becoming enabled and displays message warning user to configure settings
+     * @param Varien_Event_Observer $observer
+     */
+    public function watchEnableAction(Varien_Event_Observer $observer)
+    {
+        Mage::getSingleton('adminhtml/session')->addNotice(Mage::helper('bronto_reminder')->__(Mage::helper('bronto_reminder')->getModuleEnabledText()));
+    }
+
+    /**
      * Include auto coupon type
      *
      * @param Varien_Event_Observer $observer
@@ -78,43 +87,43 @@ class Bronto_Reminder_Model_Observer
         }
         Mage::helper('bronto_reminder')->writeDebug('Done!');
     }
-    
+
     /**
      * If a Quote/Wishlist becomes inactive/deleted/checked-out/converted,
      * remove from bronto_reminder_rule_coupon
-     * 
+     *
      * @param Varien_Event_Observer $observer
      * @return Varien_Event_Observer
      */
     public function updateReminderQueue(Varien_Event_Observer $observer)
     {
-        $object   = $observer->getEvent()->getDataObject();
+        $object = $observer->getEvent()->getDataObject();
         $filterField = false;
         $filterValue = false;
-        
+
         if ($object instanceof Mage_Wishlist_Model_Wishlist) {
             $wishlist = $object;
             $collection = $wishlist->getItemCollection();
-            
+
             if (0 === $collection->count()) {
                 $filterField = 'wishlist_id';
                 $filterValue = $wishlist->getId();
             }
         } elseif ($object instanceof Mage_Sales_Model_Quote) {
             $quote = $object;
-            
+
             if (0 === $quote->getIsActive() || 0 === $quote->getItemsCount()) {
                 $filterField = 'quote_id';
                 $filterValue = $quote->getId();
             }
         }
-        
+
         if ($filterField && $filterValue) {
             // Quote is not active, so remove from queue if exists
             Mage::getModel('bronto_reminder/rule')
-                ->removeFromReminders($filterField, $filterValue, Mage::app()->getStore()->getId());
+                ->removeFromReminders($filterField, $filterValue);
         }
-        
+
         return $observer;
     }
 }

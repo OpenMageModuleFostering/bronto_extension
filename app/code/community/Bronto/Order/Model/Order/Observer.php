@@ -16,12 +16,12 @@ class Bronto_Order_Model_Order_Observer
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getCreditmemo()->getOrder();
-        
+
         /* @var $contactQueue Bronto_Order_Model_Queue */
         $orderRow = Mage::getModel('bronto_order/queue')
-                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
-                ->setBrontoImported(null)
-                ->save();
+            ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+            ->setBrontoImported(null)
+            ->save();
     }
 
     /**
@@ -33,12 +33,12 @@ class Bronto_Order_Model_Order_Observer
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getPayment()->getOrder();
-        
+
         /* @var $contactQueue Bronto_Order_Model_Queue */
         $orderRow = Mage::getModel('bronto_order/queue')
-                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
-                ->setBrontoImported(null)
-                ->save();
+            ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+            ->setBrontoImported(null)
+            ->save();
     }
 
     /**
@@ -51,23 +51,23 @@ class Bronto_Order_Model_Order_Observer
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getOrder();
-        
+
         /* @var $contactQueue Bronto_Order_Model_Queue */
         $orderRow = Mage::getModel('bronto_order/queue')
-                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId());
-        
+            ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId());
+
         foreach (Mage::getModel('core/cookie')->get() as $key => $value) {
             if (stripos($key, "tid") !== false) {
                 $orderRow->setBrontoTid($value);
-                
+
                 break;
             }
         }
-        
+
         $orderRow
-                ->setCreatedAt($order->getCreatedAt())
-                ->setUpdatedAt($order->getUpdatedAt())
-                ->setBrontoImported(null)
-                ->save();
+            ->setCreatedAt($order->getCreatedAt())
+            ->setUpdatedAt($order->getUpdatedAt())
+            ->setBrontoImported(null)
+            ->save();
     }
 }

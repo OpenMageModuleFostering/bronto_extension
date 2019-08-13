@@ -12,19 +12,11 @@ class Bronto_Customer_Block_Adminhtml_Widget_Button_Sync extends Mage_Adminhtml_
      */
     protected function _construct()
     {
-        $missingCustomers = $this->helper('bronto_customer')->getMissingCustomers(true);
-                
-        $this->setLabel(sprintf('Sync %d Contacts to Queue', $missingCustomers));
-        $this->setOnClick("setLocation('" . Mage::helper('adminhtml')->getUrl('*/customer/sync') . "'); return false;");
+        $this->setLabel($this->__('Sync Contacts to Queue'));
+        $this->setOnClick("deleteConfirm('This will ensure all Magento contacts are in the queue to import into Bronto\\n\\nThis is meant to be used when the customer count does not match the total number of customers in the Magento admin\\n\\nWould you like to continue?', '" . Mage::helper('bronto_customer')->getScopeUrl('*/customer/sync') . "'); return false;");
         $this->setClass('save');
-        
-        
-        if ($missingCustomers == 0) {
-            $this->setLabel('Sync Complete');
-            $this->setDisabled(true)->setClass('disabled');
-        }
 
-        if (!extension_loaded('soap') || !extension_loaded('openssl') || !Mage::helper('bronto_common')->getApiToken() || !Mage::helper('bronto_customer')->isEnabled()) {
+        if (!Mage::helper('bronto_customer')->isModuleActive()) {
             $this->setDisabled(true)->setClass('disabled');
         }
     }

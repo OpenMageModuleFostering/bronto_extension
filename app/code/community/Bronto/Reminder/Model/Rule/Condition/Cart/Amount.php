@@ -53,9 +53,9 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Amount extends Bronto_Reminder_M
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Shopping cart %s amount %s %s:',
-                $this->getAttributeElementHtml(), $this->getOperatorElementHtml(), $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Shopping cart %s amount %s %s:',
+            $this->getAttributeElementHtml(), $this->getOperatorElementHtml(), $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

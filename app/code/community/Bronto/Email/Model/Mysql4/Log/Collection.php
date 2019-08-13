@@ -17,8 +17,8 @@ class Bronto_Email_Model_Mysql4_Log_Collection extends Mage_Core_Model_Mysql4_Co
      * Specify collection select order by attribute value
      * Backward compatibility with EAV collection
      *
-     * @param string                                   $attribute
-     * @param string                                   $dir
+     * @param string $attribute
+     * @param string $dir
      * @return Bronto_Email_Model_Mysql4_Log_Collection
      */
     public function addAttributeToSort($attribute, $dir = 'asc')

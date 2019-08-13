@@ -33,9 +33,9 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Storeview extends Bronto_Rem
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Item was added to wishlist %s store view %s',
-                $this->getOperatorElementHtml(), $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Item was added to wishlist %s store view %s',
+            $this->getOperatorElementHtml(), $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

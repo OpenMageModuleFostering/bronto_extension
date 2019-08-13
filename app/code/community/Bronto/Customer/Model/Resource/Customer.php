@@ -6,7 +6,7 @@ class Bronto_Customer_Model_Resource_Customer extends Mage_Customer_Model_Resour
     {
         parent::__construct();
     }
-    
+
     /**
      * Retrieve customer entity default attributes
      *

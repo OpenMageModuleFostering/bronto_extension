@@ -24,7 +24,7 @@ class Bronto_Common_Model_System_Config_Source_List
             if ($api = Mage::helper('bronto_common')->getApi()) {
                 /* @var $listObject Bronto_Api_List */
                 $listObject = $api->getListObject();
-                foreach ($listObject->readAll()->iterate() as $list /* @var $list Bronto_Api_List_Row */) {
+                foreach ($listObject->readAll()->iterate() as $list/* @var $list Bronto_Api_List_Row */) {
                     $this->_options[] = array(
                         'value' => $list->id,
                         'label' => $list->label,
@@ -32,7 +32,7 @@ class Bronto_Common_Model_System_Config_Source_List
                 }
             }
         } catch (Exception $e) {
-            Mage::helper('bronto_common')->writeError($e);
+            Mage::helper('bronto_common')->writeError('Unable to get Mailing List options: ' . $e->getMessage());
         }
 
         return $this->_options;

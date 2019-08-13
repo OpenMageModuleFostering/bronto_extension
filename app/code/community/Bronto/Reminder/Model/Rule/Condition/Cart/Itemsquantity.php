@@ -38,9 +38,9 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Itemsquantity extends Bronto_Rem
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Number of shopping cart line items %s %s:',
-                $this->getOperatorElementHtml(), $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Number of shopping cart line items %s %s:',
+            $this->getOperatorElementHtml(), $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

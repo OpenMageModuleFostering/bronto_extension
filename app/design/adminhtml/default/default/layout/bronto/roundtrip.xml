@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<layout>
-    <adminhtml_system_roundtrip_status_index>
-        <reference name="content">
-            <block type="bronto_roundtrip/adminhtml_system_roundtrip_status" />
-        </reference>
-    </adminhtml_system_roundtrip_status_index>
-</layout>

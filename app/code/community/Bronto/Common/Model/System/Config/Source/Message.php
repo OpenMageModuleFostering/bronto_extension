@@ -24,7 +24,7 @@ class Bronto_Common_Model_System_Config_Source_Message
             if ($api = Mage::helper('bronto_common')->getApi($token)) {
                 /* @var $messageObject Bronto_Api_Message */
                 $messageObject = $api->getMessageObject();
-                foreach ($messageObject->readAll()->iterate() as $message /* @var $message Bronto_Api_Message_Row */) {
+                foreach ($messageObject->readAll()->iterate() as $message/* @var $message Bronto_Api_Message_Row */) {
                     $_option = array(
                         'label' => $message->name,
                         'value' => $message->id,

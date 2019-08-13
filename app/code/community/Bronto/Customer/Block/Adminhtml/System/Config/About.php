@@ -15,5 +15,5 @@ class Bronto_Customer_Block_Adminhtml_System_Config_About extends Bronto_Common_
     /**
      * @var string
      */
-    protected $_name   = 'Bronto Customer Import for Magento';
+    protected $_name = 'Bronto Customer Import for Magento';
 }

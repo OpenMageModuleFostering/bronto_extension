@@ -11,7 +11,7 @@ interface Bronto_Common_Helper_DataInterface
      * Disable the module in the admin configuration
      *
      * @param string $scope
-     * @param int    $scopeId
+     * @param int $scopeId
      * @return bool
      */
     public function disableModule($scope = 'default', $scopeId = 0);

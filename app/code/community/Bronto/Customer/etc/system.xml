@@ -31,6 +31,7 @@
                             <label>Enable Module</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_common/system_config_backend_enable</backend_model>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>0</sort_order>
                             <show_in_default>1</show_in_default>
@@ -39,56 +40,80 @@
                         </enabled>
                         <frequency>
                             <label>Frequency</label>
-                            <depends><enabled>1</enabled></depends>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_frequency</source_model>
                             <backend_model>bronto_customer/system_config_backend_cron</backend_model>
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </frequency>
                         <interval>
                             <label>Interval</label>
-                            <depends><frequency>I</frequency></depends>
+                            <depends>
+                                <frequency>I</frequency>
+                            </depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_minutes</source_model>
                             <sort_order>30</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <comment>Set this value larger than your cron.php launch period.</comment>
                         </interval>
                         <minutes>
                             <label>Minute of the Hour</label>
-                            <depends><frequency>H</frequency></depends>
+                            <depends>
+                                <frequency>H</frequency>
+                            </depends>
                             <frontend_type>text</frontend_type>
                             <sort_order>40</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <comment>Valid range: 0-59 (default 0).</comment>
                         </minutes>
                         <time>
                             <label>Start Time</label>
-                            <depends><enabled>1</enabled></depends>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
                             <frontend_type>time</frontend_type>
                             <sort_order>50</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
+                            <comment>H:m:s (*note: seconds are not used)</comment>
                         </time>
                         <limit>
                             <label>Limit</label>
-                            <depends><enabled>1</enabled></depends>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
                             <frontend_type>select</frontend_type>
-                            <source_model>bronto_order/system_config_source_limit</source_model>
+                            <source_model>bronto_common/system_config_source_limit</source_model>
                             <sort_order>60</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <comment>Total Customers to process every cron run.</comment>
                         </limit>
+                        <sync_limit>
+                            <label>Sync Limit</label>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bronto_common/system_config_source_synclimit</source_model>
+                            <sort_order>65</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Total Customers to sync to queue at a time.</comment>
+                        </sync_limit>
                     </fields>
                 </settings>
                 <cron_list>
@@ -96,7 +121,7 @@
                     <frontend_model>bronto_customer/adminhtml_system_config_cron</frontend_model>
                     <sort_order>6</sort_order>
                     <show_in_default>1</show_in_default>
-                    <show_in_website>0</show_in_website>
+                    <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                 </cron_list>
                 <attributes>
@@ -106,7 +131,7 @@
                     <sort_order>10</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
-                    <show_in_store>0</show_in_store>
+                    <show_in_store>1</show_in_store>
                     <fields>
                         <!-- prefix -->
                         <prefix>
@@ -118,7 +143,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </prefix>
                         <new_prefix>
                             <sort_order>2</sort_order>
@@ -126,7 +151,7 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends><prefix>_new_</prefix></depends>
                         </new_prefix>
                         <!-- firstname -->
@@ -139,7 +164,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </firstname>
                         <new_firstname>
                             <sort_order>6</sort_order>
@@ -147,7 +172,7 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends><firstname>_new_</firstname></depends>
                         </new_firstname>
                         <!-- middlename -->
@@ -160,7 +185,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </middlename>
                         <new_middlename>
                             <sort_order>11</sort_order>
@@ -168,7 +193,7 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends><middlename>_new_</middlename></depends>
                         </new_middlename>
                         <!-- lastname -->
@@ -181,7 +206,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </lastname>
                         <new_lastname>
                             <sort_order>16</sort_order>
@@ -189,8 +214,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><lastname>_new_</lastname></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <lastname>_new_</lastname>
+                            </depends>
                         </new_lastname>
                         <!-- suffix -->
                         <suffix>
@@ -202,7 +229,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </suffix>
                         <new_suffix>
                             <sort_order>21</sort_order>
@@ -210,8 +237,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><suffix>_new_</suffix></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <suffix>_new_</suffix>
+                            </depends>
                         </new_suffix>
                         <!-- gender -->
                         <gender>
@@ -223,7 +252,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </gender>
                         <new_gender>
                             <sort_order>26</sort_order>
@@ -231,8 +260,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><gender>_new_</gender></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <gender>_new_</gender>
+                            </depends>
                         </new_gender>
                         <!-- dob -->
                         <dob>
@@ -244,7 +275,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </dob>
                         <new_dob>
                             <sort_order>31</sort_order>
@@ -252,8 +283,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><dob>_new_</dob></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <dob>_new_</dob>
+                            </depends>
                         </new_dob>
                         <!-- taxvat -->
                         <taxvat>
@@ -265,7 +298,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </taxvat>
                         <new_taxvat>
                             <sort_order>36</sort_order>
@@ -273,8 +306,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><taxvat>_new_</taxvat></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <taxvat>_new_</taxvat>
+                            </depends>
                         </new_taxvat>
                         <!-- website_id -->
                         <website_id>
@@ -286,7 +321,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </website_id>
                         <new_website_id>
                             <sort_order>41</sort_order>
@@ -294,8 +329,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><website_id>_new_</website_id></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <website_id>_new_</website_id>
+                            </depends>
                         </new_website_id>
                         <!-- group_id -->
                         <group_id>
@@ -307,7 +344,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </group_id>
                         <new_group_id>
                             <sort_order>46</sort_order>
@@ -315,8 +352,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><group_id>_new_</group_id></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <group_id>_new_</group_id>
+                            </depends>
                         </new_group_id>
                         <!-- created_at -->
                         <created_at>
@@ -328,7 +367,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </created_at>
                         <new_created_at>
                             <sort_order>51</sort_order>
@@ -336,8 +375,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><created_at>_new_</created_at></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <created_at>_new_</created_at>
+                            </depends>
                         </new_created_at>
                         <!-- created_in -->
                         <created_in>
@@ -349,7 +390,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </created_in>
                         <new_created_in>
                             <sort_order>56</sort_order>
@@ -357,19 +398,22 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><created_in>_new_</created_in></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <created_in>_new_</created_in>
+                            </depends>
                         </new_created_in>
                     </fields>
                 </attributes>
                 <address_attributes>
                     <label>Address Attributes</label>
                     <frontend_type>text</frontend_type>
-                    <frontend_model>bronto_customer/adminhtml_system_config_form_fieldset_attributes_address</frontend_model>
+                    <frontend_model>bronto_customer/adminhtml_system_config_form_fieldset_attributes_address
+                    </frontend_model>
                     <sort_order>15</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
-                    <show_in_store>0</show_in_store>
+                    <show_in_store>1</show_in_store>
                     <fields>
                         <!-- street -->
                         <street>
@@ -381,7 +425,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </street>
                         <new_street>
                             <sort_order>2</sort_order>
@@ -389,8 +433,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><street>_new_</street></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <street>_new_</street>
+                            </depends>
                         </new_street>
                         <!-- city -->
                         <city>
@@ -402,7 +448,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </city>
                         <new_city>
                             <sort_order>6</sort_order>
@@ -410,8 +456,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><city>_new_</city></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <city>_new_</city>
+                            </depends>
                         </new_city>
                         <!-- region -->
                         <region>
@@ -423,7 +471,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </region>
                         <new_region>
                             <sort_order>11</sort_order>
@@ -431,8 +479,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><region>_new_</region></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <region>_new_</region>
+                            </depends>
                         </new_region>
                         <!-- postcode -->
                         <postcode>
@@ -444,7 +494,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </postcode>
                         <new_postcode>
                             <sort_order>16</sort_order>
@@ -452,8 +502,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><postcode>_new_</postcode></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <postcode>_new_</postcode>
+                            </depends>
                         </new_postcode>
                         <!-- country_id -->
                         <country_id>
@@ -465,7 +517,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </country_id>
                         <new_country_id>
                             <sort_order>21</sort_order>
@@ -473,8 +525,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><country_id>_new_</country_id></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <country_id>_new_</country_id>
+                            </depends>
                         </new_country_id>
                         <!-- company -->
                         <company>
@@ -486,7 +540,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </company>
                         <new_company>
                             <sort_order>26</sort_order>
@@ -494,8 +548,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><company>_new_</company></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <company>_new_</company>
+                            </depends>
                         </new_company>
                         <!-- telephone -->
                         <telephone>
@@ -507,7 +563,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </telephone>
                         <new_telephone>
                             <sort_order>31</sort_order>
@@ -515,8 +571,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><telephone>_new_</telephone></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <telephone>_new_</telephone>
+                            </depends>
                         </new_telephone>
                         <!-- fax -->
                         <fax>
@@ -528,7 +586,7 @@
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </fax>
                         <new_fax>
                             <sort_order>36</sort_order>
@@ -536,8 +594,10 @@
                             <backend_model>bronto_customer/system_config_backend_newfield</backend_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><fax>_new_</fax></depends>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <fax>_new_</fax>
+                            </depends>
                         </new_fax>
                     </fields>
                 </address_attributes>

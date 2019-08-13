@@ -30,8 +30,9 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Cus
         'reward_warning_notification',
         'disable_auto_group_change',
     );
-    
+
     protected $_configPath = Bronto_Customer_Helper_Data::XML_PREFIX_CUSTOMER_ATTR;
+    protected $_idPath = 'bronto_customer_attributes_';
     protected $_fieldNameTemplate = 'groups[attributes][fields][_attrCode_][value]';
 
     /**

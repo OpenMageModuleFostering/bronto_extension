@@ -6,22 +6,31 @@
  */
 class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_Action
 {
+
     /**
      * Run immediately
      */
     public function runAction()
     {
+        $result = array('total' => 0, 'success' => 0, 'error' => 0);
+        $model = Mage::getModel('bronto_order/observer');
+        $helper = Mage::helper('bronto_order');
+        $limit = $helper->getLimit();
+
         try {
-            $result = array('total' => 0, 'success' => 0, 'error' => 0);
-            $model  = Mage::getModel('bronto_order/observer');
-            $helper = Mage::helper('bronto_order');
-            
             if ($storeIds = $helper->getStoreIds()) {
+                if (!is_array($storeIds)) {
+                    $storeIds = array($storeIds);
+                }
                 foreach ($storeIds as $storeId) {
-                    $storeResult = $model->processOrdersForStore($storeId);
-                    $result['total']   += $storeResult['total'];
+                    if ($limit <= 0) {
+                        continue;
+                    }
+                    $storeResult = $model->processOrdersForStore($storeId, $limit);
+                    $result['total'] += $storeResult['total'];
                     $result['success'] += $storeResult['success'];
-                    $result['error']   += $storeResult['error'];
+                    $result['error'] += $storeResult['error'];
+                    $limit = $limit - $storeResult['total'];
                 }
             } else {
                 $result = $model->processOrders();
@@ -32,13 +41,14 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
             } else {
                 $this->_getSession()->addError('Scheduled Import failed: ' . $result);
             }
-
         } catch (Exception $e) {
             $this->_getSession()->addError($e->getMessage());
-            Mage::helper('bronto_order')->writeError($e);
+            $helper->writeError($e);
         }
 
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_order'));
+        $returnParams = array('section' => 'bronto_order');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
 
     /**
@@ -46,44 +56,50 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
      */
     public function resetAction()
     {
-        $helper    = Mage::helper('bronto_order');
-        $storeIds  = $helper->getStoreIds();
-        
-        $collection = Mage::getModel('bronto_order/queue')->getCollection();
+        $helper = Mage::helper('bronto_order');
+        $storeIds = $helper->getStoreIds();
+        $resource = Mage::getResourceModel('bronto_order/queue');
+        $adapter = $resource->getWriteAdapter();
 
+        $where = array();
         if ($storeIds) {
-            $collection->addStoreFilter($storeIds);
+            $where = array('store_id IN (?)' => $storeIds);
         }
-        
-        foreach ($collection->getItems() as $orderRow) {
-            try {
-                $orderRow->setBrontoImported(null)->save();
-            } catch (Exception $e) {
-                Mage::helper('bronto_order')->writeError($e);
-                $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
-            }
+
+        try {
+            $adapter->update(
+                $resource->getTable('bronto_order/queue'), array(
+                    'bronto_imported' => null,
+                    'bronto_suppressed' => null,
+                ), $where
+            );
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
         }
-        
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_order'));
+
+        $returnParams = array('section' => 'bronto_order');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
-    
+
     /**
      * Pull Orders from Order Table if not in queue
      */
     public function syncAction()
     {
+        $helper = Mage::helper('bronto_order');
         $imported = 0;
-        $waiting  = 0;
-        
+
         try {
-            $orders = Mage::helper('bronto_order')->getMissingOrders();             
-            $waiting   = $orders->count();
-            
+            $orders = $helper->getMissingOrders();
+            $waiting = count($orders);
+
             if ($waiting > 0) {
                 foreach ($orders as $order) {
-                    Mage::getModel('bronto_order/queue')->getOrderRow($order->getEntityId(), null, $order->getStoreId())
-                        ->setQuoteId($order->getQuoteId())
-                        ->setCreatedAt($order->getCreatedAt())
+                    Mage::getModel('bronto_order/queue')->getOrderRow($order['entity_id'], null, $order['store_id'])
+                        ->setQuoteId($order['quote_id'])
+                        ->setCreatedAt($order['created_at'])
                         ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
                         ->setBrontoImported(0)
                         ->save();
@@ -92,12 +108,15 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
                 }
             }
         } catch (Exception $e) {
-            Mage::helper('bronto_order')->writeError($e);
+            $helper->writeError($e);
             $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
         }
-        
+
         $this->_getSession()->addSuccess(sprintf("%d of %d Orders were added to the Queue", $imported, $waiting));
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_order'));
+
+        $returnParams = array('section' => 'bronto_order');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
 
     /**
@@ -114,7 +133,7 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
      * Will forward to deniedAction(), if not allowed.
      *
      * @param string $section
-     * @return bool  
+     * @return bool
      */
     protected function _isSectionAllowed($section)
     {
@@ -138,4 +157,5 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
             return false;
         }
     }
+
 }

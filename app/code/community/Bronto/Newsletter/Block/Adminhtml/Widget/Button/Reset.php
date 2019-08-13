@@ -13,11 +13,14 @@ class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Reset extends Mage_Adminht
     protected function _construct()
     {
         $this->setLabel('Reset All Subscribers');
-        $this->setOnClick("deleteConfirm('This will mark all subscribers as not-imported and will cause the importer to re-process each subscriber again.\\n\\nAre you sure you want to do this?', '" . Mage::helper('adminhtml')->getUrl('*/newsletter/reset') . "'); return false;");
+        $this->setOnClick("deleteConfirm('This will mark all subscribers as not-imported and will cause the importer to re-process each subscriber again.\\n\\nAre you sure you want to do this?', '" . Mage::helper('bronto_newsletter')->getScopeUrl('*/newsletter/reset') . "'); return false;");
         $this->setClass('delete');
 
-        if (!extension_loaded('soap') || !extension_loaded('openssl') || !Mage::helper('bronto_common')->getApiToken() || !Mage::helper('bronto_customer')->isEnabled() || (!Mage::helper('bronto_customer')->isDebugEnabled() && !Mage::helper('bronto_customer')->isTestModeEnabled())) {
+        if (!Mage::helper('bronto_newsletter')->isModuleActive() || (!Mage::helper('bronto_newsletter')->isDebugEnabled() && !Mage::helper('bronto_newsletter')->isTestModeEnabled())) {
             $this->setDisabled(true)->setClass('disabled');
+            if (!Mage::helper('bronto_customer')->isDebugEnabled()) {
+                $this->setTitle('Enable Debug in the General section to ' . $this->getLabel() . '.');
+            }
         }
     }
 }

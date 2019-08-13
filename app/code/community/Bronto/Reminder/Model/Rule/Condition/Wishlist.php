@@ -78,14 +78,14 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Wishlist is not empty and abandoned for %s day(s) and %s of these conditions match:',
+        . Mage::helper('bronto_reminder')->__('Wishlist is not empty and abandoned for %s day(s) and %s of these conditions match:',
 //                $this->getOperatorElementHtml(),
-                $this->getValueElementHtml(),
-                $this->getAggregatorElement()->getHtml())
-            . $this->getRemoveLinkHtml();
+            $this->getValueElementHtml(),
+            $this->getAggregatorElement()->getHtml())
+        . $this->getRemoveLinkHtml();
     }
 
-     /**
+    /**
      * Get condition SQL select
      *
      * @param $rule
@@ -94,15 +94,15 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
      */
     protected function _prepareConditionsSql($rule, $website)
     {
-        $interval       = Mage::helper('bronto_reminder')->getCronInterval();
         $conditionValue = (int)$this->getValue();
         if ($conditionValue < 1) {
             Mage::throwException(Mage::helper('bronto_reminder')->__('Root wishlist condition should have days value at least 1.'));
         }
+        // Convert to minutes
+        $conditionValue *= 1440;
 
-        $wishlistTable     = $this->getResource()->getTable('wishlist/wishlist');
+        $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
-        $operator = '='; //$this->getResource()->getSqlOperator($this->getOperator());
 
         $select = $this->getResource()->createSelect();
         $select->from(array('item' => $wishlistItemTable), array(new Zend_Db_Expr(1)));
@@ -112,14 +112,13 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
             'item.wishlist_id = list.wishlist_id',
             array()
         );
-        
+
         $this->_limitByStoreWebsite($select, $website, 'item.store_id');
-        $conditionValueInMinutes = $conditionValue * 1440;
-        $select->where("STR_TO_DATE('".now()."',GET_FORMAT(DATETIME,'ISO')) >= DATE_ADD(list.updated_at, INTERVAL ? DAY)",    $conditionValue);
-        $select->where("STR_TO_DATE('".now()."',GET_FORMAT(DATETIME,'ISO')) <= DATE_ADD(list.updated_at, INTERVAL ? MINUTE)", $conditionValueInMinutes + $interval);
+        $curDate = now();
+        $select->where("list.updated_at BETWEEN DATE_SUB('$curDate', INTERVAL (?+:interval) MINUTE) AND DATE_SUB('$curDate', INTERVAL ? MINUTE)", $conditionValue);
         $select->where($this->_createCustomerFilter('list.customer_id'));
         $select->limit(1);
-        
+
         return $select;
     }
 
@@ -132,10 +131,10 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
      */
     public function getConditionsSql($rule, $website)
     {
-        $select     = $this->_prepareConditionsSql($rule, $website);
-        $required   = $this->_getRequiredValidation();
+        $select = $this->_prepareConditionsSql($rule, $website);
+        $required = $this->_getRequiredValidation();
         $aggregator = ($this->getAggregator() == 'all') ? ' AND ' : ' OR ';
-        $operator   = $required ? '=' : '<>';
+        $operator = $required ? '=' : '<>';
         $conditions = array();
 
         foreach ($this->getConditions() as $condition) {

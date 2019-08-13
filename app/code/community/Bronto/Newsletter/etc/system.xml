@@ -5,7 +5,7 @@
             <label>Newsletter Opt-In</label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
-            <sort_order>400</sort_order>
+            <sort_order>175</sort_order>
             <show_in_default>1</show_in_default>
             <show_in_website>1</show_in_website>
             <show_in_store>1</show_in_store>
@@ -31,6 +31,7 @@
                             <label>Enable Module</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_common/system_config_backend_enable</backend_model>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>0</sort_order>
                             <show_in_default>1</show_in_default>
@@ -39,7 +40,9 @@
                         </enabled>
                         <frequency>
                             <label>Frequency</label>
-                            <depends><enabled>1</enabled></depends>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_frequency</source_model>
                             <backend_model>bronto_newsletter/system_config_backend_cron</backend_model>
@@ -50,7 +53,9 @@
                         </frequency>
                         <interval>
                             <label>Interval</label>
-                            <depends><frequency>I</frequency></depends>
+                            <depends>
+                                <frequency>I</frequency>
+                            </depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_minutes</source_model>
                             <sort_order>30</sort_order>
@@ -61,7 +66,9 @@
                         </interval>
                         <minutes>
                             <label>Minute of the Hour</label>
-                            <depends><frequency>H</frequency></depends>
+                            <depends>
+                                <frequency>H</frequency>
+                            </depends>
                             <frontend_type>text</frontend_type>
                             <sort_order>40</sort_order>
                             <show_in_default>1</show_in_default>
@@ -71,7 +78,9 @@
                         </minutes>
                         <time>
                             <label>Start Time</label>
-                            <depends><enabled>1</enabled></depends>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
                             <frontend_type>time</frontend_type>
                             <sort_order>50</sort_order>
                             <show_in_default>1</show_in_default>
@@ -80,19 +89,35 @@
                         </time>
                         <limit>
                             <label>Limit</label>
-                            <depends><enabled>1</enabled></depends>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
                             <frontend_type>select</frontend_type>
-                            <source_model>bronto_order/system_config_source_limit</source_model>
+                            <source_model>bronto_common/system_config_source_limit</source_model>
                             <sort_order>60</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
-                            <comment>Total Orders to process every cron run.</comment>
+                            <comment>Total Subscribers to process every cron run.</comment>
                         </limit>
+                        <sync_limit>
+                            <label>Sync Limit</label>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bronto_common/system_config_source_synclimit</source_model>
+                            <sort_order>65</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment>Total Subscribers to sync to queue at a time.</comment>
+                        </sync_limit>
                     </fields>
                 </settings>
                 <checkout>
                     <label>Checkout</label>
+                    <frontend_model>bronto_common/adminhtml_system_config_form_fieldset</frontend_model>
                     <frontend_type>text</frontend_type>
                     <sort_order>2</sort_order>
                     <show_in_default>1</show_in_default>
@@ -144,37 +169,18 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </label_text>
-                        <!-- Deprecated: Custom Billing Template not needed
-                        <use_custom_template>
-                            <label>Use Custom Billing Template?</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                            <comment><![CDATA[If 'No', uses: <code>bronto/newsletter/billing.phtml</code>]]></comment>
-                        </use_custom_template>
-                        <billing_template>
-                            <label>Billing Template Path</label>
-                            <depends><use_custom_template>1</use_custom_template></depends>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>21</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                            <comment><![CDATA[<strong>Magento Default:</strong> <code>checkout/onepage/billing.phtml</code>]]></comment>
-                        </billing_template>-->
                     </fields>
                 </checkout>
                 <contacts>
                     <label>Contacts</label>
+                    <frontend_model>bronto_common/adminhtml_system_config_form_fieldset</frontend_model>
                     <frontend_type>text</frontend_type>
                     <sort_order>3</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
-                    <comment><![CDATA[<strong style="color: red">Warning!</strong> If <strong>Yes</strong>, the Magento subscriber status will overwrite the contact status in Bronto. See <a href="http://a.bron.to/magento" target="_blank">documentation</a> for more details.]]></comment>
+                    <comment>
+                        <![CDATA[<strong style="color: red">Warning!</strong> If <strong>Yes</strong>, the Magento subscriber status will overwrite the contact status in Bronto. See <a href="http://a.bron.to/magento" target="_blank">documentation</a> for more details.]]></comment>
                     <fields>
                         <update_status>
                             <label>Update Status</label>

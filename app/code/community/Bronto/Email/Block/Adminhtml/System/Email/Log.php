@@ -10,7 +10,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log extends Mage_Adminhtml_Block
     /**
      * @var string
      */
-    protected $_controller       = 'adminhtml_system_email_log';
+    protected $_controller = 'adminhtml_system_email_log';
 
     /**
      * @var string
@@ -20,7 +20,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log extends Mage_Adminhtml_Block
     /**
      * @var string
      */
-    protected $_blockGroup       = 'bronto_email';
+    protected $_blockGroup = 'bronto_email';
 
     public function __construct()
     {
@@ -30,9 +30,9 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log extends Mage_Adminhtml_Block
 
         $this->_addBackButton();
         $this->_addButton('clear', array(
-            'label'     => $this->getClearButtonLabel(),
-            'onclick'   => 'setLocation(\'' . $this->getClearUrl() .'\')',
-            'class'     => 'delete'
+            'label' => $this->getClearButtonLabel(),
+            'onclick' => 'setLocation(\'' . $this->getClearUrl() . '\')',
+            'class' => 'delete'
         ));
 
         $this->_removeButton('add');
@@ -52,5 +52,15 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log extends Mage_Adminhtml_Block
     protected function getClearButtonLabel()
     {
         return $this->_clearButtonLabel;
+    }
+
+    /**
+     * Get URL to go back
+     *
+     * @return string
+     */
+    public function getBackUrl()
+    {
+        return $this->getUrl('*/system_email_template/index');
     }
 }

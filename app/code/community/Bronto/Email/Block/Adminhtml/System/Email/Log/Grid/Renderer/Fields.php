@@ -20,7 +20,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log_Grid_Renderer_Fields extends
             return '';
         }
 
-        $fieldsHtml  = '<dl style="margin-top: 10px">';
+        $fieldsHtml = '<dl style="margin-top: 10px">';
         foreach ($fields as $field) {
             $fieldsHtml .= '<dt><strong>' . $field['name'] . '</strong></dt>';
             $fieldsHtml .= '

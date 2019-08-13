@@ -15,5 +15,5 @@ class Bronto_Email_Block_Adminhtml_System_Config_About extends Bronto_Common_Blo
     /**
      * @var string
      */
-    protected $_name   = 'Bronto Transactional Email Module';
+    protected $_name = 'Bronto Transactional Email Module';
 }

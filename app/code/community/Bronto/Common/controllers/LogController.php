@@ -26,7 +26,7 @@ class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
         // Requirements for this controller require that Bronto's
         // Debug mode be enabled for any log file to be available
         // for download
-        if(!Mage::helper('bronto_common')->isDebugEnabled())
+        if (!Mage::helper('bronto_common')->isDebugEnabled())
             return $this->norouteAction();
 
         // Add dyndns
@@ -50,7 +50,7 @@ class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
 
         /* @var $httpHelper Mage_Core_Helper_Http */
         $httpHelper = Mage::helper('core/http');
-        $ipAddress  = $httpHelper->getRemoteAddr();
+        $ipAddress = $httpHelper->getRemoteAddr();
 
         if (!in_array($ipAddress, $this->_allowedIps)) {
             if (!Mage::getSingleton('admin/session')->isLoggedIn()) {
@@ -73,7 +73,7 @@ class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
         }
 
         if (!$print) {
-            $this->getResponse()->setHeader('Content-Disposition', 'attachment; filename="'.$fileName.'"');
+            $this->getResponse()->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"');
         }
 
         $this->getResponse()->clearBody();
@@ -95,7 +95,7 @@ class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
     private function _readfileChunked($filePath, $returnBytes = true)
     {
         $buffer = '';
-        $cnt    = 0;
+        $cnt = 0;
         $handle = @fopen($filePath, 'rb');
         if ($handle === false) {
             return false;

@@ -24,12 +24,24 @@
             <bronto_reminder_mysql4>
                 <class>Bronto_Reminder_Model_Mysql4</class>
                 <entities>
-                    <rule><table>bronto_reminder_rule</table></rule>
-                    <website><table>bronto_reminder_rule_website</table></website>
-                    <message><table>bronto_reminder_message</table></message>
-                    <coupon><table>bronto_reminder_rule_coupon</table></coupon>
-                    <log><table>bronto_reminder_rule_log</table></log>
-                    <guest><table>bronto_guest_emails</table></guest>
+                    <rule>
+                        <table>bronto_reminder_rule</table>
+                    </rule>
+                    <website>
+                        <table>bronto_reminder_rule_website</table>
+                    </website>
+                    <message>
+                        <table>bronto_reminder_message</table>
+                    </message>
+                    <coupon>
+                        <table>bronto_reminder_rule_coupon</table>
+                    </coupon>
+                    <log>
+                        <table>bronto_reminder_rule_log</table>
+                    </log>
+                    <guest>
+                        <table>bronto_guest_emails</table>
+                    </guest>
                 </entities>
             </bronto_reminder_mysql4>
         </models>
@@ -58,15 +70,6 @@
                 </observers>
             </adminhtml_promo_quote_edit_tab_main_prepare_form>
         </events>
-        <template>
-            <email>
-                <bronto_reminder_template module="bronto_reminder">
-                    <label>Reminder Template</label>
-                    <file>bronto/abandoned_cart.html</file>
-                    <type>html</type>
-                </bronto_reminder_template>
-            </email>
-        </template>
     </global>
     <default>
         <bronto_reminder>
@@ -100,8 +103,6 @@
                     </bronto_reminder_update_reminder_queue>
                 </observers>
             </sales_quote_save_after>
-        </events>
-        <events>
             <wishlist_save_after>
                 <observers>
                     <bronto_reminder_update_reminder_queue>
@@ -113,7 +114,7 @@
         </events>
     </frontend>
     <admin>
-         <routers>
+        <routers>
             <adminhtml>
                 <args>
                     <modules>
@@ -125,6 +126,15 @@
     </admin>
     <adminhtml>
         <events>
+            <bronto_reminder_enable>
+                <observers>
+                    <bronto_reminder_enable>
+                        <type>singleton</type>
+                        <class>bronto_reminder/observer</class>
+                        <method>watchEnableAction</method>
+                    </bronto_reminder_enable>
+                </observers>
+            </bronto_reminder_enable>
             <controller_action_predispatch>
                 <observers>
                     <bronto_reminder_controller_action_predispatch>
@@ -141,63 +151,22 @@
                 </bronto_reminder>
             </updates>
         </layout>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <promo>
-                            <children>
-                                <bronto_reminder module="bronto_reminder">
-                                    <title>Bronto Reminder Emails</title>
-                                    <sort_order>20</sort_order>
-                                </bronto_reminder>
-                            </children>
-                        </promo>
-                        <system>
-                           <children>
-                               <config>
-                                   <children>
-                                       <bronto_reminder module="bronto_reminder">
-                                           <title>Bronto Reminder Emails Section</title>
-                                       </bronto_reminder>
-                                   </children>
-                               </config>
-                           </children>
-                       </system>
-                   </children>
-               </admin>
-           </resources>
-        </acl>
-        <menu>
-            <promo>
-                <children>
-                    <bronto_reminder module="bronto_reminder">
-                        <title>Bronto Reminder Emails</title>
-                        <action>adminhtml/reminders</action>
-                        <sort_order>20</sort_order>
-                        <depends>
-                            <module>Bronto_Reminder</module>
-                            <config>bronto_reminder/settings/enabled</config>
-                        </depends>
-                        <resource>bronto_reminder/settings</resource>
-                    </bronto_reminder>
-                </children>
-            </promo>
-        </menu>
     </adminhtml>
     <crontab>
         <jobs>
             <bronto_reminder_send_notification>
-                <run><model>bronto_reminder/observer::scheduledNotification</model></run>
+                <run>
+                    <model>bronto_reminder/observer::scheduledNotification</model>
+                </run>
             </bronto_reminder_send_notification>
         </jobs>
     </crontab>
 
     <phpunit>
-	<suite>
-	    <modules>
-		<Bronto_Reminder />
-	    </modules>
-	</suite>
+        <suite>
+            <modules>
+                <Bronto_Reminder/>
+            </modules>
+        </suite>
     </phpunit>
 </config>

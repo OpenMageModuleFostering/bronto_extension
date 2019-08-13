@@ -7,7 +7,7 @@
  */
 class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql4_Collection_Abstract
 {
-   /**
+    /**
      * Intialize collection
      *
      * @return void
@@ -20,7 +20,7 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
     /**
      * Limit rules collection by is_active column
      *
-     * @param int                                          $value
+     * @param int $value
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addIsActiveFilter($value)
@@ -32,7 +32,7 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
     /**
      * Limit rules collection by date columns
      *
-     * @param int                                          $value
+     * @param int $value
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addDateFilter($date)
@@ -47,7 +47,7 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
     /**
      * Limit rules collection by separate rule
      *
-     * @param int                                          $value
+     * @param int $value
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addRuleFilter($value)
@@ -124,11 +124,11 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
     /**
      * Redeclared for support website id filter
      *
-     * @param string                                       $field
-     * @param mixed                                        $condition
+     * @param string $field
+     * @param mixed $condition
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
-    public function addFieldToFilter($field, $condition=null)
+    public function addFieldToFilter($field, $condition = null)
     {
         if ($field == 'website_ids') {
             return $this->addWebsiteFilter($condition);

@@ -13,9 +13,9 @@ class Bronto_Customer_Block_Adminhtml_Widget_Button_Run extends Mage_Adminhtml_B
     protected function _construct()
     {
         $this->setLabel('Run Now');
-        $this->setOnClick("setLocation('" . Mage::helper('adminhtml')->getUrl('*/customer/run') . "'); return false;");
+        $this->setOnClick("setLocation('" . Mage::helper('bronto_customer')->getScopeUrl('*/customer/run') . "'); return false;");
 
-        if (!extension_loaded('soap') || !extension_loaded('openssl') || !Mage::helper('bronto_common')->getApiToken() || !Mage::helper('bronto_customer')->isEnabled()) {
+        if (!Mage::helper('bronto_customer')->isModuleActive()) {
             $this->setDisabled(true)->setClass('disabled');
         }
     }

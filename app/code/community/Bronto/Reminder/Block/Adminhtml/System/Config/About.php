@@ -15,5 +15,5 @@ class Bronto_Reminder_Block_Adminhtml_System_Config_About extends Bronto_Common_
     /**
      * @var string
      */
-    protected $_name   = 'Bronto Reminder/Follow Up Email Module';
+    protected $_name = 'Bronto Reminder/Follow Up Email Module';
 }

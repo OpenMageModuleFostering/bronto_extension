@@ -25,7 +25,7 @@ try {
           CONSTRAINT `FK_BRONTO_CUSTOMER_QUEUE_STORE_ID_CORE_STORE_STORE_ID` FOREIGN KEY (`store_id`) REFERENCES `{$this->getTable('core_store')}` (`store_id`) ON DELETE SET NULL ON UPDATE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Bronto Customer Import Queue';
     ");
-    
+
     // Populate New Table
     $installer->run("
         INSERT IGNORE INTO `{$this->getTable('bronto_customer_queue')}` 

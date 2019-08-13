@@ -15,5 +15,5 @@ class Bronto_Order_Model_System_Config_Backend_Cron extends Bronto_Common_Model_
     /**
      * @var string
      */
-    protected $_cron_model_path  = 'crontab/jobs/bronto_order_import/run/model';
+    protected $_cron_model_path = 'crontab/jobs/bronto_order_import/run/model';
 }

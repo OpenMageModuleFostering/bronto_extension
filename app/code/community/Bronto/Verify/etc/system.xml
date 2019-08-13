@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category  Bronto
+ * @package   Bronto_Verify
+ * @author    Adam Daniels <adam.daniels@atlanticbt.com>
+ * @copyright 2013 Adam Daniels
+ * @license   http://www.atlanticbt.com/ Atlantic BT
+ * @version   0.1.0
+ */
+-->
+<config>
+    <sections>
+        <bronto_verify translate="label" module="bronto_verify">
+            <label>Install Verification</label>
+            <tab>bronto</tab>
+            <sort_order>900</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <!-- About Block -->
+                <about>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_verify/adminhtml_system_config_about</frontend_model>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                </about>
+                <!-- API Token Verification -->
+                <apitoken>
+                    <label>API Status</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <expanded>1</expanded>
+                    <fields>
+                        <token_status>
+                            <label>Last API Token Status</label>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_apitoken</frontend_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </token_status>
+                        <roundtrip_status>
+                            <label>Last API Connection Status</label>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_roundtrip</frontend_model>
+                            <sort_order>11</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </roundtrip_status>
+                    </fields>
+                </apitoken>
+                <conflictchecker>
+                    <label>Conflict Checker</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>40</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <expanded>1</expanded>
+                    <fields>
+                        <check_conflicts>
+                            <label>Check Conflicts</label>
+                            <comment>Find all module conflicts</comment>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_conflict</frontend_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </check_conflicts>
+                    </fields>
+                </conflictchecker>
+                <permissionchecker translate="label">
+                    <label>Permissions Settings</label>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_verify/adminhtml_system_config_form_permission</frontend_model>
+                    <sort_order>50</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <expanded>1</expanded>
+                    <fields>
+                        <owner translate="label comment">
+                            <label>Owner</label>
+                            <comment><![CDATA[Owner to check for, (can be name or uid)]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </owner>
+                        <group translate="label comment">
+                            <label>Group</label>
+                            <comment><![CDATA[Group to check for, (can be name or gid)]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </group>
+                        <directories translate="label comment">
+                            <label>Directories</label>
+                            <comment><![CDATA[Directory permission to check, standard is 755]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </directories>
+                        <files translate="label comment">
+                            <label>Files</label>
+                            <comment><![CDATA[File permission to check, standard is 644]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </files>
+                        <exclude translate="label comment">
+                            <label>Exclude Patterns</label>
+                            <comment><![CDATA[Nodes to exclude, can be path or file]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </exclude>
+                    </fields>
+                </permissionchecker>
+                <permissionchecker_validate>
+                    <label>Permissions Validation</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>51</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <expanded>1</expanded>
+                    <collapseable>0</collapseable>
+                    <fields>
+                        <validate translate="label">
+                            <label>Check Permissions</label>
+                            <button_label>Check Permissions</button_label>
+                            <comment>Compare against the above Permissions Settings.</comment>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_button</frontend_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </validate>
+                        <results>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_index</frontend_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </results>
+                    </fields>
+                </permissionchecker_validate>
+            </groups>
+        </bronto_verify>
+    </sections>
+</config>

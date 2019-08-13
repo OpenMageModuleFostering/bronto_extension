@@ -56,10 +56,10 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Subselection extends Bronto_Remi
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('If an item is %s in the shopping cart with %s of these conditions match:',
-                $this->getOperatorElementHtml(),
-                $this->getAggregatorElement()->getHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('If an item is %s in the shopping cart with %s of these conditions match:',
+            $this->getOperatorElementHtml(),
+            $this->getAggregatorElement()->getHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

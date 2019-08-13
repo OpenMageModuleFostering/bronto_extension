@@ -2,26 +2,35 @@
 
 /**
  * @category   Bronto
- * @package    Bronto_Customer
+ * @package    Bronto_Newsletter
  */
 class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Controller_Action
 {
+
     /**
      * Run immediately
      */
     public function runAction()
     {
-        try {
-            $result = array('total' => 0, 'success' => 0, 'error' => 0);
-            $model  = Mage::getModel('bronto_newsletter/observer');
-            $helper = Mage::helper('bronto_common');
+        $result = array('total' => 0, 'success' => 0, 'error' => 0);
+        $model = Mage::getModel('bronto_newsletter/observer');
+        $helper = Mage::helper('bronto_newsletter');
+        $limit = $helper->getLimit();
 
+        try {
             if ($storeIds = $helper->getStoreIds()) {
+                if (!is_array($storeIds)) {
+                    $storeIds = array($storeIds);
+                }
                 foreach ($storeIds as $storeId) {
-                    $storeResult = $model->processSubscribersForStore($storeId);
-                    $result['total']   += $storeResult['total'];
+                    if ($limit <= 0) {
+                        continue;
+                    }
+                    $storeResult = $model->processSubscribersForStore($storeId, $limit);
+                    $result['total'] += $storeResult['total'];
                     $result['success'] += $storeResult['success'];
-                    $result['error']   += $storeResult['error'];
+                    $result['error'] += $storeResult['error'];
+                    $limit = $limit - $storeResult['total'];
                 }
             } else {
                 $result = $model->processSubscribers();
@@ -32,35 +41,101 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
             } else {
                 $this->_getSession()->addError('Scheduled Sync failed: ' . $result);
             }
-
         } catch (Exception $e) {
             $this->_getSession()->addError($e->getMessage());
-            Mage::helper('bronto_newsletter')->writeError($e);
+            $helper->writeError($e);
         }
 
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_newsletter'));
+        $returnParams = array('section' => 'bronto_newsletter');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
 
     /**
-     * Reset all Customers
+     * Reset all Subscribers
      */
     public function resetAction()
     {
-        $subscribers = Mage::getModel('bronto_newsletter/queue')
-            ->getCollection()
-            ->addFilter('imported', 1);
+        $helper = Mage::helper('bronto_newsletter');
+        $resource = Mage::getResourceModel('bronto_newsletter/queue');
+        $adapter = $resource->getWriteAdapter();
 
-        foreach($subscribers as $subscriber) {
-            try {
-                $subscriber->setImported(0)->save();
-            } catch(Exception $e) {
-                Mage::helper('bronto_newsletter')->writeError($e);
+        try {
+            $adapter->update(
+                $resource->getTable('bronto_newsletter/queue'),
+                array(
+                    'imported'          => 2,
+                    'bronto_suppressed' => null,
+                ),
+                array('imported' => 1)
+            );
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
         }
 
-        
+        $returnParams = array('section' => 'bronto_newsletter');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
+    }
+
+    /**
+     * Pull Subscribers from Subscribers Table if not in queue
+     */
+    public function syncAction()
+    {
+        $helper = Mage::helper('bronto_newsletter');
+        $imported = 0;
+
+        try {
+            $subscribers = $helper->getMissingSubscribers();
+            $waiting = count($subscribers);
+
+            if ($waiting > 0) {
+                foreach ($subscribers as $subscriber) {
+                    // Convert Magento subscriber status to bronto subscriber status
+                    switch ($subscriber['subscriber_status']) {
+                        case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:
+                            $status = Bronto_Api_Contact::STATUS_ACTIVE;
+                            break;
+
+                        case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED:
+                            $status = Bronto_Api_Contact::STATUS_UNSUBSCRIBED;
+                            break;
+
+                        case Mage_Newsletter_Model_Subscriber::STATUS_UNCONFIRMED:
+                            $status = Bronto_Api_Contact::STATUS_UNCONFIRMED;
+                            break;
+
+                        case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:
+                        default:
+                            $status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
+                            break;
+                    }
+
+                    // Create Subscriber
+                    Mage::getModel('bronto_newsletter/queue')->getContactRow($subscriber['subscriber_id'], $subscriber['store_id'])
+                        ->setStatus($status)
+                        ->setSubscriberEmail($subscriber['subscriber_email'])
+                        ->setMessagePreference('html')
+                        ->setSource('api')
+                        ->setImported(0)
+                        ->setBrontoSuppressed(NULL)
+                        ->save();
+
+                    $imported++;
+                }
+            }
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
         }
 
-        $this->_redirect('*/system_config/edit', array('section' => 'bronto_newsletter'));
+        $this->_getSession()->addSuccess(sprintf("%d of %d Subscribers were added to the Queue", $imported, $waiting));
+
+        $returnParams = array('section' => 'bronto_newsletter');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
     }
 
     /**
@@ -101,4 +176,5 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
             return false;
         }
     }
+
 }

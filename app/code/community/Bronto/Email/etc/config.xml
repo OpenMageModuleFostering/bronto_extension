@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Email>
-            <version>1.1.2</version>
+            <version>1.1.7</version>
         </Bronto_Email>
     </modules>
     <global>
@@ -15,14 +15,6 @@
             <bronto_email>
                 <class>Bronto_Email_Block</class>
             </bronto_email>
-            <adminhtml>
-                <rewrite>
-                    <system_email_template>Bronto_Email_Block_Adminhtml_System_Email_Template</system_email_template>
-                    <system_email_template_grid>Bronto_Email_Block_Adminhtml_System_Email_Template_Grid</system_email_template_grid>
-                    <system_email_template_edit>Bronto_Email_Block_Adminhtml_System_Email_Template_Edit</system_email_template_edit>
-                    <system_email_template_edit_form>Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form</system_email_template_edit_form>
-                </rewrite>
-            </adminhtml>
         </blocks>
         <models>
             <bronto_email>
@@ -32,12 +24,21 @@
             <bronto_email_mysql4>
                 <class>Bronto_Email_Model_Mysql4</class>
                 <entities>
-                    <log><table>bronto_email_log</table></log>
+                    <log>
+                        <table>bronto_email_log</table>
+                    </log>
+                    <template>
+                        <table>core_email_template</table>
+                    </template>
+                    <message>
+                        <table>bronto_email_template</table>
+                    </message>
                 </entities>
             </bronto_email_mysql4>
             <core>
                 <rewrite>
-                    <email_template>Bronto_Email_Model_Email_Message</email_template>
+                    <email_template>Bronto_Email_Model_Template</email_template>
+                    <email_template_mailer>Bronto_Email_Model_Template_Mailer</email_template_mailer>
                 </rewrite>
             </core>
             <adminhtml>
@@ -50,10 +51,8 @@
             <bronto_email_setup>
                 <setup>
                     <module>Bronto_Email</module>
+                    <class>Bronto_Email_Model_Resource_Setup</class>
                 </setup>
-                <connection>
-                    <use>core_setup</use>
-                </connection>
             </bronto_email_setup>
             <bronto_email_write>
                 <connection>
@@ -82,6 +81,7 @@
         <bronto_email>
             <settings>
                 <enabled>0</enabled>
+                <use_bronto>0</use_bronto>
                 <log_enabled>1</log_enabled>
                 <log_fields_enabled>1</log_fields_enabled>
             </settings>
@@ -89,6 +89,15 @@
     </default>
     <adminhtml>
         <events>
+            <bronto_email_enable>
+                <observers>
+                    <bronto_email_enable>
+                        <type>singleton</type>
+                        <class>bronto_email/observer</class>
+                        <method>watchEnableAction</method>
+                    </bronto_email_enable>
+                </observers>
+            </bronto_email_enable>
             <controller_action_predispatch>
                 <observers>
                     <bronto_email_controller_action_predispatch>
@@ -97,6 +106,15 @@
                     </bronto_email_controller_action_predispatch>
                 </observers>
             </controller_action_predispatch>
+            <controller_action_predispatch_adminhtml_system_config_save>
+                <observers>
+                    <bronto_email_controller_action_postdispatch_adminhtml_system_config_save>
+                        <type>singleton</type>
+                        <class>bronto_email/observer</class>
+                        <method>saveDynamicField</method>
+                    </bronto_email_controller_action_postdispatch_adminhtml_system_config_save>
+                </observers>
+            </controller_action_predispatch_adminhtml_system_config_save>
         </events>
         <layout>
             <updates>
@@ -105,32 +123,12 @@
                 </bronto_email>
             </updates>
         </layout>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <bronto_email translate="title" module="bronto_email">
-                                            <title>Bronto Email</title>
-                                            <sort_order>200</sort_order>
-                                        </bronto_email>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-                    </children>
-                </admin>
-            </resources>
-        </acl>
     </adminhtml>
     <phpunit>
         <suite>
             <modules>
-                    <Bronto_Email />
+                <Bronto_Email/>
             </modules>
-         </suite>
+        </suite>
     </phpunit>
 </config>

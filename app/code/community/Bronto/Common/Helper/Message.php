@@ -42,15 +42,18 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
                     continue;
                 }
                 foreach ($stores as $store) {
-                    $storeMessages = Mage::helper('bronto_common/message')
-                    ->getMessagesOptionsArray(
-                        $store->getId(),
-                        $website->getId()
-                    );
-                    $messageOptions = array_merge($messageOptions, $storeMessages);
+                    if (Mage::helper('bronto_email')->isEnabled($store->getId())) {
+                        $storeMessages = Mage::helper('bronto_common/message')
+                            ->getMessagesOptionsArray(
+                                $store->getId(),
+                                $website->getId()
+                            );
+                        $messageOptions = array_merge($messageOptions, $storeMessages);
+                    }
                 }
             }
         }
+
         $existingValues = array();
         foreach ($messageOptions as $key => $option) {
             if (!in_array($option['value'], $existingValues)) {
@@ -68,7 +71,7 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
      *
      * @return array
      */
-    public function getMessagesOptionsArray($store = null, $websiteId = null)
+    public function getMessagesOptionsArray($store = null, $websiteId = null, $filter = array(), $withCreateNew = false)
     {
         /* @var $api Bronto_Api */
         $api = $this->getApi(null, $store, $websiteId);
@@ -77,15 +80,15 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
             /* @var $messageObject Bronto_Api_Message */
             $messageObject = $api->getMessageObject();
 
-            $options    = array();
+            $options = array();
             $pageNumber = 1;
 
             try {
-                while ($messages = $messageObject->readAll(array(), false, $pageNumber)) {
+                while ($messages = $messageObject->readAll($filter, false, $pageNumber)) {
                     if ($messages->count() <= 0) {
                         break;
                     }
-                    foreach ($messages as $message /* @var $message Bronto_Api_Message_Row */) {
+                    foreach ($messages as $message/* @var $message Bronto_Api_Message_Row */) {
                         if ($message->status == 'active') {
                             $options[] = array(
                                 'label' => $message->name,
@@ -99,10 +102,24 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
                 Mage::helper('bronto_common')->writeError($e);
             }
         }
-        array_unshift($options, array(
-            'label' => '-- Not Selected --',
-            'value' => '',
-        ));
+
+        if ($withCreateNew) {
+            // Add Create New.. Option
+            array_unshift($options, array(
+                 'label' => '** Create New...',
+                 'value' => '_new_'
+            ));
+        } else {
+            // Add -- None Selected -- Option
+            array_unshift($options, array(
+                 'label' => '-- None Selected --',
+                 'value' => ''
+            ));
+        }
+
+
+        // Sort Alphabetically
+        sort($options);
 
         return $options;
     }

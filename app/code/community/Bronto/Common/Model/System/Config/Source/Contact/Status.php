@@ -9,16 +9,16 @@ class Bronto_Common_Model_System_Config_Source_Contact_Status
 
     /**
      * Description for protected
-     * @var array    
+     * @var array
      * @access protected
      */
     protected $_options = array();
 
     /**
      * Short description for function
-     * 
+     *
      * Long description (if any) ...
-     * 
+     *
      * @return array  Return description (if any) ...
      * @access public
      */

@@ -35,7 +35,7 @@ class Bronto_Reminder_Model_Condition_Abstract extends Mage_Rule_Model_Condition
      * Generate customer condition string
      *
      * @param $customer
-     * @param string    $fieldName
+     * @param string $fieldName
      * @return string
      */
     protected function _createCustomerFilter($fieldName)
@@ -46,9 +46,9 @@ class Bronto_Reminder_Model_Condition_Abstract extends Mage_Rule_Model_Condition
     /**
      * Limit select by website with joining to store table
      *
-     * @param Zend_Db_Select                           $select
+     * @param Zend_Db_Select $select
      * @param int                                      |             Zend_Db_Expr $website
-     * @param string                                   $storeIdField
+     * @param string $storeIdField
      * @return Bronto_Reminder_Model_Condition_Abstract
      */
     protected function _limitByStoreWebsite(Zend_Db_Select $select, $website, $storeIdField)

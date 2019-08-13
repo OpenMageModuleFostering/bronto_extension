@@ -19,11 +19,19 @@ class Bronto_Order_Block_Bta extends Mage_Core_Block_Text
             return;
         }
 
+        $key = md5(
+            Mage::app()->getStore()->getWebsiteId() .
+            Mage::getConfig()->getNode(Mage_Core_Model_App::XML_PATH_INSTALL_DATE)
+        );
+
         return "
 <script type=\"text/javascript\">
 	document.write(unescape(\"%3Cscript src='\"
 		+ ((document.location.protocol == \"https:\") ? \"https:\" : \"http:\")
 		+ \"//p.bm23.com/bta.js' type='text/javascript'%3E%3C/script%3E\"));
+</script>
+<script type=\"text/javascript\">
+	var bta = new __bta('$key');
 </script>
 ";
     }

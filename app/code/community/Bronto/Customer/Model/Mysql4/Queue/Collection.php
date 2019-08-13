@@ -5,20 +5,21 @@
  * @copyright 2011-2013 Bronto Software, Inc.
  * @version   1.0.2
  */
-class Bronto_Customer_Model_Mysql4_Queue_Collection 
+class Bronto_Customer_Model_Mysql4_Queue_Collection
     extends Mage_Core_Model_Mysql4_Collection_Abstract
-{    
+{
     /**
      * Initialize Model
-     * 
-     * @return void  
+     *
+     * @return void
      * @access public
      */
-    public function _construct() {
+    public function _construct()
+    {
         parent::_construct();
         $this->_init('bronto_customer/queue');
     }
-    
+
     /**
      * @return Bronto_Order_Model_Mysql4_Queue_Collection
      */
@@ -27,7 +28,7 @@ class Bronto_Customer_Model_Mysql4_Queue_Collection
         $this->addFieldToFilter('bronto_imported', array('notnull' => true));
         return $this;
     }
-    
+
     /**
      * @return Bronto_Order_Model_Mysql4_Queue_Collection
      */
@@ -69,12 +70,10 @@ class Bronto_Customer_Model_Mysql4_Queue_Collection
 
         $storeIds = array_unique($storeIds);
 
-        if ($index = array_search(null, $storeIds)) {
+        if ($index = array_search(null, $storeIds, true)) {
             unset($storeIds[$index]);
             $nullCheck = true;
         }
-
-        $storeIds[0] = ($storeIds[0] == '') ? 0 : $storeIds[0];
 
         if ($nullCheck) {
             $this->getSelect()->where('store_id IN(?) OR store_id IS NULL', $storeIds);
@@ -93,7 +92,8 @@ class Bronto_Customer_Model_Mysql4_Queue_Collection
      */
     public function orderByCreatedAt($dir = self::SORT_ORDER_DESC)
     {
-        $this->setOrder('created_at', $dir);
+        $this->getSelect()->order("created_at $dir");
+
         return $this;
     }
 
@@ -105,7 +105,8 @@ class Bronto_Customer_Model_Mysql4_Queue_Collection
      */
     public function orderByUpdatedAt($dir = self::SORT_ORDER_DESC)
     {
-        $this->setOrder('updated_at', $dir);
+        $this->getSelect()->order("updated_at $dir");
+
         return $this;
     }
 }

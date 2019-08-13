@@ -28,8 +28,9 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Add
         'vat_request_date',
         'vat_request_success',
     );
-    
+
     protected $_configPath = Bronto_Customer_Helper_Data::XML_PREFIX_ADDRESS_ATTR;
+    protected $_idPath = 'bronto_customer_address_attributes_';
     protected $_fieldNameTemplate = 'groups[address_attributes][fields][_attrCode_][value]';
 
     /**

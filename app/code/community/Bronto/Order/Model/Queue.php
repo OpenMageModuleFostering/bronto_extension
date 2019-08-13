@@ -7,12 +7,13 @@
  */
 class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 {
+
     public function _construct()
     {
         parent::_construct();
         $this->_init('bronto_order/queue');
     }
-    
+
     /**
      * Retrieve Order Queue Row
      * @param int $orderId
@@ -26,10 +27,10 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
         if ((false === $orderId && false === $quoteId) || false === $storeId) {
             return $this;
         }
-        
+
         // Create Collection
         $collection = $this->getCollection();
-        
+
         // Add Filters
         if (($quoteId > 0) && ($orderId > 0)) {
             $collection->getSelect()->where("`quote_id` = $quoteId OR `order_id` = $orderId");
@@ -39,7 +40,7 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
             $collection->addFieldToFilter('order_id', $orderId);
         }
         $collection->addFieldToFilter('store_id', $storeId);
-        
+
         try {
             // Handle Results
             if ($collection->count() == 1) {
@@ -66,41 +67,80 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
         } catch (Exception $e) {
             Mage::helper('bronto_order')->writeDebug("Exception Thrown pulling order row");
         }
-        
+
         return $this;
     }
-    
-    public function getExistingIds()
+
+    /**
+     * Get Count of missing orders
+     * @return int
+     */
+    public function getMissingOrdersCount()
     {
-        $collection = $this->getCollection();
-        $collection->getSelect()
-            ->reset(Zend_Db_Select::COLUMNS)
-            ->columns('order_id')
-            ->group(array('order_id'));
-        
-        return $collection->getColumnValues('order_id');
+        // Get Resources
+        $resource = $this->getResource();
+        $adapter = $resource->getWriteAdapter();
+
+        // Build Select Statement
+        $select = $adapter->select();
+        $select->from(
+            array('order' => $resource->getTable('sales/order')), array(new Zend_Db_Expr('COUNT(entity_id) as count'))
+        )
+            ->where('NOT EXISTS (?)', $this->_getSubselect($resource, $adapter));
+
+        // Get Results
+        $result = $adapter->query($select)->fetch();
+
+        if (array_key_exists('count', $result)) {
+            return $result['count'];
+        } else {
+            return 0;
+        }
     }
-    
+
+    /**
+     * Get Sub-Select Statement that limits results
+     * @param Bronto_Order_Model_Mysql4_Queue $resource
+     * @param type $adapter
+     * @return Varien_Db_Select
+     */
+    private function _getSubselect($resource, $adapter)
+    {
+        // Build Sub-Select Statement
+        $subselect = $adapter->select()
+            ->from(
+                array('queue' => $resource->getTable('bronto_order/queue')), array(new Zend_Db_Expr(1))
+            )
+            ->where('queue.order_id = order.entity_id');
+
+        return $subselect;
+    }
+
     /**
      * Get collection of orders which aren't already in the queue, but should be
-     * @param array $existingIds
-     * @return Mage_Sales_Model_Resource_Order_Collection
+     * @return array
      */
-    public function getMissingOrders($existingIds = array(), $count = 250)
+    public function getMissingOrders()
     {
-        $orders = Mage::getModel('sales/order')
-            ->getCollection();
-        
-        // If there are existing IDs, don't pull those orders
-        if (count($existingIds) > 0) {
-            $orders->addFieldToFilter('entity_id', array('nin' => $existingIds));
-        }
-        
-        // If there is a count limit, limit to that many results
-        if ($count) {
-            $orders->getSelect()->limit($count);
-        }
-        
-        return $orders;
+        // Get Resources
+        $resource = $this->getResource();
+        $adapter = $resource->getWriteAdapter();
+
+        // Get Sync Limit Value
+        $count = Mage::helper('bronto_order')->getSyncLimit();
+
+        // Build Select Statement
+        $select = $adapter->select()
+            ->from(
+                array('order' => $resource->getTable('sales/order')), array('entity_id', 'store_id', 'quote_id', 'created_at')
+            )
+            ->where('NOT EXISTS (?)', $this->_getSubselect($resource, $adapter))
+            ->limit($count);
+
+        // Get Results
+        $result = $adapter->query($select)->fetchAll();
+
+        return $result;
     }
+
 }

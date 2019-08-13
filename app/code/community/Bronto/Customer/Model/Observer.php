@@ -8,17 +8,31 @@
 class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 {
     private $_fieldMap = array();
-    
+
+    /**
+     * Observes module becoming enabled and displays message warning user to configure settings
+     * @param Varien_Event_Observer $observer
+     */
+    public function watchEnableAction(Varien_Event_Observer $observer)
+    {
+        Mage::getSingleton('adminhtml/session')->addNotice(Mage::helper('bronto_customer')->__(Mage::helper('bronto_customer')->getModuleEnabledText()));
+    }
+
     /**
      * @param  mixed $storeId
      *
      * @return array
      */
-    public function processCustomersForStore($storeId = null)
+    public function processCustomersForStore($storeId = null, $limit)
     {
-        $store   = Mage::app()->getStore($storeId);
+        if (!$limit) {
+            Mage::helper('bronto_customer')->writeDebug('  Limit empty. Skipping...');
+            return false;
+        }
+
+        $store = Mage::app()->getStore($storeId);
         $storeId = $store->getId();
-        
+
         $result = array('total' => 0, 'success' => 0, 'error' => 0);
         Mage::helper('bronto_customer')->writeDebug("Starting Customer Import process for store: {$store->getName()} ({$storeId})");
 
@@ -36,12 +50,6 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         /* @var $contactObject Bronto_Api_Contact */
         $contactObject = $api->getContactObject();
 
-        $limit = $store->getConfig(Bronto_Customer_Helper_Data::XML_PATH_LIMIT);
-        if (!$limit) {
-            Mage::helper('bronto_customer')->writeDebug('  Limit empty. Skipping...');
-            return false;
-        }
-        
         // Get all customers in queue who haven't been imported into bronto
         $customerRows = Mage::getModel('bronto_customer/queue')
             ->getCollection()
@@ -58,43 +66,43 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         }
 
         $customerAttributes = Mage::getModel('customer/entity_attribute_collection');
-        $addressAttributes  = Mage::getModel('customer/entity_address_attribute_collection');
-        $customerCache      = array();
+        $addressAttributes = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
+        $customerCache = array();
 
         // For each Customer...
         foreach ($customerRows as $customerRow) {
             $customerId = $customerRow->getCustomerId();
-            if ($customer = Mage::getModel('customer/customer')->load($customerId) /* @var $customer Mage_Customer_Model_Customer */) {
+            if ($customer = Mage::getModel('customer/customer')->load($customerId)/* @var $customer Mage_Customer_Model_Customer */) {
                 Mage::helper('bronto_customer')->writeDebug("  Processing Customer ID: {$customerId} for Store ID: {$storeId}");
                 $customerCache[] = array('customerId' => $customerId, 'storeId' => $storeId);
-                
+
                 /* @var $brontoContact Bronto_Api_Contact_Row */
-                $brontoContact = $contactObject->createRow();
+                $brontoContact = $contactObject->createRow(array());
                 $brontoContact->email = $customer->getEmail();
-                
+
                 /* Process Customer Attributes */
                 try {
-                    $brontoContact = $this->processAttributes($brontoContact, $customer, $customerAttributes, $store, 'customer');
+                    $brontoContact = $this->_processAttributes($brontoContact, $customer, $customerAttributes, $store, 'customer');
 
                     /* Process Address Attributes */
                     $primaryAddress = $customer->getPrimaryShippingAddress();
                     if (!empty($primaryAddress)) {
-                        $brontoContact = $this->processAttributes($brontoContact, $primaryAddress, $addressAttributes, $store, 'address');
+                        $brontoContact = $this->_processAttributes($brontoContact, $primaryAddress, $addressAttributes, $store, 'address');
                     }
-                    
+
                     $brontoContact->persist();
                 } catch (Exception $e) {
-                    
+
                 }
 
                 try {
                     // Mark Customer as imported
                     $customerRow->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
                     $customerRow->save();
-                    
+
                     // Flush every 10 Customers
                     if ($result['total'] % 100 === 0) {
-                        $result        = $this->flushCustomers($contactObject, $customerCache, $result);
+                        $result = $this->_flushCustomers($contactObject, $customerCache, $result);
                         $customerCache = array();
                     }
                 } catch (Exception $e) {
@@ -102,7 +110,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
                     // Mark Customer as *not* imported
                     $customerRow->setBrontoImported(null);
-                    
+
                     $customerRow->save();
 
                     $result['error']++;
@@ -113,7 +121,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         }
 
         // Final flush (for any we miss)
-        $results = $this->flushCustomers($contactObject, $customerCache, $result);
+        $results = $this->_flushCustomers($contactObject, $customerCache, $result);
 
         Mage::helper('bronto_customer')->writeDebug('  Success: ' . $results['success']);
         Mage::helper('bronto_customer')->writeDebug('  Error:   ' . $results['error']);
@@ -121,7 +129,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
         return $results;
     }
-    
+
     /**
      * Cycle through attributes and validate against Bronto Field type
      * @param Bronto_Api_Contact_Row $brontoContact
@@ -131,7 +139,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
      * @param string $type 'customer' or 'address'
      * @return Bronto_Api_Contact_Row
      */
-    public function processAttributes(Bronto_Api_Contact_Row $brontoContact, $source, $attributes, Mage_Core_Model_Store $store, $type = 'customer')
+    protected function _processAttributes(Bronto_Api_Contact_Row $brontoContact, $source, $attributes, Mage_Core_Model_Store $store, $type = 'customer')
     {
         // For each Customer attribute
         foreach ($attributes as $attribute) {
@@ -139,7 +147,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 continue;
             }
             $_attributeCode = $attribute->getAttributeCode();
-            
+
             // Get Attribute Field
             switch ($type) {
                 case 'address':
@@ -149,37 +157,41 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                     $_fieldName = Mage::helper('bronto_customer')->getCustomerAttributeField($_attributeCode, $store);
                     break;
             }
-            
+
             // Get Customer Attribute Value
-            $_attributeValue = $this->getReadableValue($attribute, $source->getData($_attributeCode));
-                        
+            $_attributeValue = $this->_getReadableValue($attribute, $source->getData($_attributeCode));
+
             // Skip un-mapped or empty attributes
             if (empty($_fieldName) || '_none_' == $_fieldName || !$_attributeValue || '' == $_attributeValue) {
                 continue;
             }
-            
+
             // Store Bronto Key => Magento field label for errors
             if (!array_key_exists($_fieldName, $this->_fieldMap)) {
                 $this->_fieldMap[$_fieldName] = $attribute->getFrontendLabel();
             }
-            
+
             $brontoContact->setField($_fieldName, $_attributeValue);
         }
-        
+
         return $brontoContact;
     }
-    
+
     /**
      * Based on attribute type, pull the value or the label
      * @param type $attribute
      * @param type $value
      * @return type
      */
-    public function getReadableValue($attribute, $value)
+    protected function _getReadableValue($attribute, $value)
     {
+        if ('' == $value) {
+            return '';
+        }
+
         $_attributeType = $attribute->getFrontendInput();
         $_attributeCode = $attribute->getAttributeCode();
-        
+
         // Pick up Website/Store/Group Values
         switch ($_attributeCode) {
             case 'website_id':
@@ -201,7 +213,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
             default:
                 break;
         }
-        
+
         // Format Attribute Values
         switch ($_attributeType) {
             case 'select':
@@ -216,7 +228,14 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 return $values;
                 break;
             case 'date':
-                return Mage::getSingleton('core/date')->date('Y-m-d', $value);
+                $dates = explode(' ', $value);
+                $date  = $dates[0];
+
+                if (!preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $date)) {
+                    return '';
+                } else {
+                    return $date;
+                }
                 break;
             default:
                 return $value;
@@ -231,7 +250,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
      *
      * @return array
      */
-    public function flushCustomers($customerObject, $customerCache, $result)
+    protected function _flushCustomers($customerObject, $customerCache, $result)
     {
         $fieldModel = Mage::getModel('bronto_common/system_config_source_field');
         $flushResult = $customerObject->flush();
@@ -242,36 +261,40 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
         foreach ($flushResult as $i => $flushResultRow) {
             if ($flushResultRow->hasError()) {
-                $errorCode    = $flushResultRow->getErrorCode();
+                $errorCode = $flushResultRow->getErrorCode();
                 $errorMessage = $flushResultRow->getErrorMessage();
-                
+
                 // Catch Error and Replace Field ID with Field Name
                 if (preg_match_all("/([a-zA-Z0-9\-]){36}/", $errorMessage, $matches)) { // Grab field id if exists
                     foreach ($matches[0] as $match) {
-                        $fieldObject  = $fieldModel->getFieldObjectById($match);
+                        $fieldObject = $fieldModel->getFieldObjectById($match);
                         if ($fieldObject) {
                             $errorMessage = str_replace($match, $fieldObject->name, $errorMessage);
-                        } elseif(array_key_exists($match, $this->_fieldMap)) {
-                            $mageLabel    = $this->_fieldMap[$match];
+                        } elseif (array_key_exists($match, $this->_fieldMap)) {
+                            $mageLabel = $this->_fieldMap[$match];
                             $errorMessage = "Bronto field mapped for {$mageLabel} no longer exists in your bronto account";
                         }
                     }
                 }
-                
+
                 if (isset($customerCache[$i])) {
                     // Get Customer Object
                     $customer = Mage::getModel('customer/customer')->load($customerCache[$i]['customerId']);
-                    $store    = Mage::getModel('core/store')->load($customerCache[$i]['storeId']);
-                    $website  = Mage::getModel('core/website')->load($store->getWebsiteId());
+                    $store = Mage::getModel('core/store')->load($customerCache[$i]['storeId']);
+                    $website = Mage::getModel('core/website')->load($store->getWebsiteId());
                     $storeMessage = "For `{$website->getName()}`:`{$store->getName()}`: ";
-                    
-                    // Reset Bronto Import status
-                    Mage::getModel('bronto_customer/queue')
-                        ->getCustomerRow($customerCache[$i]['customerId'], $customerCache[$i]['storeId'])
-                        ->setBrontoImported(null)
-                        ->setBrontoSuppressed($errorMessage)
-                        ->save();
-                    
+
+                    $customerObject = Mage::getModel('bronto_customer/queue')
+                                      ->getCustomerRow($customerCache[$i]['customerId'], $customerCache[$i]['storeId'])
+                                      ->setBrontoImported(null);
+
+                    // If Error Code In specified Array, suppress contact
+                    if (in_array($errorCode, array(302, 303, 314, 315, 317))) {
+                        $customerObject->setBrontoSuppressed($errorMessage);
+                    }
+
+                    $customerObject->save();
+
                     Mage::helper('bronto_customer')->writeError("[{$errorCode}] {$storeMessage}{$errorMessage} ({$customer->getEmail()})");
                 } else {
                     Mage::helper('bronto_customer')->writeError("[{$errorCode}] {$errorMessage}");
@@ -281,7 +304,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 $result['success']++;
             }
         }
-        
+
         return $result;
     }
 
@@ -291,17 +314,23 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
     public function processCustomers()
     {
         $result = array(
-            'total'   => 0,
+            'total' => 0,
             'success' => 0,
-            'error'   => 0,
+            'error' => 0,
         );
+
+        $limit = Mage::helper('bronto_customer')->getLimit();
 
         $stores = Mage::app()->getStores(true);
         foreach ($stores as $_store) {
-            $storeResult = $this->processCustomersForStore($_store);
-            $result['total']   += $storeResult['total'];
+            if ($limit <= 0) {
+                continue;
+            }
+            $storeResult = $this->processCustomersForStore($_store, $limit);
+            $result['total'] += $storeResult['total'];
             $result['success'] += $storeResult['success'];
-            $result['error']   += $storeResult['error'];
+            $result['error'] += $storeResult['error'];
+            $limit = $limit - $storeResult['total'];
         }
 
         return $result;
@@ -314,84 +343,148 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
     {
         /* @var $customer Mage_Customer_Model_Customer */
         $customer = $observer->getCustomer();
-        
+
         /* @var $contactQueue Bronto_Customer_Model_Queue */
         Mage::getModel('bronto_customer/queue')
-                ->getCustomerRow($customer->getId(), Mage::app()->getStore()->getId())
-                ->setCreatedAt($customer->getCreatedAt())
-                ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
-                ->setBrontoImported(null)
-                ->setBrontoSuppressed(null)
-                ->save();
+            ->getCustomerRow($customer->getId(), $customer->getStoreId())
+            ->setCreatedAt($customer->getCreatedAt())
+            ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
+            ->setBrontoImported(null)
+            ->setBrontoSuppressed(null)
+            ->save();
     }
-    
+
     /**
-     * Grab Config Data Object before save and handle the 'Create New...' value for 
+     * Grab Config Data Object before save and handle the 'Create New...' value for
      * fields that were generated dynamically
      * @param Varien_Event_Observer $observer
      * @return Varien_Event_Observer
      */
     public function saveDynamicField(Varien_Event_Observer $observer)
     {
-        if ($observer->getObject()->getSection() == 'bronto_customer') {
-            $observer = $this->_handleAttributes($observer);
+        $action = $observer->getEvent()->getControllerAction();
+
+        if ($action->getRequest()->getParam('section') == 'bronto_customer') {
+            $groups  = $action->getRequest()->getPost('groups');
+            $section = $action->getRequest()->getParam('section');
+
+            // Pre-Process Fields to Strip out and Handle Dynamic Fields
+            $groups = $this->_handleDynamicAttributes($groups, $section);
+
+            // Replace Existing 'groups' data with newly stripped 'groups' data and pass on to be saved
+            $observer->getEvent()->getControllerAction()->getRequest()->setPost('groups', $groups);
         }
-        
+
         return $observer;
     }
-    
+
     /**
      * Process customer and address attributes and save back to observer
-     * @param Varien_Event_Observer $observer
-     * @return Varien_Event_Observer
+     * @param  array $groups
+     * @param string $section
+     * @return array
      */
-    protected function _handleAttributes(Varien_Event_Observer $observer)
+    protected function _handleDynamicAttributes($groups, $section)
     {
-        $data = $observer->getObject()->getData();
-        
-        $attrFieldsCustomer = $this->_processAttributes($data['groups']['attributes']['fields']);
-        $data['groups']['attributes']['fields'] = $attrFieldsCustomer;
-            
-        $attrFieldsAddress = $this->_processAttributes($data['groups']['address_attributes']['fields']);
-        $data['groups']['address_attributes']['fields'] = $attrFieldsAddress;
-            
-        $observer->getObject()->setData($data);
-        
-        return $observer;
+        // Process Dynamic Customer Attribute Fields
+        if (array_key_exists('attributes', $groups)) {
+            $attrFieldsCustomer = $this->_processDynamicAttributes($groups['attributes']['fields'], $section, 'attributes');
+            $groups['attributes']['fields'] = $attrFieldsCustomer;
+        }
+
+        // Process Dynamic Address Attribute Fields
+        if (array_key_exists('address_attributes', $groups)) {
+            $attrFieldsAddress = $this->_processDynamicAttributes($groups['address_attributes']['fields'], $section, 'address_attributes');
+            $groups['address_attributes']['fields'] = $attrFieldsAddress;
+        }
+
+        // Return Updated Groups Data
+        return $groups;
     }
-    
+
     /**
      * Capture "Create New..." attributes, create field in Bronto, and save field id
      * @param  array $attributesFields
+     * @param string $section
+     * @param string $group
      * @return array
      */
-    protected function _processAttributes(array $attributesFields)
+    protected function _processDynamicAttributes($attributesFields = array(), $section, $group)
     {
+        // Create Config Object
+        $config = Mage::getModel('core/config');
+
+        // Get Admin Scope Parameters
+        $scopeParams = Mage::helper('bronto_common')->getScopeParams();
+
+        // Get Array of Attributes that are hard-coded into system.xml
+        $ignore = Mage::helper('bronto_customer')->getSystemAttributes();
+
+        // Cycle Through Attribute Fields to Find and Save Dynamic Fields
         foreach ($attributesFields as $fieldId => $field) {
+            // Save Dynamic 'Create New...' Fields
             if (preg_match('/dynamic_new_/', $fieldId)) {
-                $realfield = str_replace('dynamic_new_', '', $fieldId);
+                // Strip off 'dynamic_new_' from Field ID to Get real Field ID
+                $realField = str_replace('dynamic_new_', '', $fieldId);
                 $value     = $field['value'];
 
-                /* @var $fieldObject Bronto_Api_Field */
-                $fieldObject = Mage::helper('bronto_common')->getApi()->getFieldObject();
-
-                $field        = $fieldObject->createRow();
-                $field->name  = $fieldObject->normalize($value);
-                $field->label = $value;
-                $field->type  = Bronto_Api_Field::TYPE_TEXT;
+                if (is_null($value)) {
+                    continue;
+                }
 
                 try {
-                    $field->save();
-                    $fieldObject->addToCache($field->name, $field);
+                    /* @var $fieldObject Bronto_Api_Field */
+                    $fieldObject  = Mage::helper('bronto_common')->getApi()->getFieldObject();
+                    $brontoField        = $fieldObject->createRow();
+                    $brontoField->name  = $fieldObject->normalize($value);
+                    $brontoField->label = $value;
+                    $brontoField->type  = Bronto_Api_Field::TYPE_TEXT;
 
-                    $attributesFields[$realfield] = array('value' => $field->id);
+                    $brontoField->save();
+                    $fieldObject->addToCache($brontoField->name, $brontoField);
+
+                    $scope = $scopeParams['scope'];
+                    if ($scope != 'default') {
+                        $scope .= 's';
+                    }
+
+                    // Save Field To Config
+                    $config->saveConfig(
+                        $section.'/'.$group.'/'.$realField,
+                        $brontoField->id,
+                        $scope,
+                        $scopeParams[$scopeParams['scope'].'_id']
+                    );
+
+                    // Unset Dynamic Fields
+                    unset($attributesFields[$realField]);
                     unset($attributesFields[$fieldId]);
+                    unset($fieldObject);
                 } catch (Exception $e) {
                     Mage::helper('bronto_customer')->writeError("Unable to save new field: {$value}");
                 }
             }
+
+            // Save Dynamic Fields
+            elseif (!in_array($fieldId, $ignore[$group])) {
+                $scope = $scopeParams['scope'];
+                if ($scope != 'default') {
+                    $scope .= 's';
+                }
+
+                // Save Field To Config
+                $config->saveConfig(
+                    $section.'/'.$group.'/'.$fieldId,
+                    $field['value'],
+                    $scope,
+                    $scopeParams[$scopeParams['scope'].'_id']
+                );
+
+                // Unset Dynamic Field
+                unset($attributesFields[$fieldId]);
+            }
         }
-        
+
         return $attributesFields;
     }
 }

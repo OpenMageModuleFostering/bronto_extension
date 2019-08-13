@@ -33,9 +33,9 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Sharing extends Bronto_Remin
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Wishlist %s shared',
-                $this->getValueElementHtml())
-            . $this->getRemoveLinkHtml();
+        . Mage::helper('bronto_reminder')->__('Wishlist %s shared',
+            $this->getValueElementHtml())
+        . $this->getRemoveLinkHtml();
     }
 
     /**

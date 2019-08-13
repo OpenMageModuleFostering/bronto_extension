@@ -86,12 +86,114 @@
     text-align: center;
     color: #000;
     font-size: x-small;
+    clear: left;
 }
 
 .bronto-progress-bar div {
     background-color: #35b963;
+    float:left;
     border-radius: 2px;
     text-align: center;
     color: #fff;
     font-size: x-small;
+}
+
+.bronto-progress-bar div.bronto-progress-bar-complete {
+    background-color: #35b963;
+}
+
+.bronto-progress-bar div.bronto-progress-bar-suppressed {
+    background-color: #FF4545;
+}
+
+.bronto-progress-bar div.bronto-progress-bar-disabled {
+    background-color: #666;
+}
+
+.bronto-progress-bar-legend {
+    font-size: 10px;
+}
+
+.bronto-progress-bar-legend-complete,
+.bronto-progress-bar-legend-suppressed,
+.bronto-progress-bar-legend-disabled {
+    float:left;
+    padding-right:10px;
+}
+
+.bronto-progress-bar-legend-details {
+    float:left;
+    clear:right;
+}
+
+.bronto-progress-bar-legend-status {
+    width: 12px;
+    height: 12px;
+    float: left;
+    margin: 2px;
+}
+
+.bronto-progress-bar-legend-complete .bronto-progress-bar-legend-status {
+    background-color: #35b963;
+}
+
+.bronto-progress-bar-legend-suppressed .bronto-progress-bar-legend-status {
+    background-color: #FF4545;
+}
+
+.bronto-progress-bar-legend-disabled .bronto-progress-bar-legend-status {
+    background-color: #666;
+}
+
+.bronto-with-help {
+    padding-top: 0px;
+    margin: 3px 0px 5px;
+}
+
+.bronto-with-help > strong {
+    font-size: 11px;
+    margin-left: 13px;
+}
+
+.bronto-help {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    margin: 3px 4px 1px;
+    width: 16px;
+    height: 16px;
+    background: url(../../../default/default/images/i_question-mark.png) 0 0 no-repeat;
+    text-decoration: none !important;
+    text-indent: -999em;
+    overflow: hidden;
+    z-index: 9999999;
+}
+
+.bronto-floater {
+    float: left;
+}
+
+.bronto-vertical-align {
+    margin-top: 0px;
+}
+.bronto-help:hover {
+    overflow: visible;
+    text-indent:0;
+}
+.bronto-help-window {
+    position:relative;
+    width:200px;
+    background-color:#fff;
+    border: 1px solid #555;
+    padding: 5px;
+    top: 0;
+    left: 20px;
+}
+.bronto-large-image {
+    top: 20px;
+    width: 640px;
+    left: -600px;
+}
+.bronto-large-image img {
+    width: 640px;
 }

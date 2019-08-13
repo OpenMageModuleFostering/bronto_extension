@@ -7,5 +7,5 @@
 class Bronto_Newsletter_Model_System_Config_Backend_Cron extends Bronto_Common_Model_System_Config_Backend_Cron
 {
     protected $_cron_string_path = 'crontab/jobs/bronto_newsletter_import/schedule/cron_expr';
-    protected $_cron_model_path  = 'crontab/jobs/bronto_newsletter_import/run/model';
+    protected $_cron_model_path = 'crontab/jobs/bronto_newsletter_import/run/model';
 }

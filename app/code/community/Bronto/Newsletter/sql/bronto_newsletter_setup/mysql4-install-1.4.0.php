@@ -6,7 +6,7 @@ $installer = $this;
 $installer->startSetup();
 
 try {
-$installer->run("
+    $installer->run("
 
 CREATE TABLE `{$this->getTable('bronto_newsletter_queue')}` (
   `status` varchar(32) CHARACTER SET utf8 NOT NULL,

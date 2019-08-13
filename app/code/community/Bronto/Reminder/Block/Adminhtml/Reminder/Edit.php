@@ -10,7 +10,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
     /**
      * @var string
      */
-    protected $_objectId   = 'id';
+    protected $_objectId = 'id';
 
     /**
      * @var string
@@ -27,6 +27,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
         parent::__construct();
         $rule = Mage::registry('current_reminder_rule');
         $this->removeButton('reset');
+        $this->setValidationUrl($this->getUrl('*/*/validate'));
 
         if ($rule) {
             $this->_updateButton('save', 'label', Mage::helper('bronto_reminder')->__('Save'));
@@ -35,7 +36,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
             if ($rule->getId()) {
                 $confirm = Mage::helper('bronto_reminder')->__('Are you sure you want to match this rule now?');
                 $this->_addButton('match_now', array(
-                    'label'   => Mage::helper('bronto_reminder')->__('Match Now'),
+                    'label' => Mage::helper('bronto_reminder')->__('Match Now'),
                     'onclick' => "confirmSetLocation('{$confirm}', '{$this->getMatchUrl()}')"
                 ), -1);
                 if ($limit = Mage::helper('bronto_reminder')->getOneRunLimit()) {
@@ -43,10 +44,10 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
                 }
 
                 $sendButtonSettings = array(
-                    'label'   => Mage::helper('bronto_reminder')->__('Send Now')
+                    'label' => Mage::helper('bronto_reminder')->__('Send Now')
                 );
 
-                if (!Mage::helper('bronto_reminder')->isAllowSend()) {
+                if (!Mage::helper('bronto_reminder')->isAllowSendForAny()) {
                     $sendButtonSettings['disabled'] = 'disabled';
                 } else {
                     $sendButtonSettings['onclick'] = "confirmSetLocation('{$confirm}', '{$this->getRunUrl()}')";
@@ -56,8 +57,8 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
             }
 
             $this->_addButton('save_and_continue_edit', array(
-                'class'   => 'save',
-                'label'   => Mage::helper('bronto_reminder')->__('Save and Continue Edit'),
+                'class' => 'save',
+                'label' => Mage::helper('bronto_reminder')->__('Save and Continue Edit'),
                 'onclick' => 'editForm.submit($(\'edit_form\').action + \'back/edit/\')',
             ), 3);
         }
@@ -68,8 +69,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
         $rule = Mage::registry('current_reminder_rule');
         if ($rule->getRuleId()) {
             return Mage::helper('bronto_reminder')->__("Edit Rule '%s'", $this->htmlEscape($rule->getName()));
-        }
-        else {
+        } else {
             return Mage::helper('bronto_reminder')->__('New Rule');
         }
     }

@@ -10,15 +10,15 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_About extends Bronto_Commo
 
     /**
      * Description for protected
-     * @var string   
+     * @var string
      * @access protected
      */
     protected $_module = 'bronto_newsletter';
 
     /**
      * Description for protected
-     * @var string   
+     * @var string
      * @access protected
      */
-    protected $_name   = 'Bronto Contact Newsletter Sign-Up for Magento';
+    protected $_name = 'Bronto Contact Newsletter Sign-Up for Magento';
 }

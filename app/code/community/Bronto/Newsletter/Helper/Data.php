@@ -7,50 +7,73 @@
  */
 class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 {
-    const XML_PATH_ENABLED             = 'bronto_newsletter/settings/enabled';
-    const XML_PATH_LIMIT               = 'bronto_newsletter/settings/limit';
-    const XML_PATH_DEFAULT             = 'bronto_newsletter/checkout/default_checked';
-    const XML_PATH_SHOW_GUEST          = 'bronto_newsletter/checkout/show_to_guests';
-    const XML_PATH_SHOW_REGISTRAR      = 'bronto_newsletter/checkout/show_to_registrars';
-    const XML_PATH_SHOW_SUBSCRIBED     = 'bronto_newsletter/checkout/show_if_subscribed';
-    const XML_PATH_LABEL_TEXT          = 'bronto_newsletter/checkout/label_text';
+    const XML_PATH_ENABLED = 'bronto_newsletter/settings/enabled';
+    const XML_PATH_LIMIT = 'bronto_newsletter/settings/limit';
+    const XML_PATH_SYNC_LIMIT = 'bronto_newsletter/settings/sync_limit';
+    const XML_PATH_DEFAULT = 'bronto_newsletter/checkout/default_checked';
+    const XML_PATH_SHOW_GUEST = 'bronto_newsletter/checkout/show_to_guests';
+    const XML_PATH_SHOW_REGISTRAR = 'bronto_newsletter/checkout/show_to_registrars';
+    const XML_PATH_SHOW_SUBSCRIBED = 'bronto_newsletter/checkout/show_if_subscribed';
+    const XML_PATH_LABEL_TEXT = 'bronto_newsletter/checkout/label_text';
     const XML_PATH_USE_CUSTOM_TEMPLATE = 'bronto_newsletter/checkout/use_custom_template';
-    const XML_PATH_BILLING_TEMPLATE    = 'bronto_newsletter/checkout/billing_template';
-    const XML_PATH_INSTALL_DATE        = 'bronto_newsletter/settings/install_date';
-    const XML_PATH_UPGRADE_DATE        = 'bronto_newsletter/settings/upgrade_date';
+    const XML_PATH_BILLING_TEMPLATE = 'bronto_newsletter/checkout/billing_template';
+    const XML_PATH_INSTALL_DATE = 'bronto_newsletter/settings/install_date';
+    const XML_PATH_UPGRADE_DATE = 'bronto_newsletter/settings/upgrade_date';
 
     /**
-     * @param string $store
      * @return bool
      */
-    public function isEnabled($store = null)
+    public function isEnabled()
     {
-        if (!$this->getApiToken($store)) {
-            return false;
-        }
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED);
+    }
 
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_ENABLED, $store);
+    /*
+     * Get Text to display in notice when enabling module
+     *
+     * @return string
+     */
+    public function getModuleEnabledText()
+    {
+        $message = parent::getModuleEnabledText();
+        $scopeData = $this->getScopeParams();
+        if ($scopeData['scope'] != 'default') {
+            $message = $this->__(
+                'If the API token being used for this configuration scope is different from that of the Default Config scope, ' .
+                'you should un-check the `Use Website` or `Use Default` for the <em>Add to List(s)</em> field in the <em>Contacts</em> ' .
+                'group on this page and select the desired list(s).'
+            );
+        }
+        return $message;
     }
 
     /**
      * @param string $path
      * @return bool
      */
-    public function disableModule()
+    public function disableModule($scope = 'default', $scopeId = 0)
     {
-        return $this->_disableModule(self::XML_PATH_ENABLED);
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
 
     /**
      * @return int
      */
-    public function getLimit()
+    public function getSyncLimit()
+    {
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_SYNC_LIMIT);
+    }
+
+    /**
+     * @return int
+     */
+    public function getLimit($storeId = null)
     {
         if (!$this->isEnabled()) {
             return false;
         }
 
-        return (int) Mage::getStoreConfig(self::XML_PATH_LIMIT);
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT, $storeId);
     }
 
     /**
@@ -58,7 +81,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function isEnabledCheckedByDefault()
     {
-        return (bool) Mage::getStoreConfig(self::XML_PATH_DEFAULT);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_DEFAULT);
     }
 
     /**
@@ -66,7 +89,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function isEnabledForGuestCheckout()
     {
-        return (bool) Mage::getStoreConfig(self::XML_PATH_SHOW_GUEST);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_SHOW_GUEST);
     }
 
     /**
@@ -74,7 +97,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function isEnabledForRegisterCheckout()
     {
-        return (bool) Mage::getStoreConfig(self::XML_PATH_SHOW_REGISTRAR);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_SHOW_REGISTRAR);
     }
 
     /**
@@ -82,7 +105,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function isEnabledIfAlreadySubscribed()
     {
-        return (bool) Mage::getStoreConfig(self::XML_PATH_SHOW_SUBSCRIBED);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_SHOW_SUBSCRIBED);
     }
 
     /**
@@ -90,7 +113,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function getCheckboxLabelText()
     {
-        return Mage::getStoreConfig(self::XML_PATH_LABEL_TEXT);
+        return $this->getAdminScopedConfig(self::XML_PATH_LABEL_TEXT);
     }
 
     /**
@@ -105,47 +128,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 
         /* @var $subscriber Mage_Newsletter_Model_Subscriber */
         $subscriber = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
-        return (bool) $subscriber->isSubscribed();
-    }
-
-    /**
-     * @return bool
-     */
-    public function useCustomBillingTemplate()
-    {
-        return (bool) Mage::getStoreConfig(self::XML_PATH_USE_CUSTOM_TEMPLATE);
-    }
-
-    /**
-     * @return string
-     */
-    public function getCustomBillingTemplate()
-    {
-        $template = Mage::getStoreConfig(self::XML_PATH_BILLING_TEMPLATE);
-
-        if (!$this->useCustomBillingTemplate() || empty($template)) {
-            return false;
-        }
-
-        return $template;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCheckoutOnepageBillingTemplate()
-    {
-        $customTemplate = $this->getCustomBillingTemplate();
-
-        if (empty($customTemplate)) {
-            if ($this->isEnabled()) {
-                return 'bronto/newsletter/billing.phtml';
-            } else {
-                return 'checkout/onepage/billing.phtml';
-            }
-        }
-
-        return $customTemplate;
+        return (bool)$subscriber->isSubscribed();
     }
 
     /**
@@ -156,5 +139,25 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
     protected function _getModuleName()
     {
         return 'Bronto_Newsletter';
+    }
+
+    /**
+     * Get Count of Subscribers not in queue
+     * @return int
+     */
+    public function getMissingSubscribersCount()
+    {
+        return Mage::getModel('bronto_newsletter/queue')
+            ->getMissingSubscribersCount();
+    }
+
+    /**
+     * Get Subscribers which aren't in queue
+     * @return array
+     */
+    public function getMissingSubscribers()
+    {
+        return Mage::getModel('bronto_newsletter/queue')
+            ->getMissingSubscribers();
     }
 }

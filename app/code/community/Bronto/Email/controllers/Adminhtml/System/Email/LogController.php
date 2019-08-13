@@ -11,11 +11,11 @@ class Bronto_Email_Adminhtml_System_Email_LogController extends Mage_Adminhtml_C
     {
         $this->_title($this->__('Bronto Deliveries'))->_title($this->__('Logs'));
         $this->loadLayout()
-             ->_setActiveMenu('system/email/log')
-             ->_addBreadcrumb(
-                 Mage::helper('bronto_email')->__('Bronto Delivery Log'),
-                 Mage::helper('bronto_email')->__('Bronto Delivery Log')
-             );
+            ->_setActiveMenu('system/email/log')
+            ->_addBreadcrumb(
+                Mage::helper('bronto_email')->__('Bronto Delivery Log'),
+                Mage::helper('bronto_email')->__('Bronto Delivery Log')
+            );
         return $this;
     }
 
