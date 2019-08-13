@@ -27,7 +27,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_
         $this->setChild('add_button',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label'   => Mage::helper('adminhtml')->__('Add Bronto Message'),
+                    'label'   => Mage::helper('adminhtml')->__('Add New Template'),
                     'onclick' => "window.location='" . $this->getCreateUrl() . "'",
                     'class'   => 'add'
                 ))

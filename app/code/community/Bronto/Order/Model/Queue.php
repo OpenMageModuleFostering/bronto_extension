@@ -34,7 +34,7 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 
         // Add Filters
         if (($quoteId > 0) && ($orderId > 0)) {
-            $collection->getSelect()->where("`quote_id` = $quoteId OR `order_id` = $orderId");
+            $collection->getSelect()->where("`quote_id` = $quoteId AND `order_id` = $orderId");
         } elseif (($quoteId > 0)) {
             $collection->addFieldToFilter('quote_id', $quoteId);
         } elseif (($orderId > 0)) {

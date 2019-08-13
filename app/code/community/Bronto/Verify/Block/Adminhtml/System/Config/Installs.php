@@ -32,6 +32,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Installs
         'bronto_newsletter',
         'bronto_customer',
         'bronto_order',
+        'bronto_reviews',
         'bronto_reminder',
         'bronto_email',
     );

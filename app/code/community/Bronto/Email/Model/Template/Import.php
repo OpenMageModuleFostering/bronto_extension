@@ -62,7 +62,7 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
         $token = Mage::helper('bronto_common')->getApiToken('store', $store->getId());
         if ($token) {
             $this->_apiObject = new Bronto_Api_Message(array(
-                'api' => new Bronto_Api($token)
+                'api' => Mage::helper('bronto_common')->getApi($token, 'store', $store->getId())
             ));
         } else {
             return false;

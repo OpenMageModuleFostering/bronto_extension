@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Newsletter>
-            <version>1.4.6</version>
+            <version>1.4.7</version>
         </Bronto_Newsletter>
     </modules>
     <global>
@@ -34,6 +34,7 @@
             <bronto_newsletter_setup>
                 <setup>
                     <module>Bronto_Newsletter</module>
+                    <class>Bronto_Newsletter_Model_Resource_Setup</class>
                 </setup>
                 <connection>
                     <use>core_setup</use>
@@ -92,7 +93,7 @@
     <default>
         <bronto_newsletter>
             <settings>
-                <enabled>1</enabled>
+                <enabled>0</enabled>
                 <mage_cron>1</mage_cron>
                 <frequency>D</frequency>
                 <interval>15</interval>

@@ -118,7 +118,8 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
                 switch ($name) {
                     case 'img':
                     case 'image':
-                        return $product->getSmallImageUrl();
+                        return Mage::helper('bronto_common')->getProductImageUrl($product);
+                        // return $product->getSmallImageUrl();
                     case 'url':
                         return Mage::helper('catalog/product')->getProductUrl($product);
                 }

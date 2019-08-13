@@ -19,6 +19,16 @@ class Bronto_Reviews_Helper_Data
     const XML_PATH_REPLY_TO      = 'bronto_reviews/settings/reply_to';
 
     /**
+     * Gets the canonical name for the Bronto Review module
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return 'Bronto Reviews';
+    }
+
+    /**
      * Check if module is enabled
      *
      * @param string $scope
@@ -28,11 +38,6 @@ class Bronto_Reviews_Helper_Data
      */
     public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        // Check if valid token is present
-        if (!$this->validApiToken(null, $scope, $scopeId)) {
-            return false;
-        }
-
         // Get Enabled Scope
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
@@ -133,9 +138,14 @@ class Bronto_Reviews_Helper_Data
     public function getReviewsUrl($product, $storeId = null)
     {
         $url = Mage::getModel('core/url')->setStore($storeId);
-        return $url->getUrl('review/product/list', array(
-            'id' => $product->getId()
-        ));
+        $params = array('id' => $product->getId());
+        if ($product->getCategoryId()) {
+            $params['category'] = $product->getCategoryId();
+        } else {
+            $categoryId = end($product->getCategoryIds());
+            $params['category'] = $categoryId;
+        }
+        return $url->getUrl('review/product/list', $params);
     }
 
     /**

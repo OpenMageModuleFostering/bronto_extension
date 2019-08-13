@@ -484,8 +484,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 }
             }
 
+            $createdAt = $shipment->getCreatedAtStoreDate();
+            if (empty($createdAt)) {
+                // unset the blank string to force current timestamp
+                $createdAt = null;
+            }
+
             $this->setField('shipmentIncrementId', $shipment->getIncrementId());
-            $this->setField('shipmentCreatedAt', Mage::helper('core')->formatDate($shipment->getCreatedAtStoreDate(), 'long', true)); // TODO: needed?
+            $this->setField('shipmentCreatedAt', Mage::helper('core')->formatDate($createdAt, 'long', true)); // TODO: needed?
             $this->setField('shipmentItems', $this->_filterShipmentItems($shipment));
             $this->setField('shipmentTracking', $this->_getShipmentTrackingNumber($shipment, $shipment->getOrder()));
 
@@ -512,8 +518,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 }
             }
 
+            $createdAt = $creditmemo->getCreatedAtStoreDate();
+            if (empty($createdAt)) {
+                // unset the blank string to force current timestamp
+                $createdAt = null;
+            }
+
             $this->setField('creditmemoIncrementId', $creditmemo->getIncrementId());
-            $this->setField('creditmemoCreatedAt', Mage::helper('core')->formatDate($creditmemo->getCreatedAtStoreDate(), 'long', true)); // TODO: needed?
+            $this->setField('creditmemoCreatedAt', Mage::helper('core')->formatDate($createdAt, 'long', true)); // TODO: needed?
             $this->setField('creditmemoItems', $this->_filterCreditmemoItems($creditmemo));
 
             $this->_filteredObjects[] = 'creditmemo';

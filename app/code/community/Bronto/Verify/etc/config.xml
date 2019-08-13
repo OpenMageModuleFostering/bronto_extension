@@ -68,15 +68,6 @@
                 <files>644</files>
                 <exclude>app/etc, mage, pear, media, var, errors, build, .git, .svn, shell, pkginfo, includes</exclude>
             </permissionchecker>
-            <soap_options>
-                <soap_client>Bronto_SoapClient</soap_client>
-                <stream_context>0</stream_context>
-                <retry_limit>2</retry_limit>
-                <trace>0</trace>
-                <exceptions>1</exceptions>
-                <connection_timeout>30</connection_timeout>
-                <cache_wsdl>WSDL_CACHE_BOTH</cache_wsdl>
-            </soap_options>
         </bronto_verify>
     </default>
 

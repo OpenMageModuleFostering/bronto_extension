@@ -24,6 +24,7 @@ class Bronto_Fix_Os_Script extends Mage_Shell_Abstract {
         'newsletter',
         'order',
         'reminder',
+        'reviews',
     );
 
     /**
@@ -84,6 +85,7 @@ Tasks:
   newsletter    {$this->_getTaskName('newsletter')}
   order         {$this->_getTaskName('order')}
   reminder      {$this->_getTaskName('reminder')}
+  reviews       {$this->_getTaskName('reviews')}
 
 
 LIST;

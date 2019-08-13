@@ -61,10 +61,10 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
         }
 
         if ($this->getEditMode()) {
-            return Mage::helper('adminhtml')->__('Edit Bronto Email Message');
+            return Mage::helper('adminhtml')->__('Edit Template');
         }
 
-        return Mage::helper('adminhtml')->__('New Bronto Email Message');
+        return Mage::helper('adminhtml')->__('New Template');
     }
 
     /**

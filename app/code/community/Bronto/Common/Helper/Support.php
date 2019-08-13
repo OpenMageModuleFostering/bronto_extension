@@ -6,6 +6,9 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
     const XML_PATH_LAST_RUN   = 'bronto/support/last_run';
     const XML_PATH_REGISTERED = 'bronto/support/registered';
 
+    const XML_PATH_CLEAR_LOGS = 'bronto/settings/clear_logs';
+    const XML_PATH_LOG_THRES  = 'bronto/settings/log_threshold';
+
     // Process registration
     protected $_registrationUrl = 'https://brontops.com/register/magento';
 
@@ -33,6 +36,19 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
     public function isRegistered()
     {
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_REGISTERED);
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldClearLogs()
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_CLEAR_LOGS);
+    }
+
+    public function getLogThreshold()
+    {
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_LOG_THRES) * (60 * 60 * 24);
     }
 
     /**
@@ -348,7 +364,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
         $archive = Mage::getModel('bronto_common/archive');
         if ($archive->open($file, ZipArchive::OVERWRITE)) {
             $now       = time();
-            $threshold = $now - (60 * 60 * 24 * 30);
+            $threshold = $now - $this->getLogThreshold();
 
             $archive->addEmptyDir('log');
 
@@ -375,6 +391,26 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
         }
 
         return $archive;
+    }
+
+    /**
+     * Removes log files that are over the threshold old
+     *
+     * @return bool
+     */
+    public function clearOldLogs()
+    {
+        $logDir = Mage::getBaseDir('var') . DS . 'log' . DS . 'bronto';
+        $threshold = time() - $this->getLogThreshold();
+
+        $success = true;
+        foreach (glob($logDir . DS . '*log') as $logFile) {
+            $stat = lstat($logFile);
+            if ($stat['mtime'] < $threshold) {
+                $success = $success && unlink($logFile);
+            }
+        }
+        return $success;
     }
 
     /**
@@ -493,8 +529,9 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
                 CURLOPT_SSL_VERIFYPEER => 0,
                 CURLOPT_POSTFIELDS     => $json
             ));
-            $client->post($this->_registrationUrl, $json);
+            $client->post($this->_registrationUrl, $params);
         } catch (Exception $e) {
+            var_dump($e->getMessage());
             $this->writeError('Registration submission failed: ', $e->getMessage());
 
             return false;

@@ -13,6 +13,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Guide extends Mage_Adminhtml_B
      */
     private $_sections = array(
         'bronto',
+        'bronto_api',
         'bronto_common',
         'bronto_news',
         'bronto_newsletter',

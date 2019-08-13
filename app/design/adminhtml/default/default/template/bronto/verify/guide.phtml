@@ -12,37 +12,18 @@
         ],
         buttonCustomHTML: dontShowButtonHtml,
         description: "<?php echo $this->__(
-            'The Advanced module is here as a helpful troubleshooting resource. ' .
-            'This page allows you, among other things, to check your API Token validity and connection, ' .
+            'The Admin Tools module is here as a helpful troubleshooting resource. ' .
+            'This page allows you, among other things, ' .
             'see any configuration conflicts between any other installed modules, and ensure your files all have the correct permissions to run correctly and securely.' .
             '%sReady to Go?%s',
             '<br /><br /><div style=\"text-align:right; font-weight:bold;\">',
             '</div>'
         ) ?>",
         id: "start",
-        next: "bronto_verify-api_status",
-        overlay: true, closeOnEscape: true,
-        title: "Bronto Extension - <?php echo $this->__('Advanced Module') ?>",
-        width: 600
-    });
-
-    /**
-     * Explain API Status
-     */
-    guiders.createGuider({
-        attachTo: '#bronto_verify_apitoken-head',
-        buttons: [
-            {name: "<?php echo $this->__('Back') ?>"},
-            {name: "<?php echo $this->__('Next') ?>"},
-            {name: "<?php echo $this->__('Close') ?>"}
-        ],
-        autoFocus: true, closeOnEscape: true,
-        description: "<?php echo $this->__('This is where you can verify the status of the API Token and the API Connection.  Just click the `Verify Now` button to the right of each one to update the status.') ?>",
-        id: "bronto_verify-api_status",
         next: "bronto_verify-install_status",
-        position: 9,
-        title: "<?php echo $this->__('API Status') ?>",
-        width: 200
+        overlay: true, closeOnEscape: true,
+        title: "Bronto Extension - <?php echo $this->__('Admin Tools') ?>",
+        width: 600
     });
 
     /**
@@ -82,11 +63,11 @@
         autoFocus: true, closeOnEscape: true,
         onShow: function() { sectionOpen('#bronto_verify_advanced-head'); },
         onHide: function() { sectionClose('#bronto_verify_advanced-head'); },
-        description: "<?php echo $this->__('The Advanced Debugging section provides functionality for identifying observers of events and file paths for classes.') ?>",
+        description: "<?php echo $this->__('The Classpath Inspection section provides functionality for identifying observers of events and file paths for classes.') ?>",
         id: "bronto_verify-advanced",
         next: "bronto_verify-conflict_checker",
         position: 9,
-        title: "<?php echo $this->__('Advanced Debugging') ?>",
+        title: "<?php echo $this->__('Classpath Inspection') ?>",
         width: 200
     });
 
@@ -224,33 +205,9 @@
         '<br /><br/><em>',
         '</em>') ?>",
         id: "bronto_verify-cron_examples",
-        next: "bronto_verify-soap_options",
-        position: 9,
-        title: "<?php echo $this->__('Crontab Examples') ?>",
-        width: 200
-    });
-
-    /**
-     * Explain SOAP Config Section
-     */
-    guiders.createGuider({
-        attachTo: '#bronto_verify_soap_options-head',
-        shouldSkip: function() {
-            return <?php echo ($this->isDefaultScope()) ? 'false' : 'true'; ?>
-        },
-        buttons: [
-            {name: "<?php echo $this->__('Back') ?>"},
-            {name: "<?php echo $this->__('Next') ?>"},
-            {name: "<?php echo $this->__('Close') ?>"}
-        ],
-        autoFocus: true, closeOnEscape: true,
-        onShow: function() { sectionOpen('#bronto_verify_soap_options-head'); },
-        onHide: function() { sectionClose('#bronto_verify_soap_options-head'); },
-        description: "<?php echo $this->__('The SOAP Options section allows you to customize SOAP client settings that are specific to your system.') ?>",
-        id: "bronto_verify-soap_options",
         next: "final",
         position: 9,
-        title: "<?php echo $this->__('SOAP Options') ?>",
+        title: "<?php echo $this->__('Crontab Examples') ?>",
         width: 200
     });
 

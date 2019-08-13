@@ -167,6 +167,14 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
     }
 
     /**
+     * @see parent
+     */
+    protected function _emailClass()
+    {
+        return 'bronto_email/template';
+    }
+
+    /**
      * Log about the functionality of sending the email before it goes out
      *
      * @param Bronto_Api_Contact_Row $contact

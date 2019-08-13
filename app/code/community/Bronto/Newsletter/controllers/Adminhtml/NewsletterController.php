@@ -127,6 +127,7 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
                     }
 
                     // Create Subscriber
+                    $now = Mage::getSingleton('core/date')->gmtDate();
                     Mage::getModel('bronto_newsletter/queue')->getContactRow($subscriber['subscriber_id'], $subscriber['store_id'])
                         ->setStatus($status)
                         ->setSubscriberEmail($subscriber['subscriber_email'])
@@ -134,6 +135,8 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
                         ->setSource('api')
                         ->setImported(0)
                         ->setBrontoSuppressed(null)
+                        ->setCreatedAt($now)
+                        ->setUpdatedAt($now)
                         ->save();
 
                     $imported++;

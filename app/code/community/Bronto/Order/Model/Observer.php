@@ -142,6 +142,9 @@ class Bronto_Order_Model_Observer
                     case Mage_Sales_Model_Order::STATE_HOLDED:
                     case Mage_Sales_Model_Order::STATE_CLOSED:
                         $brontoOrder->delete();
+                        $orderRow
+                            ->setBrontoImported(Mage::getSingleton('core/date')->gmtDate())
+                            ->save();
                         break;
 
                     default:
@@ -224,6 +227,17 @@ class Bronto_Order_Model_Observer
                             /* @var $product Mage_Catalog_Model_Product */
                             $product = Mage::getModel('catalog/product')->setStoreId($storeId)->load($item->getProductId());
 
+                            // If the product type is simple and the description
+                            // is empty, then attempt to find a parent product
+                            // to backfill the description.
+                            if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE && !$product->getData($descriptionAttr)) {
+                                 $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
+                                 if (isset($parentIds[0])) {
+                                     $parentProduct = Mage::getModel('catalog/product')->setStoreId($storeId)->load($parentIds[0]);
+                                     $product->setData($descriptionAttr, $parentProduct->getData($descriptionAttr));
+                                 }
+                            }
+
                             // If there is a parent product, use that to get category ids
                             if ($parent) {
                                 $categoryIds = $parent->getCategoryIds();
@@ -249,7 +263,7 @@ class Bronto_Order_Model_Observer
                                 'id'          => $item->getId(),
                                 'sku'         => $item->getSku(),
                                 'name'        => $item->getName(),
-                                'description' => $productHelper->getProductAttribute($item->getProductId(), $descriptionAttr),
+                                'description' => $product->getData($descriptionAttr),
                                 'category'    => implode(' ', $categories),
                                 'image'       => $this->_helper->getItemImg($item, $product, $storeId),
                                 'url'         => $this->_helper->getItemUrl($item, $product, $storeId),

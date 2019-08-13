@@ -47,11 +47,6 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        // Check if valid token is present
-        if (!$this->validApiToken(null, $scope, $scopeId)) {
-            return false;
-        }
-
         // Get Enabled Scope
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }

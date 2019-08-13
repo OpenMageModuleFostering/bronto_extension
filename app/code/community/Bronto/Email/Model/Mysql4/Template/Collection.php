@@ -16,7 +16,7 @@ class Bronto_Email_Model_Mysql4_Template_Collection extends Mage_Core_Model_Mysq
         if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 9))) {
             $this->_select->joinLeft(
                 array($this->_brontoTable),
-                "`{this->_templateTable}`.`template_id` = `{$this->_brontoTable}`.`core_template_id`"
+                "`{$this->_templateTable}`.`template_id` = `{$this->_brontoTable}`.`core_template_id`"
             );
         }
     }

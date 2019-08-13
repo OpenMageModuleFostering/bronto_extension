@@ -42,11 +42,11 @@
                   <p style="line-height:16px;">
                   <strong style="color: #666; font-size:14px">Get Support</strong>
                   <br/>
-                  <a href="<?php echo $this->getModuleNamespace() != 'bronto_common' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head">Learn Next Steps</a>
+                  <a href="<?php echo $this->getSection() != 'bronto' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head">Learn Next Steps</a>
                   </p>
                 </div>
                 <div style="float:right; padding-left:5px">
-                  <a href="<?php echo $this->getModuleNamespace() != 'bronto_common' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head"><img src="<?php echo $this->getSkinUrl('bronto/images/support.png'); ?>" alt="Need Help? Get Support"/></a>
+                  <a href="<?php echo $this->getSection() != 'bronto' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head"><img src="<?php echo $this->getSkinUrl('bronto/images/support.png'); ?>" alt="Need Help? Get Support"/></a>
                 </div>
             </div>
     <?php endif; ?>

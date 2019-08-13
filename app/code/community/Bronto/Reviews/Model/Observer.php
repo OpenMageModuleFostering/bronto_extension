@@ -347,7 +347,7 @@ class Bronto_Reviews_Model_Observer
 
         // Cycle through order items and create fields
         $productInc = 1;
-        foreach ($order->getAllItems() as $item) {
+        foreach ($order->getAllVisibleItems() as $item) {
             // Get Store ID from Order
             $storeId    = $order->getStoreId();
 

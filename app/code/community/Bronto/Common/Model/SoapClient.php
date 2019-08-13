@@ -16,7 +16,7 @@ class Bronto_Common_Model_SoapClient extends Bronto_SoapClient
             unset($options['wsdl']);
         }
         $opts = array('ciphers' => 'RC4-SHA');
-        $options['stream_context'] = stream_context_create('ssl', $opts);
+        $options['stream_context'] = stream_context_create(array('ssl' => $opts));
         parent::__construct($wsdl, $options);
     }
 }

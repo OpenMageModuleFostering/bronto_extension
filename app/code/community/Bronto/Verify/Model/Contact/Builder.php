@@ -27,7 +27,7 @@ class Bronto_Verify_Model_Contact_Builder
      *
      * @access public
      */
-    public function __construct(Bronto_Common_Model_Api $api)
+    public function __construct(Bronto_Api $api)
     {
         $this->_api = $api;
     }

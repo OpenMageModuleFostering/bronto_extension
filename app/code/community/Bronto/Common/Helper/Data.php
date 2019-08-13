@@ -17,6 +17,7 @@ class Bronto_Common_Helper_Data
     const XML_PATH_TEST            = 'bronto/settings/test';
     const XML_PATH_NOTICES         = 'bronto/settings/notices';
     const XML_PATH_ENABLED         = 'bronto/settings/enabled';
+    const XML_PATH_TABLE_RUN       = 'bronto/settings/fix_script';
 
     /**
      * Formatting Settings
@@ -79,6 +80,18 @@ class Bronto_Common_Helper_Data
     public function getModuleEnabledText()
     {
         return $this->__('If you have changed your API token, please ensure you reconfigure all available options.');
+    }
+
+    /**
+     * Determines if the last time the table schema scan was a previous version
+     *
+     * @return bool
+     */
+    public function shouldRunFixScript()
+    {
+      return $this->getModuleVersion() != $this->getAdminScopedConfig(
+          self::XML_PATH_TABLE_RUN,
+          'default', $scopeId = 0);
     }
 
     /**
@@ -301,11 +314,6 @@ class Bronto_Common_Helper_Data
             return false;
         }
 
-        // If module is missing token, return false
-        if (!$this->getApiToken()) {
-            return false;
-        }
-
         // If requirements are not met, return false
         if (!$this->verifyRequirements($this->_getModuleName())) {
             return false;
@@ -407,7 +415,9 @@ class Bronto_Common_Helper_Data
             $token = $this->getApiToken($scope, $scopeId);
         }
 
-        return Bronto_Common_Model_Api::getInstance($token);
+        return Mage::getModel('bronto_common/api')
+            ->setToken($token)
+            ->getClient();
     }
 
     /**
@@ -456,13 +466,27 @@ class Bronto_Common_Helper_Data
         }
 
         try {
-            $api = new Bronto_Api($token, array('debug' => true));
-            $api->login();
+            $api = $this->getApi($token, $scope, $scopeId);
             $tokenRow = $api->getTokenInfo();
 
             return $tokenRow->hasPermissions(7);
         } catch (Exception $e) {
-            return false;
+            $helper = Mage::helper('bronto_common/api');
+            if (
+                !$helper->isStreamContextOverride() &&
+                (
+                    $e->getCode() == Bronto_Api_Exception::WSDL_PARSE_ERROR ||
+                    $e->getCode() == Bronto_Api_Exception::CONNECTION_RESET
+                )
+            ) {
+                $helper->setStreamContext(true);
+                return $this->validApiToken($token, $scope, $scopeId);
+            } else {
+                if ($helper->isStreamContextOverride()) {
+                    $helper->setStreamContext(false);
+                }
+                return false;
+            }
         }
     }
 
@@ -589,25 +613,6 @@ class Bronto_Common_Helper_Data
         }
 
         return ($modules[$moduleName]->active == 'true');
-    }
-
-    /**
-     * Get SOAP Options
-     *
-     * @return array
-     */
-    public function getSoapOptions()
-    {
-        // If Verify Module is enabled, use the settings from there
-        if ($this->isModuleInstalled('Bronto_Verify') && $this->isModuleActive()) {
-            return Mage::helper('bronto_verify')->getSoapOptions();
-        }
-
-        // Return Default Options
-        return array(
-            'retry_limit' => 2,
-            'debug'       => $this->isDebugEnabled(),
-        );
     }
 
     /**

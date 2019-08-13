@@ -17,12 +17,13 @@ class Bronto_Cron_Os_Script extends Mage_Shell_Abstract {
      * @var array
      */
     protected $_validCronTasks = array(
+        'api',
         'customer',
         'newsletter',
         'order',
         'reminder',
     );
-    
+
     /**
      * Retrieve Usage Help Message
      *
@@ -39,7 +40,7 @@ Usage:  php -f bronto/cron.php -- -a <action> <options>
 Defined actions:
 
   list                      Shows a list of all available tasks
-        
+
   run                       Runs the Cron processes
     -t --task <task>        Specifies an individual task to run
 
@@ -54,6 +55,9 @@ USAGE;
      */
     protected function _getTaskName($task)
     {
+        if ($task == 'api') {
+            $task = 'common/' . $task;
+        }
         return Mage::helper('bronto_' . $task)->getName();
     }
 
@@ -62,13 +66,14 @@ USAGE;
      */
     public function run() {
         $action = $this->getArg('action') ?: $this->getArg('a');
-        
+
         switch ($action) {
             case 'list':
                 echo <<<LIST
 
 Tasks:
 
+  api           {$this->_getTaskName('api')}
   customer      {$this->_getTaskName('customer')}
   newsletter    {$this->_getTaskName('newsletter')}
   order         {$this->_getTaskName('order')}
@@ -85,14 +90,14 @@ LIST;
                 break;
         }
     }
-    
+
     /**
      * Handle run action and get specified tasks
      */
     protected function _processCrons()
     {
         $task = $this->getArg('task') ?: $this->getArg('t');
-        
+
         if (!$task) {
             $this->_runCron($this->_validCronTasks);
         } else if (in_array($task, $this->_validCronTasks)) {
@@ -100,10 +105,10 @@ LIST;
         } else {
             $this->_showHelp();
         }
-        
+
         echo "Complete\r\n\r\n";
     }
-    
+
     /**
      * Run Each Specified Cron
      * @param array $tasks
@@ -115,6 +120,9 @@ LIST;
 
             try {
                 switch ($task) {
+                    case 'api':
+                        $result = Mage::getModel('bronto_common/observer')->processApiErrors();
+                        break;
                     case 'customer':
                         $result = Mage::getModel('bronto_customer/observer')->processCustomers(true);
                         break;
@@ -136,11 +144,11 @@ LIST;
             } catch (Exception $e) {
                 echo $e->getMessage();
             }
-            
+
             echo "\r\n{$this->_getTaskName($task)}: Finished \r\n\r\n";
         }
     }
-    
+
     /**
      * Translate the result array into a readable string
      * @param array $results
@@ -152,7 +160,7 @@ LIST;
         foreach ($results as $title => $count) {
             $display .= '  ' . $title . ' = ' . $count . ';';
         }
-        
+
         return $display;
     }
 }

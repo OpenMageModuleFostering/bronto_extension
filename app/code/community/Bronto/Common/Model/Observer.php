@@ -99,6 +99,60 @@ class Bronto_Common_Model_Observer
     }
 
     /**
+     * Cron to clear really old log entries
+     */
+    public function clearOldLogs($cron)
+    {
+        $helper = Mage::helper(self::SUPPORT_IDENTIFIER);
+        if ($helper->shouldClearLogs()) {
+            $helper->clearOldLogs();
+        }
+    }
+
+    /**
+     * Cron to process API errors
+     */
+    public function processApiErrors($cron = null)
+    {
+        $results = array(
+          'total' => 0,
+          'success' => 0,
+          'error' => 0
+        );
+
+        $helper = Mage::helper('bronto_common/api');
+        if (!$helper->isEnabled()) {
+            return $results;
+        }
+        $helper->writeDebug('Retrying API errors.');
+        $api = $helper->getApi();
+        try {
+            $api->login();
+        } catch (Exception $e) {
+            $helper->writeDebug('Skipping process because API is not taking calls: ' . $e->getMessage());
+            return $results;
+        }
+
+        $collection = Mage::getModel('bronto_common/error')->getCollection()
+            ->orderByOldest()
+            ->addAttemptThreshold($helper->getAttemptThreshold())
+            ->setPageSize($helper->getErrorThreshold());
+
+        foreach ($collection->getItems() as $error) {
+            try {
+                $error->attempt($error->getId());
+                $results['success']++;
+            } catch (Exception $e) {
+                $helper->writeError('An entry was place back in the queue: ' . $e->getMessage());
+                $results['error']++;
+            }
+            $results['total']++;
+        }
+
+        return $results;
+    }
+
+    /**
      * Validates that certain fields are not empty
      *
      * @param array   $groups

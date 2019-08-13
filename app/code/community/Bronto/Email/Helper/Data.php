@@ -86,11 +86,6 @@ class Bronto_Email_Helper_Data
      */
     public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        // Check if valid token is present
-        if (!$this->validApiToken(null, $scope, $scopeId)) {
-            return false;
-        }
-
         // Get Enabled Scope
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
@@ -159,7 +154,12 @@ class Bronto_Email_Helper_Data
      */
     public function canSendBronto(Mage_Core_Model_Email_Template $template, $storeId = null)
     {
-        if ($this->isEnabled('store', $storeId) && $this->canUseBronto('store', $storeId) && $template->getTemplateSendType() != 'magento') {
+        if (
+            $this->isEnabled('store', $storeId) &&
+            $this->canUseBronto('store', $storeId) &&
+            !is_null($template->getBrontoMessageId()) &&
+            $template->getTemplateSendType() != 'magento'
+        ) {
             return true;
         }
 

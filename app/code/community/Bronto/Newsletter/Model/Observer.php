@@ -284,7 +284,7 @@ class Bronto_Newsletter_Model_Observer
 
         $helper = Mage::helper('bronto_newsletter/contact');
 
-        $lists = $helper->getListIds($storeId);
+        $lists = $helper->getListIds('store', $storeId);
 
         // Get Subscriber Queue for store
         /* var $subscribers Bronto_Newsletter_Model_Mysql4_Queue_Collection */
@@ -311,7 +311,7 @@ class Bronto_Newsletter_Model_Observer
 
                 // Get List Details
                 foreach ($lists as $listId) {
-                    if ($list = $helper->getListData($listId, $storeId)) {
+                    if ($list = $helper->getListData($listId, 'store', $storeId)) {
                         $listName = $list->label;
                     } else {
                         Mage::throwException(
@@ -332,7 +332,7 @@ class Bronto_Newsletter_Model_Observer
                     Mage::throwException($bounceMessage);
                 }
 
-                if ($helper->getUpdateStatus()) {
+                if ($helper->getUpdateStatus('store', $storeId)) {
                     switch ($subscriber->getStatus()) {
                         case Bronto_Api_Contact::STATUS_UNCONFIRMED:
                         case Bronto_Api_Contact::STATUS_TRANSACTIONAL:

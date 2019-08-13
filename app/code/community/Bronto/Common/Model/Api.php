@@ -4,65 +4,109 @@
  * @category Bronto
  * @package  Common
  */
-class Bronto_Common_Model_Api extends Bronto_Api
+class Bronto_Common_Model_Api extends Mage_Core_Model_Abstract implements Bronto_Observer
 {
-    //  {{{ properties
+
+    protected static $_instances = array();
+    protected $_setOnce = false;
 
     /**
-     * @var array
+     * @see parent
      */
-    static private $_instances = array();
-
-    //  }}}
-    //  {{{ getInstance()
-
-    /**
-     * @param string $token
-     * @param bool   $debug
-     *
-     * @return Bronto_Common_Model_Api
-     * @access public
-     */
-    public static function getInstance($token, $debug = true)
+    protected function _construct()
     {
-        $token = trim($token);
+        parent::_construct();
+        $this->_init('bronto_common/api');
+    }
 
-        $options = Mage::helper('bronto_common')->getSoapOptions();
-
+    /**
+     * Gets the Bronto_Api client for for use in Magento
+     *
+     * @return Bronto_Api
+     */
+    public function getClient()
+    {
+        $token = $this->getToken();
         if (!isset(self::$_instances[$token])) {
-            Mage::helper('bronto_common')->writeDebug("Initiating API for token: {$token}");
-            self::$_instances[$token] = new self($token, $options);
+            $options = Mage::helper('bronto_common/api')->getSoapOptions();
+            if (empty($options['observer'])) {
+                $options['observer'] = $this;
+            }
+            self::$_instances[$token] = new Bronto_Api($token, $options);
         }
-
         return self::$_instances[$token];
     }
 
-    //  }}}
-    //  {{{ throwException()
+    /**
+     * @return bool
+     */
+    public function hasSetSession()
+    {
+        return $this->_setOnce;
+    }
 
     /**
-     * @param string|Exception $exception
-     * @param string           $message
-     * @param string           $code
+     * @see parent
      *
-     * @return void
-     * @access public
-     * @throws Bronto_Api_Exception
+     * @param Bronto_Api $api
      */
-    public function throwException($exception, $message = null, $code = null)
+    public function onBeforeLogin($api)
     {
-        try {
-            parent::throwException($exception, $message, $code);
-        } catch (Bronto_Api_Exception $e) {
-            if ($request = $e->getRequest()) {
-                Mage::helper('bronto_common')->writeDebug(var_export($request, true));
+        if ($this->hasSetSession()) {
+            $this->unsSessionId();
+            Mage::helper('bronto_common')->writeDebug('Session ID expired for token: ' . $this->getToken());
+            $this->_setOnce = false;
+        } else {
+            try {
+                parent::load($api->getToken());
+                if ($this->hasSessionId()) {
+                    $api->setSessionId($this->getSessionId());
+                    Mage::helper('bronto_common')->writeDebug('Hitting API sessionId cache for token: ' . $this->getToken());
+                    $this->_setOnce = true;
+                }
+            } catch (Exception $e) {
+                // Swallow read exceptions, in case of FTP install
+                Mage::helper('bronto_common')->writeError('Failed to read from api session table: ' . $e->getMessage());
             }
-            if ($response = $e->getResponse()) {
-                Mage::helper('bronto_common')->writeDebug(var_export($response, true));
-            }
-            throw $e;
         }
     }
 
-    //  }}}
+    /**
+     * @see parent
+     *
+     * @param Bronto_Api $api
+     * @param string $sessionId
+     */
+    public function onAfterLogin($api, $sessionId)
+    {
+        try {
+            $this
+              ->setToken($api->getToken())
+              ->setSessionId($sessionId)
+              ->setCreatedAt(Mage::getSingleton('core/date')->gmtDate())
+              ->save();
+            Mage::helper('bronto_common')->writeDebug("Initiating API for token: {$this->getToken()}");
+        } catch (Exception $e) {
+            Mage::helper('bronto_common')->writeError("Failed to update API {$this->getToken()} Session: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * @see parent
+     *
+     * @param Bronto_Api $api
+     * @param Bronto_Api_Exception $exception
+     */
+    public function onError($api, $exception)
+    {
+        if ($exception instanceOf Bronto_Api_Exception) {
+            if ($request = $exception->getRequest()) {
+                Mage::helper('bronto_common')->writeDebug(var_export($request, true));
+            }
+
+            if ($response = $exception->getResponse()) {
+                Mage::helper('bronto_common')->writeDebug(var_export($response, true));
+            }
+        }
+    }
 }

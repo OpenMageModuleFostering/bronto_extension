@@ -205,9 +205,13 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
 
                 /* @var $deliveryObject Bronto_Api_Delivery */
                 Mage::helper($this->_helper)->writeDebug('  Getting Delivery Object...');
-                $deliveryObject = Mage::helper($this->_helper)
-                    ->getApi(null, 'store', $variables['store']->getId())
-                    ->getDeliveryObject();
+                $client = Mage::helper($this->_helper)
+                    ->getApi(null, 'store', $variables['store']->getId());
+
+                $deliveryObject = Mage::getModel('bronto_common/delivery', array(
+                    'api' => $client,
+                    'email_class' => $this->_emailClass()
+                ));
                 $deliveryCount++;
                 Mage::helper($this->_helper)->writeDebug('    Delivery Object Created Successfully');
 
@@ -405,6 +409,43 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
     public function getLastDeliveryId()
     {
         return $this->_lastDeliveryId;
+    }
+
+    /**
+     * Allows the retryer to trigger
+     *
+     * @param Bronto_Api_Delivery $deliveryObject
+     */
+    public function triggerBeforeAfterSend(Bronto_Api_Delivery_Row $delivery)
+    {
+        $contactObject = $delivery->getApi()->getContactObject();
+        $messageObject = $delivery->getApi()->getMessageObject();
+
+        $contact = $contactObject->createRow();
+        $message = $messageObject->createRow();
+
+        $message->id = $delivery->messageId;
+        $contact->id = $delivery->recipients[0]['id'];
+
+        try {
+            $message->read();
+            $contact->read();
+
+            $this->_beforeSend($contact, $message);
+            $this->_afterSend(true, null, $delivery);
+        } catch (Exception $e) {
+            Mage::helper('bronto_common')->writeError('Failed to trigger email send: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * The string model class associating this email template
+     *
+     * @return string
+     */
+    protected function _emailClass()
+    {
+        return 'bronto_common/email_template';
     }
 
     /**

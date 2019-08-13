@@ -131,7 +131,8 @@ class Bronto_Emailcapture_Model_Queue extends Mage_Core_Model_Abstract
     {
         $ttl = Mage::helper('bronto_emailcapture')->getCookieTtl(false);
 
-        $where = array('updated_at <' => date(strtotime('-' . $ttl . 'days')));
-        $this->_getResource()->getWriteAdapter()->delete($this->getTable('bronto_emailcapture/queue'), $where);
+        $where = array('updated_at < ?' => date(strtotime('-' . $ttl . 'days')));
+        $resource = Mage::getSingleton('core/resource');
+        $this->_getResource()->getWriteAdapter()->delete($resource->getTableName('bronto_emailcapture/queue'), $where);
     }
 }

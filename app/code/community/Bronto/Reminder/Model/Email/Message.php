@@ -17,6 +17,14 @@ class Bronto_Reminder_Model_Email_Message extends Bronto_Common_Model_Email_Temp
     protected $_apiLogFile = 'bronto_reminder_api.log';
 
     /**
+     * @see parent
+     */
+    protected function _emailClass()
+    {
+        return 'bronto_reminder/email_message';
+    }
+
+    /**
      * Log about the functionality of sending the email before it goes out
      *
      * @param Bronto_Api_Contact_Row $contact
