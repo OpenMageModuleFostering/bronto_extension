@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <bronto module="bronto_common">
+            <label>Bronto</label>
+            <sort_order>999</sort_order>
+        </bronto>
+    </tabs>
+    <sections>
+        <bronto module="bronto_common">
+            <label>General</label>
+            <tab>bronto</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>100</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <about>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_common/adminhtml_system_config_about</frontend_model>
+                    <sort_order>0</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                </about>
+                <settings>
+                    <label>Settings</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <api_token>
+                            <label>API Token</label>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field_apitoken</frontend_model>
+                            <backend_model>bronto_common/system_config_backend_token</backend_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <validate>validate-length minimum-length-36</validate>
+                        </api_token>
+                        <debug>
+                            <label>Debug</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Allow Bronto modules to write logs in <code>var/log</code>.]]></comment>
+                        </debug>
+                        <verbose>
+                            <depends><debug>1</debug></depends>
+                            <label>Verbose Log Output</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>25</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[If enabled, debug logs will also contain each API call.]]></comment>
+                        </verbose>
+                        <test>
+                            <label>Test Mode</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[Email sent with <a href="http://community.bronto.com/api/v4/objects/general/deliveryobject" target="_blank"><code>type=test</code></a> only to existing Contacts.]]></comment>
+                        </test>
+                        <notices>
+                            <label>Error Notices</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Show warnings/errors as site notices.</comment>
+                        </notices>
+                    </fields>
+                </settings>
+            </groups>
+        </bronto>
+    </sections>
+</config>

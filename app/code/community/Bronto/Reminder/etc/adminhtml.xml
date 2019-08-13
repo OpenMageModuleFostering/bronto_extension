@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <promo>
+                        <children>
+                            <bronto_reminder module="bronto_reminder">
+                                <title>Bronto Reminder Emails</title>
+                                <sort_order>20</sort_order>
+                            </bronto_reminder>
+                        </children>
+                    </promo>
+                    <system>
+                       <children>
+                           <config>
+                               <children>
+                                   <bronto_reminder module="bronto_reminder">
+                                       <title>Bronto Reminder Emails Section</title>
+                                   </bronto_reminder>
+                               </children>
+                           </config>
+                       </children>
+                   </system>
+               </children>
+           </admin>
+       </resources>
+    </acl>
+    <menu>
+        <promo>
+            <children>
+                <bronto_reminder module="bronto_reminder">
+                    <title>Bronto Reminder Emails</title>
+                    <action>adminhtml/reminders</action>
+                    <sort_order>20</sort_order>
+                    <depends>
+                        <module>Bronto_Reminder</module>
+                        <config>bronto_reminder/settings/enabled</config>
+                    </depends>
+                    <resource>bronto_reminder/settings</resource>
+                </bronto_reminder>
+            </children>
+        </promo>
+    </menu>
+</config>

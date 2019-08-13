@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category  Bronto
+ * @package   Bronto_ConflictChecker
+ * @author    Jamie Kahgee <jamie.kahgee@atlanticbt.com>
+ * @copyright 2012 Atlantic BT
+ * @license   http://www.atlanticbt.com/ Atlantic BT
+ */
+-->
+<config>
+    <modules>
+        <Bronto_ConflictChecker>
+            <version>0.1.0</version>
+        </Bronto_ConflictChecker>
+    </modules>
+
+    <global>
+        <blocks>
+            <bronto_conflictchecker>
+				<class>Bronto_ConflictChecker_Block</class>
+			</bronto_conflictchecker>
+        </blocks>
+
+        <helpers>
+            <bronto_conflictchecker>
+                <class>Bronto_ConflictChecker_Helper</class>
+            </bronto_conflictchecker>
+        </helpers>
+
+        <models>
+            <bronto_conflictchecker>
+                <class>Bronto_ConflictChecker_Model</class>
+                <resourceModel>bronto_conflictchecker_mysql4</resourceModel>
+            </bronto_conflictchecker>
+            <bronto_conflictchecker_mysql4>
+                <class>Bronto_ConflictChecker_Model_Mysql4</class>
+            </bronto_conflictchecker_mysql4>
+        </models>
+    </global>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <bronto_conflictchecker before="Mage_Adminhtml">Bronto_ConflictChecker_Adminhtml</bronto_conflictchecker>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+
+    <phpunit>
+        <suite>
+            <modules>
+                <Bronto_ConflictChecker />
+            </modules>
+        </suite>
+    </phpunit>
+</config>

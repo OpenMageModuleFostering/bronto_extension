@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category  Bronto
+ * @package   Bronto_Roundtrip
+ * @author    Adam Daniels <adam.daniels@atlanticbt.com>
+ * @copyright 2012 Adam Daniels
+ * @license   http://www.atlanticbt.com/ Atlantic BT
+ */
+-->
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <bronto_roundtrip module="bronto_roundtrip">
+                                        <title>Bronto Rountrip Verification</title>
+                                    </bronto_roundtrip>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

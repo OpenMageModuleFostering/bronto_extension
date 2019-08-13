@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<layout>
+    <adminhtml_promo_quote_edit>
+        <reference name="content">
+            <block type="bronto_reminder/adminhtml_promo_notice" name="promo_edit_notice"/>
+        </reference>
+    </adminhtml_promo_quote_edit>
+</layout>

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category  Bronto
+ * @package PermissionChecker
+ * @author    Jamie Kahgee <jamie.kahgee@atlanticbt.com>
+ * @copyright 2012 Atlantic BT
+ * @license   http://www.atlanticbt.com/ Atlantic BT
+ */
+-->
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <permission_checker translate="title" module="bronto_permissionchecker">
+                                        <title>Permission Checker</title>
+                                        <sort_order>10</sort_order>
+                                    </permission_checker>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

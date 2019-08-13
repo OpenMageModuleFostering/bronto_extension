@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Bronto_Extension",
+    "type": "magento-module",
+    "license": "OSL",
+    "homepage": "",
+    "description": "Drive sales with targeted lifecycle marketing campaigns that convert one-time buyers into repeat customers.",
+    "authors": [
+    {
+        "name": "Dave Johnson",
+        "email": "dave.johnson@bronto.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

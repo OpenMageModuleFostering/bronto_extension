@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bronto_PermissionChecker>
+            <active>true</active>
+            <codePool>community</codePool>
+        </Bronto_PermissionChecker>
+    </modules>
+</config>
