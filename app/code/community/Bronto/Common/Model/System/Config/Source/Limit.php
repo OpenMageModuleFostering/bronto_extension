@@ -12,6 +12,8 @@ class Bronto_Common_Model_System_Config_Source_Limit
     public function toOptionArray()
     {
         return array(
+            10    => 10,
+            25    => 25,
             50    => 50,
             100   => 100,
             250   => 250,

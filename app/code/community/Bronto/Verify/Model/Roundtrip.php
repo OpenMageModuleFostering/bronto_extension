@@ -48,7 +48,8 @@ class Bronto_Verify_Model_Roundtrip
         ob_end_clean();
 
         // Set setting and return results
-        if (200 == $retcode) {
+        // If the token is valid, we can safely assume the API is up
+        if (200 == $retcode || Mage::helper('bronto_verify/apitoken')->getStatus()) {
             $this->_helper->writeDebug('Connection status SUCCESS');
             $this->_helper->setStatus($this->_helper->getPath('roundtrip_status'), '1');
         } else {

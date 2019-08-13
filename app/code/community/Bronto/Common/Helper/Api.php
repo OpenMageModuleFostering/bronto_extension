@@ -11,6 +11,15 @@ class Bronto_Common_Helper_Api extends Bronto_Common_Helper_Data
     const XML_PATH_FREQUENCY_MIN = 'bronto_api/settings/minutes';
     const XML_PATH_ERROR_THRES   = 'bronto_api/setting/limit';
 
+
+    const XML_PATH_QUEUE_ENABLED       = 'bronto_api/queue_settings/enabled';
+    const XML_PATH_QUEUE_MAGE_CRON     = 'bronto_api/queue_settings/mage_cron';
+    const XML_PATH_QUEUE_LIMIT         = 'bronto_api/queue_settings/limit';
+    const XML_PATH_QUEUE_TIME          = 'bronto_api/queue_settings/time';
+    const XML_PATH_QUEUE_INTERVAL      = 'bronto_api/queue_settings/interval';
+    const XML_PATH_QUEUE_FREQUENCY     = 'bronto_api/queue_settings/frequency';
+    const XML_PATH_QUEUE_FREQUENCY_MIN = 'bronto_api/queue_settings/minutes';
+
     const XML_PATH_SOAP_CLIENT             = 'bronto_api/soap_options/soap_client';
     const XML_PATH_API_OBSERVER            = 'bronto_api/soap_options/observer';
     const XML_PATH_API_RETRYER             = 'bronto_api/soap_options/retryer';
@@ -34,6 +43,16 @@ class Bronto_Common_Helper_Api extends Bronto_Common_Helper_Data
     }
 
     /**
+     * Gets the Canonical name of the Send Queue
+     *
+     * @return string
+     */
+    public function getSendName()
+    {
+        return $this->__('Bronto Send Queue');
+    }
+
+    /**
      * Checks if the api retryer is enabled
      *
      * @return bool
@@ -41,6 +60,42 @@ class Bronto_Common_Helper_Api extends Bronto_Common_Helper_Data
     public function isEnabled($scope = 'default', $scopeId = 0)
     {
         return (bool) $this->getAdminScopedConfig(self::XML_PATH_ENABLED);
+    }
+
+    /**
+     * Checked if the send queue is enabled
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return bool
+     */
+    public function canUseQueue($scope = 'default', $scopeId = 0)
+    {
+        return (bool) $this->getAdminScopedConfig(self::XML_PATH_QUEUE_ENABLED, $scope, $scopeId);
+    }
+
+    /**
+     * Check if the cron is magento
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return bool
+     */
+    public function queueCanUseMageCron($scope = 'default', $scopeId = 0)
+    {
+        return (bool) $this->getAdminScopedConfig(self::XML_PATH_QUEUE_MAGE_CRON, $scope, $scopeId);
+    }
+
+    /**
+     * Gets the send queue threshold
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return int
+     */
+    public function getSendLimit($scope = 'default', $scopeId = 0)
+    {
+        return (int) $this->getAdminScopedConfig(self::XML_PATH_QUEUE_LIMIT, $scope, $scopeId);
     }
 
     /**

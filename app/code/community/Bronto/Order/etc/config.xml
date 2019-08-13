@@ -130,6 +130,7 @@
                 <minutes>0</minutes>
                 <limit>250</limit>
                 <sync_limit>1000</sync_limit>
+                <bulk_limit>100</bulk_limit>
             </settings>
             <import>
                 <description>short_description</description>

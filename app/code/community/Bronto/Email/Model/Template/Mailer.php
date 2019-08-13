@@ -29,28 +29,8 @@ class Bronto_Email_Model_Template_Mailer
             return parent::send();
         }
 
-        // Load Bronto Message
-        $store = Mage::getModel('core/store')->load($this->getStoreId());
-
-        // Load Bronto Message
-        /* @var $messageObject Bronto_Api_Message */
-        $messageObject = Mage::helper('bronto_email/message')->getApi(
-            null,
-            'store',
-            $store->getId()
-        )->getMessageObject();
-
-        // Load Message
-        try {
-            /* @var $message Bronto_Api_Message_Row */
-            $message     = $messageObject->createRow();
-            $message->id = $emailTemplate->getBrontoMessageId();
-            $message->read();
-        } catch (Exception $e) {
-            Mage::helper('bronto_email')->writeDebug('Falling Back to Magento Sending: ' . $e);
-
-            return parent::send();
-        }
+        $message = new Bronto_Api_Message_Row();
+        $message->id = $emailTemplate->getBrontoMessageId();
 
         // Send all emails from corresponding list
         while (!empty($this->_emailInfos)) {

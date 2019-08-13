@@ -111,6 +111,7 @@ class Bronto_Order_Model_Observer
         $basePrefix      = $this->_helper->getPriceAttribute('store', $store->getId());
         $inclTaxes       = $this->_helper->isTaxIncluded('store', $store->getId());
         $inclDiscounts   = $this->_helper->isDiscountIncluded('store', $store->getId());
+        $uploadMax       = $this->_helper->getBulkLimit('store', $store->getId());
         $orderCache      = array();
 
         // Cycle through each order queue row
@@ -227,22 +228,34 @@ class Bronto_Order_Model_Observer
                             /* @var $product Mage_Catalog_Model_Product */
                             $product = Mage::getModel('catalog/product')->setStoreId($storeId)->load($item->getProductId());
 
-                            // If the product type is simple and the description
-                            // is empty, then attempt to find a parent product
-                            // to backfill the description.
-                            if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE && !$product->getData($descriptionAttr)) {
-                                 $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
-                                 if (isset($parentIds[0])) {
-                                     $parentProduct = Mage::getModel('catalog/product')->setStoreId($storeId)->load($parentIds[0]);
-                                     $product->setData($descriptionAttr, $parentProduct->getData($descriptionAttr));
-                                 }
-                            }
-
                             // If there is a parent product, use that to get category ids
                             if ($parent) {
                                 $categoryIds = $parent->getCategoryIds();
                             } else {
                                 $categoryIds = $product->getCategoryIds();
+                            }
+
+                            // If the product type is simple and the description
+                            // is empty, then attempt to find a parent product
+                            // to backfill the description.
+                            if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE && !$product->getData($descriptionAttr)) {
+                                $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
+                                if (isset($parentIds[0])) {
+                                    $parentProduct = Mage::getModel('catalog/product')->setStoreId($storeId)->load($parentIds[0]);
+                                    $product->setData($descriptionAttr, $parentProduct->getData($descriptionAttr));
+                                }
+                            }
+
+                            if (empty($categoryIds)) {
+                                if (empty($parentProduct)) {
+                                    $parentIds = Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId());
+                                    if (isset($parentIds[0])) {
+                                        $parentProduct = Mage::getModel('catalog/product')->setStoreId($storeId)->load($parentIds[0]);
+                                    }
+                                }
+                                if ($parentProduct) {
+                                    $categoryIds = $parentProduct->getCategoryIds();
+                                }
                             }
 
                             // Cycle through category ids to pull category details
@@ -285,7 +298,7 @@ class Bronto_Order_Model_Observer
 //                    $orderRow->save();
 
                     // Flush every 10 orders
-                    if ($result['total'] % 100 === 0) {
+                    if ($result['total'] % $uploadMax === 0) {
                         $result     = $this->_flushOrders($orderObject, $orderCache, $result);
                         $orderCache = array();
                     }
@@ -304,15 +317,15 @@ class Bronto_Order_Model_Observer
 
         // Final flush (for any we miss)
         if (!empty($orderCache)) {
-            $results = $this->_flushOrders($orderObject, $orderCache, $result);
+            $result = $this->_flushOrders($orderObject, $orderCache, $result);
         }
 
         // Log results
-        $this->_helper->writeDebug('  Success: ' . $results['success']);
-        $this->_helper->writeDebug('  Error:   ' . $results['error']);
-        $this->_helper->writeDebug('  Total:   ' . $results['total']);
+        $this->_helper->writeDebug('  Success: ' . $result['success']);
+        $this->_helper->writeDebug('  Error:   ' . $result['error']);
+        $this->_helper->writeDebug('  Total:   ' . $result['total']);
 
-        return $results;
+        return $result;
     }
 
     /**

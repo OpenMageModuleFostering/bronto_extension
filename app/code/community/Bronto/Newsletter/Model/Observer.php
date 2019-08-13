@@ -39,6 +39,15 @@ class Bronto_Newsletter_Model_Observer
     }
 
     /**
+     * Observes module becoming enabled and displays message warning user to configure settings
+     * @param Varien_Event_Observer $observer
+     */
+    public function watchEnableAction(Varien_Event_Observer $observer)
+    {
+        Mage::getSingleton('adminhtml/session')->addNotice(Mage::helper('bronto_newsletter')->__(Mage::helper('bronto_newsletter')->getModuleEnabledText()));
+    }
+
+    /**
      * Get Bronto Contact Row via Email address
      *
      * @param string $email
@@ -96,7 +105,7 @@ class Bronto_Newsletter_Model_Observer
             /* @var $subscriber Mage_Newsletter_Model_Subscriber */
             $subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
             if (!$subscriber->hasSubscriberEmail() && $isSubscribed == Bronto_Api_Contact::STATUS_TRANSACTIONAL) {
-                $this->_helper->writeError('Unable to create subscriber object');
+                $this->_helper->writeDebug('Unable to create subscriber object');
 
                 return false;
             }
@@ -199,7 +208,7 @@ class Bronto_Newsletter_Model_Observer
             }
 
             // Send to queue
-            $this->_saveToQueue($subscriber, Mage::app()->getStore()->getId());
+            $this->_saveToQueue($subscriber, $subscriber->getStoreId());
         } catch (Exception $e) {
             $this->_helper->writeError($e);
         }
@@ -234,11 +243,15 @@ class Bronto_Newsletter_Model_Observer
 
         // If ContactQueue status doesn't match subscriber status, replace it
         if ($status != $contactQueue->getStatus()) {
+            if ($subscriber->getSubscribeSource() == 'popup') {
+                $contactQueue->setImported(2);
+            } else {
+                $contactQueue->setImported(0);
+            }
             $contactQueue->setSubscriberEmail($subscriber->getEmail())
                 ->setStatus($status)
                 ->setMessagePreference('html')
                 ->setSource('api')
-                ->setImported(0)
                 ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
                 ->save();
         }
@@ -379,8 +392,10 @@ class Bronto_Newsletter_Model_Observer
 
                 $result['success']++;
             } catch (Exception $e) {
-                // 315 means contact on suppression list, so suppress
-                if (315 == $e->getCode()) {
+                // 303 = invalid email address
+                // 315 = on suppression list
+                // 317 = email over 100 characters in length
+                if (in_array($e->getCode(), array(303, 315, 317))) {
                     $subscriber->setBrontoSuppressed($e->getMessage());
                 }
 

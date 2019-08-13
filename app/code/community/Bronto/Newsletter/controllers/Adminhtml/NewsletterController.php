@@ -61,30 +61,53 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
         $adapter  = $resource->getWriteAdapter();
 
         $queue_id = $this->getRequest()->getParam('queue_id', false);
+        $suppressed = $this->getRequest()->getParam('suppressed', false);
 
         try {
+            $update = array('bronto_suppressed' => null);
+            $where = array();
             if ($queue_id) {
-                $adapter->update(
-                    $resource->getTable('bronto_newsletter/queue'),
-                    array(
-                        'imported'          => null,
-                        'bronto_suppressed' => null,
-                    ),
-                    array('queue_id = ?' => $queue_id)
-                );
+                $update['imported'] = null;
+                $where['queue_id = ?'] = $queue_id;
+            } else if ($suppressed) {
+                $update['imported'] = null;
+                $where['bronto_suppressed IS NOT NULL'] = '';
             } else {
-                $adapter->update(
-                    $resource->getTable('bronto_newsletter/queue'),
-                    array(
-                        'imported'          => 2,
-                        'bronto_suppressed' => null,
-                    ),
-                    array('imported' => 1)
-                );
+                $update['imported'] = 2;
+                $where['imported'] = 1;
             }
+            $adapter->update(
+                $resource->getTable('bronto_newsletter/queue'),
+                $update,
+                $where
+            );
         } catch (Exception $e) {
             $helper->writeError($e);
             $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
+        }
+
+        $returnParams = array('section' => 'bronto_newsletter');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
+    }
+
+    /**
+     * Marks all Subscribers as imported
+     */
+    public function markAction()
+    {
+        $helper = Mage::helper('bronto_newsletter');
+        $resource = Mage::getResourceModel('bronto_newsletter/queue');
+        $adapter = $resource->getWriteAdapter();
+
+        try {
+            $adapter->update(
+                $resource->getTable('bronto_newsletter/queue'),
+                array('imported' => 1),
+                array('bronto_suppressed IS NULL' => ''));
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Mark All failed: ' . $e->getMessage());
         }
 
         $returnParams = array('section' => 'bronto_newsletter');

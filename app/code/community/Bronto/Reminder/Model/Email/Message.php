@@ -25,6 +25,14 @@ class Bronto_Reminder_Model_Email_Message extends Bronto_Common_Model_Email_Temp
     }
 
     /**
+     * @see parent
+     */
+    protected function _queuable()
+    {
+        return false;
+    }
+
+    /**
      * Log about the functionality of sending the email before it goes out
      *
      * @param Bronto_Api_Contact_Row $contact

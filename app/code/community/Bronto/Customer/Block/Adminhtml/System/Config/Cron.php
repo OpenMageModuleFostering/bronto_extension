@@ -16,6 +16,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
     {
         $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_sync'));
         $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_reset'));
+        $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_mark'));
         $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_run'));
 
         return parent::_prepareLayout();

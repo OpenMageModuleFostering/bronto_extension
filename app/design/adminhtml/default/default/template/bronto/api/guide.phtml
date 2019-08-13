@@ -138,9 +138,51 @@
             autoFocus: true, closeOnEscape: true,
             description: "<?php echo $this->__('This is where you can verify the status of the API Token and the API Connection.  Just click the `Verify Now` button to the right of each one to update the status.') ?>",
             id: "bronto_api-api_status",
-            next: "bronto_api-mage_cron",
+            next: "bronto_api-send_mage_cron",
             position: 9,
             title: "<?php echo $this->__('API Status') ?>",
+            width: 200
+        });
+
+        /**
+         * Explain Using Magento Cron
+         */
+        <?php $advancedCronLink = $this->helper('bronto_common')->getScopeUrl('/system_config/edit/section/bronto_verify'); ?>
+        guiders.createGuider({
+            attachTo: '#row_bronto_api_queue_settings_mage_cron',
+            buttons: [
+                {name: "<?php echo $this->__('Back') ?>"},
+                {name: "<?php echo $this->__('Next') ?>"},
+                {name: "<?php echo $this->__('Close') ?>"}
+            ],
+            autoFocus: true, closeOnEscape: true,
+            description: "<?php echo $this->__('The `Use Magento Cron` setting, when set to No, allows you to create your own crontab entry on your server instead of using Magento\'s cron system.  You should only change this if you are experiencing issues where the cron job for this module fails to run due to too many jobs.%sYou can find more details under the %s, including examples of how to configure the cron job.', '<br /><br />', '<a href=\"' . $advancedCronLink . '\" title=\"Advanced &raquo; Cron Settings\">Advanced Tab</a>') ?>",
+            id: "bronto_api-send_mage_cron",
+            next: "bronto_api-send_cron_table",
+            position: 10,
+            title: "<?php echo $this->__('Send Cron Options') ?>",
+            width: 200
+        });
+
+        /**
+         * Cron Table
+         */
+        guiders.createGuider({
+            attachTo: '.bronto-cron-table',
+            buttons: [
+                {name: "<?php echo $this->__('Back') ?>"},
+                {name: "<?php echo $this->__('Next') ?>"},
+                {name: "<?php echo $this->__('Close') ?>"}
+            ],
+            autoFocus: true,
+            closeOnEscape: true,
+            highlight: '.bronto-cron-table',
+            overlay: true,
+            description: "<?php echo $this->__('This table shows you the recent history of the Cron Jobs that are pending, running, have successfully completed, or have failed upon execution.') ?>",
+            id: "bronto_api-send_cron_table",
+            next: "bronto_api-mage_cron",
+            position: 10,
+            title: "<?php echo $this->__('Send Cron Table') ?>",
             width: 200
         });
 
@@ -160,7 +202,7 @@
             id: "bronto_api-mage_cron",
             next: "bronto_api-attempt_threshold",
             position: 10,
-            title: "<?php echo $this->__('Cron Options') ?>",
+            title: "<?php echo $this->__('Retry Cron Options') ?>",
             width: 200
         });
 
@@ -183,12 +225,11 @@
             width: 200
         });
 
-
         /**
          * Cron Table
          */
         guiders.createGuider({
-            attachTo: '.bronto-cron-table',
+            attachTo: '#bronto_api_settings ~ .bronto-cron',
             buttons: [
                 {name: "<?php echo $this->__('Back') ?>"},
                 {name: "<?php echo $this->__('Next') ?>"},
@@ -202,7 +243,7 @@
             id: "bronto_api-cron_table",
             next: "bronto_api-soap_options",
             position: 10,
-            title: "<?php echo $this->__('Cron Table') ?>",
+            title: "<?php echo $this->__('Retry Cron Table') ?>",
             width: 200
         });
 

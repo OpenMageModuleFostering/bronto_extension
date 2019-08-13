@@ -36,6 +36,34 @@ class Bronto_Email_Model_Observer
     }
 
     /**
+     * Observes the module becoming enabled and moves custom templates to the
+     * bronto email table
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function moveOldTemplates(Varien_Event_Observer $observer)
+    {
+        $helper = Mage::helper('bronto_email');
+        $settings = $helper->getTemplatePaths();
+        $scopeParams = $helper->getScopeParams();
+        foreach ($settings as $setting) {
+            $data = $helper->getAdminScopedConfig($setting);
+            if (str_replace('/', '_', $setting) == $data) {
+                continue;
+            }
+            $model = Mage::getModel('bronto_email/message')->load($data);
+            if (!$model->getId()) {
+                try {
+                    Mage::getModel('bronto_email/template_import')
+                        ->importTemplate($data, $scopeParams['store_id'], true);
+                } catch (Exception $e) {
+                    $helper->writeError("Failed to import message {$e->getMessage()}");
+                }
+            }
+        }
+    }
+
+    /**
      * Grab Config Data Object before save and handle the 'Create New...' value for
      * fields that were generated dynamically
      *

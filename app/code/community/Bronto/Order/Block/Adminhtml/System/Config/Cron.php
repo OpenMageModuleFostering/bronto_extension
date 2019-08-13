@@ -23,6 +23,7 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     {
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_sync'));
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_reset'));
+        $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_mark'));
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_run'));
 
         return parent::_prepareLayout();

@@ -20,7 +20,7 @@ class Bronto_Email_Model_System_Config_Source_Email_Template extends Mage_Adminh
             $collection = Mage::getModel('bronto_email/template')->getCollection();
 
             // Apply conditional logic to handle 1.9 overriding collection _construct
-            if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+            if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
                 $collection->getSelect()->joinLeft(
                     $brontoTable,
                     "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
@@ -36,7 +36,7 @@ class Bronto_Email_Model_System_Config_Source_Email_Template extends Mage_Adminh
                         $store   = Mage::app()->getStore($storeCode);
                         $storeId = $store->getId();
 
-                        $collection->addFieldToFilter('store_id', $storeId);
+                        $collection->addStoreViewFilter($storeId);
                     }
                 }
 

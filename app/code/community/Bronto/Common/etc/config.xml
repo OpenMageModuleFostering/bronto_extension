@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Common>
-            <version>2.2.2</version>
+            <version>2.3.0</version>
         </Bronto_Common>
     </modules>
     <global>
@@ -30,6 +30,9 @@
                   <error>
                       <table>bronto_common_api_errors</table>
                   </error>
+                  <queue>
+                      <table>bronto_common_api_send_queue</table>
+                  </queue>
               </entities>
             </bronto_common_mysql4>
         </models>
@@ -134,6 +137,11 @@
                 <using_solution_partner>1</using_solution_partner>
             </support>
         </bronto>
+        <bronto_popup>
+            <settings>
+                <subscribe>0</subscribe>
+            </settings>
+        </bronto_popup>
         <bronto_api>
             <settings>
                 <enabled>0</enabled>
@@ -144,6 +152,14 @@
                 <limit>50</limit>
                 <threshold>5</threshold>
             </settings>
+            <queue_settings>
+                <enabled>0</enabled>
+                <mage_cron>1</mage_cron>
+                <frequency>I</frequency>
+                <interval>5</interval>
+                <minutes>0</minutes>
+                <limit>50</limit>
+            </queue_settings>
             <soap_options>
                 <soap_client>Bronto_SoapClient</soap_client>
                 <observer>Bronto_Common_Model_Api</observer>
@@ -164,6 +180,11 @@
                     <model>bronto_common/observer::processApiErrors</model>
                 </run>
             </bronto_common_errors>
+            <bronto_common_queue>
+                <run>
+                    <model>bronto_common/observer::processSendQueue</model>
+                </run>
+            </bronto_common_queue>
             <bronto_common_delete_archives>
                 <schedule>
                     <cron_expr>0 0 * * *</cron_expr>

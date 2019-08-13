@@ -12,6 +12,8 @@ class Bronto_Email_Helper_Data
     const XML_PATH_USE_BRONTO         = 'bronto_email/settings/use_bronto';
     const XML_PATH_LOG_ENABLED        = 'bronto_email/settings/log_enabled';
     const XML_PATH_LOG_FIELDS_ENABLED = 'bronto_email/settings/log_fields_enabled';
+    const XML_PATH_DEFAULT_COUPON     = 'bronto_email/settings/default_coupon';
+    const XML_PATH_DEFAULT_REC        = 'bronto_email/settings/default_recommendation';
 
     /**
      * Xml path to email template nodes
@@ -111,6 +113,30 @@ class Bronto_Email_Helper_Data
     }
 
     /**
+     * Gets the default rule id
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return string
+     */
+    public function getDefaultRule($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_DEFAULT_COUPON, $scope, $scopeId);
+    }
+
+    /**
+     * Gets the default product recommendation
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return string
+     */
+    public function getDefaultRecommendation($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_DEFAULT_REC, $scope, $scopeId);
+    }
+
+    /**
      * Get Config setting for sending through bronto
      *
      * @param string $scope
@@ -201,7 +227,7 @@ class Bronto_Email_Helper_Data
         $emails    = array();
         $templates = Mage::getModel('bronto_email/template')->getCollection();
 
-        if ($this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+        if ($this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
             $templateTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/template');
             $brontoTable   = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
             $templates->getSelect()->joinLeft(

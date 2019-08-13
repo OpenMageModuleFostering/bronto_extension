@@ -76,6 +76,60 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
     }
 
     /**
+     * Gets the the global recommendation or the one configured for the email
+     *
+     * @param int $storeId
+     * @return Bronto_Product_Model_Recommendation
+     */
+    protected function _getRecommendation($storeId = null)
+    {
+        $recommendation = Mage::getModel('bronto_product/recommendation');
+        $recommendationId = $this->getProductRecommendation();
+        if ($recommendationId) {
+            if ($recommendation->load($recommendationId)->hasEntityId()) {
+                return $recommendation;
+            }
+        }
+
+        if ($this->_helper == 'bronto_email') {
+            $recommendationId = Mage::helper('bronto_email')->getDefaultRecommendation('store', $storeId);
+            if ($recommendationId) {
+                $recommendation->load($recommendationId);
+            }
+        }
+
+        return $recommendation;
+    }
+
+    /**
+     * Gets the global rule id or the one configured for the email
+     *
+     * @param int $storeId
+     * @return int
+     */
+    protected function _getSalesRule($storeId = null)
+    {
+        $rule = Mage::getModel('salesrule/rule');
+        $ruleId = $this->getSalesRule();
+        if ($ruleId) {
+            if ($rule->load($ruleId)->getId()) {
+                return $rule;
+            }
+        }
+
+        if ($this->_helper == 'bronto_email') {
+            $ruleId = Mage::helper('bronto_email')->getDefaultRule('store', $storeId);
+            if ($ruleId) {
+                if ($rule->load($ruleId)->getId()) {
+                    return $rule;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Process email template code
      *
      * @param Bronto_Api_Delivery_Row $delivery
@@ -91,10 +145,11 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
             $processor->setStoreId($variables['subscriber']->getStoreId());
         }
 
-        if ($message = $this->getMessage()) {
-            $processor->setMessageId($message->id);
+        if ($this->getBrontoMessageId()) {
+            $processor->setMessageId($this->getBrontoMessageId());
         }
 
+        $processor->setRecommendation($this->_getRecommendation($variables['store']->getId()));
         $processor->setVariables($variables);
         $processor->setAvailable($this->getVariablesOptionArray());
 
@@ -108,21 +163,6 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
      */
     public function isMessageValidForSend()
     {
-        /* @var $message Bronto_Api_Message_Row */
-        $message = $this->getMessage();
-
-        if (!($message instanceOf Bronto_Api_Message_Row)) {
-            Mage::helper($this->_helper)->writeError('  Invalid Message');
-
-            return false;
-        }
-
-        if ($message->status != 'active') {
-            Mage::helper($this->_helper)->writeError('  Message is not active: ' . $message->name);
-
-            return false;
-        }
-
         if (!($this->getSenderName() && $this->getSenderEmail())) {
             Mage::helper($this->_helper)->writeError('  Message cannot be sent: Sender Name or Email is not set');
 
@@ -130,6 +170,74 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
         }
 
         return true;
+    }
+
+    /**
+     * Sends a Bronto Delivery
+     *
+     * @param Bronto_Common_Model_Queue $queue
+     * @return boolean
+     */
+    public function sendDeliveryFromQueue($queue)
+    {
+        $deliveryErrors = 0;
+        $message = $queue->getMessage();
+        $contacts = $queue->getContacts();
+
+        $this->setParams($queue->getAdditionalData());
+        $this->setMessage($message);
+        $this->setBrontoMessageId($message->id);
+        $this->setBrontoMessageName($message->name);
+        $this->setBrontoMessageApproved(1);
+
+        foreach ($contacts as $contact) {
+            $this->_beforeSend($contact, $message);
+            if (!$contact->id) {
+                $deliveryErrors++;
+                $this->_afterSend(false, "{$contact->email}: {$contact->error}");
+                continue;
+            }
+            try {
+                $delivery = $queue->prepareDelivery();
+                $delivery->start = $this->_startTime($queue->getStoreId());
+                $recipients = array(
+                    array(
+                        'type' => 'contact',
+                        'id'   => $contact->id,
+                        'deliveryType' => 'selected'
+                    ),
+                );
+                $list = Mage::getModel('bronto_common/list', $this->_helper);
+                $excludes = $list->addAdditionalRecipients($queue->getStoreId());
+                foreach ($excludes as $exclude) {
+                      $recipients[] = $exclude;
+                }
+                $delivery->recipients = $recipients;
+                $delivery->save();
+
+                if ($delivery->id) {
+                    $this->setLastDeliveryId($delivery->id);
+                    $this->_afterSend(true, null, $delivery);
+                } else {
+                    $this->_afterSend(false, null, $delivery);
+                }
+            } catch (Exception $e) {
+                $deliveryErrors++;
+                $errorMessage = $e->getMessage();
+                if ($e->getCode() === Bronto_Api_Delivery_Exception::MESSAGE_NOT_TRANSACTIONAL_APPROVED) {
+                    // Replace message id with message name
+                    if (preg_match_all("/([a-zA-Z0-9\-]){36}/", $errorMessage, $matches)) { // Grab field id if exists
+                        foreach ($matches[0] as $match) {
+                            $errorMessage = str_replace($match, $message->name, $errorMessage);
+                        }
+                    }
+                }
+
+                Mage::helper($this->_helper)->writeError($errorMessage);
+                $this->_afterSend(false, $errorMessage, $delivery);
+            }
+        }
+        return $deliveryErrors == 0;
     }
 
     /**
@@ -143,14 +251,20 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
      */
     public function send($email, $name = null, array $variables = array())
     {
+        // In the rare case we got here w/o hitting sendTransactional first...
+        if (!isset($variables['store']) || !is_object($variables['store'])) {
+            // Get the current store view, as to not break things
+            $variables['store'] = Mage::app()->getStore();
+        }
+
         // If not set to go through Bronto, fall through to magento sending
         if (!Mage::helper($this->_helper)->canSendBronto($this, $variables['store']->getId())) {
             return parent::send($email, $name, $variables);
         }
 
         /* @var $message Bronto_Api_Message_Row */
-        $message   = $this->getMessage();
         $messageId = $this->getBrontoMessageId();
+        $sendType = $this->getTemplateSendType();
 
         // If messageId is empty, send through Magento
         if (empty($messageId)) {
@@ -175,100 +289,44 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
         $variables['email'] = reset($emails);
         $variables['name']  = reset($names);
 
-        // Load Bronto Contact(s)
-        $contacts = array();
-        foreach ($emails as $key => $email) {
-            Mage::helper('bronto_common/contact')->writeDebug('  Getting Contact Object for: ' . $email . ' - Store: ' . $variables['store']->getId());
-            $contacts[$key] = Mage::helper('bronto_common/contact')->getContactByEmail($email, $this->_helper, $variables['store']->getId(), 2);
-        }
+        $apiHelper = Mage::helper('bronto_common/api');
+        $api = $apiHelper->getApi(null, 'store', $variables['store']->getId());
 
-        $deliveryCount  = 0;
-        $deliveryErrors = 0;
+        $delivery = $api->getDeliveryObject()->createRow();
+        $delivery = $this->getProcessedDelivery($delivery, $variables);
+        $this->_additionalFields($delivery, $variables);
 
-        /* @var $contact Bronto_Api_Contact_Row */
-        foreach ($contacts as $contact) {
+        $data = array(
+            'emails' => $emails,
+            'params' => $this->_additionalData(),
+            'delivery' => array(
+                'messageId' => $this->getBrontoMessageId(),
+                'type' => $sendType ? $sendType : 'transactional',
+                'fromEmail' => $this->getSenderEmail(),
+                'fromName' => $this->getSenderName(),
+                'replyEmail' => $this->getSenderEmail(),
+                'fields' => $delivery->getFields(),
+            )
+        );
+
+        $queue = Mage::getModel('bronto_common/queue')
+            ->setStoreId($variables['store']->getId())
+            ->setApi($api)
+            ->setUnserializedEmailData($data)
+            ->setEmailClass($this->_emailClass())
+            ->setCreatedAt(Mage::getSingleton('core/date')->gmtDate());
+
+        if ($this->_queuable() && $apiHelper->canUseQueue('store', $queue->getStoreId())) {
             try {
-                // If contact does not have id, create contact, if still no id, log it
-                if (!$contact->id || empty($contact->id)) {
-                    $contact = Mage::helper('bronto_common/contact')->saveContact($contact);
-                    if (!$contact->id || empty($contact->id)) {
-                        $this->_beforeSend($contact, $message);
-                        $deliveryErrors++;
-                        Mage::helper($this->_helper)->writeDebug('  TEST MODE: Skipping e-mail: ' . $contact->email);
-                        $this->_afterSend(0, "TEST MODE ENABLED: Contact does not exist: " . $contact->email);
-                        continue;
-                    }
-                }
-
-                // Trigger _beforeSend action for logging
-                $this->_beforeSend($contact, $message);
-
-                /* @var $deliveryObject Bronto_Api_Delivery */
-                Mage::helper($this->_helper)->writeDebug('  Getting Delivery Object...');
-                $client = Mage::helper($this->_helper)
-                    ->getApi(null, 'store', $variables['store']->getId());
-
-                $deliveryObject = Mage::getModel('bronto_common/delivery', array(
-                    'api' => $client,
-                    'email_class' => $this->_emailClass()
-                ));
-                $deliveryCount++;
-                Mage::helper($this->_helper)->writeDebug('    Delivery Object Created Successfully');
-
-                Mage::helper($this->_helper)->writeDebug('  Creating Delivery Row...');
-                /* @var $delivery Bronto_Api_Delivery_Row */
-                $delivery            = $deliveryObject->createRow();
-                $delivery->start     = Mage::getModel('core/date')->date('c');
-                $delivery->messageId = $message->id;
-
-                $delivery->type = $this->getTemplateSendType() ? $this->getTemplateSendType() : 'transactional';
-                $delivery->fromEmail  = $this->getSenderEmail();
-                $delivery->fromName   = $this->getSenderName();
-                $delivery->replyEmail = $this->getSenderEmail();
-                $recipients = array(
-                    array(
-                        'type' => 'contact',
-                        'id'   => $contact->id,
-                        'deliveryType' => 'selected'
-                    ),
-                );
-                foreach (Mage::getModel('bronto_common/list', $this->_helper)
-                  ->addAdditionalRecipients($variables['store']->getId()) as $exclude) {
-                      $recipients[] = $exclude;
-                }
-                $delivery->recipients = $recipients;
-
-                Mage::helper($this->_helper)->writeDebug('  Processing Delivery');
-                $delivery = $this->getProcessedDelivery($delivery, $variables);
-                Mage::helper($this->_helper)->writeDebug('  Saving Delivery...');
-
-                $delivery->save();
-
-                if ($delivery->id) {
-                    $this->setLastDeliveryId($delivery->id);
-                    $this->_afterSend(true, null, $delivery);
-                } else {
-                    $deliveryErrors++;
-                    $this->_afterSend(false, null, $delivery);
-                }
+                $queue->save();
+                return true;
             } catch (Exception $e) {
-                $errorMessage = $e->getMessage();
-                if ($e->getCode() === Bronto_Api_Delivery_Exception::MESSAGE_NOT_TRANSACTIONAL_APPROVED) {
-                    // Replace message id with message name
-                    if (preg_match_all("/([a-zA-Z0-9\-]){36}/", $errorMessage, $matches)) { // Grab field id if exists
-                        foreach ($matches[0] as $match) {
-                            $errorMessage = str_replace($match, $message->name, $errorMessage);
-                        }
-                    }
-                }
-
-                $deliveryErrors++;
-                Mage::helper($this->_helper)->writeError($errorMessage);
-                $this->_afterSend(false, $errorMessage, isset($delivery) ? $delivery : null);
+                $apiHelper->writeError('Failed to save email to queue for store ' . $queue->getStoreId() . ': ' . $e->getMessage());
+                return $this->sendDeliveryFromQueue($queue);
             }
+        } else {
+            return $this->sendDeliveryFromQueue($queue);
         }
-
-        return $deliveryErrors == 0;
     }
 
     /**
@@ -295,7 +353,7 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
             return parent::sendTransactional($templateId, $sender, $email, $name, $vars, $storeId);
         } else {
             // If module enabled and template ID is not an instance of the api row, see if we can pull an instance
-            if (!($templateId instanceOf Bronto_Api_Message_Row)) {
+            if (!($templateId instanceof Bronto_Api_Message_Row)) {
                 $emailTemplate = Mage::getModel('bronto_email/template')
                     ->setDesignConfig($this->getDesignConfig()->getData());
 
@@ -312,24 +370,8 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
                     return parent::sendTransactional($templateId, $sender, $email, $name, $vars, $storeId);
                 }
 
-                // Load Store
-                $store = Mage::getModel('core/store')->load($storeId);
-
-                // Load Bronto Message
-                /* @var $messageObject Bronto_Api_Message */
-                $messageObject = Mage::helper('bronto_common/message')->getApi(null, 'store', $store->getId())->getMessageObject();
-
-                // Load Message
-                try {
-                    /* @var $message Bronto_Api_Message_Row */
-                    $message     = $messageObject->createRow();
-                    $message->id = $emailTemplate->getBrontoMessageId();
-                    $message->read();
-                } catch (Exception $e) {
-                    Mage::helper($this->_helper)->writeDebug('Falling Back to Magento Sending: Message Not Found.' /* . $e*/);
-
-                    return parent::sendTransactional($templateId, $sender, $email, $name, $vars, $storeId);
-                }
+                $message = new Bronto_Api_Message_Row();
+                $message->id = $emailTemplate->getBrontoMessageId();
 
                 // Send through main template model
                 $emailTemplate->sendTransactional(
@@ -343,7 +385,7 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
 
                 return $this->setSentSuccess($emailTemplate->getSentSuccess());
             } else {
-                $message = $templateId;
+                $this->setBrontoMessageId($templateId->id);
             }
         }
 
@@ -352,11 +394,6 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
         if (($storeId === null) && $this->getDesignConfig()->getStore()) {
             $storeId = $this->getDesignConfig()->getStore();
         }
-
-        $this->setMessage($message);
-        $this->setBrontoMessageId($message->id);
-        $this->setBrontoMessageName($message->name);
-        $this->setBrontoMessageApproved(1);
 
         // If $sender is not array, it is a reference to a config setting, otherwise it should have 'name' and 'email'
         if (!is_array($sender)) {
@@ -373,11 +410,8 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
         }
 
         // Check for Sales Rules
-        if ($this->getSalesRule() && !isset($vars['coupon'])) {
+        if (!isset($vars['coupon']) && $rule = $this->_getSalesRule($storeId)) {
             try {
-                /** @var Mage_SalesRule_Model_Rule $rule */
-                $rule = Mage::getModel('salesrule/rule')->load($this->getSalesRule());
-
                 /** @var Mage_SalesRule_Model_Coupon $coupon */
                 $coupon = $rule->acquireCoupon();
 
@@ -385,7 +419,7 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
                     $vars['coupon'] = $coupon;
                 }
             } catch (Exception $e) {
-                Mage::helper($this->_helper)->writeDebug('  Failed loading Sales Rule with ID: ' . $this->getSalesRule());
+                Mage::helper($this->_helper)->writeDebug('  Failed loading Sales Rule with ID: ' . $rule->getId());
             }
         }
 
@@ -443,13 +477,6 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
     }
 
     /**
-     * @param Bronto_Api_Delivery_Row $delivery
-     */
-    protected function _addAdditionalRecipients($delivery, $storeId)
-    {
-    }
-
-    /**
      * The string model class associating this email template
      *
      * @return string
@@ -457,6 +484,47 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
     protected function _emailClass()
     {
         return 'bronto_common/email_template';
+    }
+
+    /**
+     * Is this a queuable message?
+     *
+     * @return bool
+     */
+    protected function _queuable()
+    {
+        return true;
+    }
+
+    /**
+     * When should this email be sent out?
+     *
+     * @param int $storeId
+     * @return string
+     */
+    protected function _startTime($storeId)
+    {
+        return date('c');
+    }
+
+    /**
+     * Ability to set additional fields
+     *
+     * @param $delivery
+     * @param $variables
+     */
+    protected function _additionalFields($delivery, $variables)
+    {
+    }
+
+    /**
+     * Ability to add to the serialization data
+     *
+     * @return array
+     */
+    protected function _additionalData()
+    {
+        return array();
     }
 
     /**

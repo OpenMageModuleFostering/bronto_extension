@@ -85,7 +85,7 @@ class Bronto_Common_Model_System_Config_Backend_Token extends Mage_Core_Model_Co
         $sentry = Mage::getModel('bronto_common/keysentry');
         $sentry->disableModules($this->getScope(), $this->getScopeId(), $includeCommon);
 
-        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, 9)) {
+        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('edition' => 'Enterprise', 'major' => 9)))) {
             $sentry->unlinkEmails(
                 Mage::getModel('bronto_email/message')->getCollection(),
                 $this->getScope(),

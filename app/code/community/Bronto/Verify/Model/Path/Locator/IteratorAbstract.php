@@ -24,7 +24,7 @@ abstract class Bronto_Verify_Model_Path_Locator_IteratorAbstract
      *
      * @param Bronto_Verify_Model_Path_Locator_LocatorInterface $iterator
      */
-    public function __construct(Bronto_Verify_Model_Path_Locator_LocatorInterface $iterator)
+    public function __construct($iterator)
     {
         $this->_iterator = $iterator;
     }

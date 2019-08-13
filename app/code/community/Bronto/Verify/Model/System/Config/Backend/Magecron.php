@@ -23,6 +23,7 @@ class Bronto_Verify_Model_System_Config_Backend_Magecron extends Mage_Core_Model
         // If disabling using Magento Cron, delete from config
         if ($this->getValue() == '0') {
             $module     = array_shift(explode('/', $realPath));
+            $module     = $module == 'bronto_api' ? 'bronto_common/api' : $module;
             $stringPath = Mage::helper($module)->getCronStringPath();
             $modelPath  = Mage::helper($module)->getCronModelPath();
 

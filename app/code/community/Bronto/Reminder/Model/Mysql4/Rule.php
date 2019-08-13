@@ -484,6 +484,7 @@ class Bronto_Reminder_Model_Mysql4_Rule
 
                 $dataToInsert[] = array(
                     'rule_id'        => $ruleId,
+                    'product_recommendation_id' => $rule->getProductRecommendationId(),
                     'coupon_id'      => $couponId,
                     'unique_id'      => $row['unique_id'],
                     'store_id'       => $row['store_id'],
@@ -535,10 +536,11 @@ class Bronto_Reminder_Model_Mysql4_Rule
      *
      * @param int|null $limit
      * @param int|null $ruleId
+     * @param int|null $threshold
      *
      * @return array
      */
-    public function getCustomersForNotification($limit = null, $ruleId = null)
+    public function getCustomersForNotification($limit = null, $ruleId = null, $threshold = null)
     {
         $couponTable = $this->getTable('bronto_reminder/coupon');
         $ruleTable   = $this->getTable('bronto_reminder/rule');
@@ -549,6 +551,7 @@ class Bronto_Reminder_Model_Mysql4_Rule
             array(
                 'rule_id',
                 'coupon_id',
+                'product_recommendation_id',
                 'unique_id',
                 'store_id',
                 'customer_id',
@@ -557,6 +560,10 @@ class Bronto_Reminder_Model_Mysql4_Rule
                 'wishlist_id',
             )
         );
+
+        if ($threshold) {
+            $select->where('c.emails_failed IS NULL OR c.emails_failed < ? ', $threshold);
+        }
 
         $select->join(
             array('r' => $ruleTable),

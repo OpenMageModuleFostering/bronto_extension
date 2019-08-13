@@ -12,6 +12,7 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     const XML_PATH_SYNC_LIMIT    = 'bronto_order/settings/sync_limit';
     const XML_PATH_INSTALL_DATE  = 'bronto_order/settings/install_date';
     const XML_PATH_UPGRADE_DATE  = 'bronto_order/settings/upgrade_date';
+    const XML_PATH_BULK_LIMIT    = 'bronto_order/settings/bulk_limit';
 
     const XML_PATH_PRICE         = 'bronto_order/import/price';
     const XML_PATH_DESCRIPTION   = 'bronto_order/import/description';
@@ -140,6 +141,13 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     public function isDiscountIncluded($scope = 'default', $scopeId = 0)
     {
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_INCL_DISCOUNT, $scope, $scopeId);
+    }
+
+    /**
+     * @return int
+     */
+    public function getBulkLimit($scope = 'default', $scopeId = 0) {
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_BULK_LIMIT, $scope, $scopeId);
     }
 
     /**

@@ -42,7 +42,13 @@ class Bronto_Common_Helper_Data
     /**
      * Pop-up Settings
      */
-    const XML_PATH_POPUP_CODE = 'bronto_popup/settings/code';
+    const XML_PATH_POPUP_CODE      = 'bronto_popup/settings/code';
+    const XML_PATH_POPUP_SUBSCRIBE = 'bronto_popup/settings/subscribe';
+
+    /**
+     * Coupon Settings
+     */
+    const XML_PATH_COUPON_SITE_HASH = 'bronto_coupon/settings/site_hash';
 
     /**
      * Module Human Readable Name
@@ -105,6 +111,26 @@ class Bronto_Common_Helper_Data
     }
 
     /**
+     * Can the user be subscribed to magento?
+     *
+     * @return bool
+     */
+    public function isSubscribeToMagento()
+    {
+        return (bool) $this->getAdminScopedConfig(self::XML_PATH_POPUP_SUBSCRIBE);
+    }
+
+    /**
+     * Get Site has for the coupon redemption code
+     *
+     * @return string
+     */
+    public function getCouponSiteHash()
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_COUPON_SITE_HASH);
+    }
+
+    /**
      * Determine if email can be sent through bronto
      *
      * @param Mage_Core_Model_Email_Template $template
@@ -130,12 +156,16 @@ class Bronto_Common_Helper_Data
      */
     public function getProductImageUrl($product)
     {
-        return (string)Mage::helper('catalog/image')
-            ->init($product, $this->getImageType($product->getStoreId()))
-            ->resize(
-                $this->getImageWidth($product->getStoreId()),
-                $this->getImageHeight($product->getStoreId())
-            );
+        try {
+            return (string)Mage::helper('catalog/image')
+                ->init($product, $this->getImageType($product->getStoreId()))
+                ->resize(
+                    $this->getImageWidth($product->getStoreId()),
+                    $this->getImageHeight($product->getStoreId())
+                );
+        } catch (Exception $e) {
+            return '';
+        }
     }
 
     /**
@@ -285,7 +315,7 @@ class Bronto_Common_Helper_Data
         } else {
             $coreConfig->saveConfig($path, 0, $scope, $scopeId);
 
-            if (!$this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+            if (!$this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
                 list($module) = explode('/', $path);
 
                 $coreConfigData->setScope($scope)
@@ -849,19 +879,19 @@ class Bronto_Common_Helper_Data
         );
 
         // Update Scope based on what has been set
-        if ($scopeParams['store']) {
+        if ($scopeParams['store'] !== false) {
             $store = Mage::app()->getStore($scopeParams['store']);
             if ($store->getId()) {
                 $scopeParams['store_id'] = $store->getId();
             }
             $scopeParams['scope'] = 'store';
-        } elseif ($scopeParams['website']) {
+        } elseif ($scopeParams['website'] !== false) {
             $website = Mage::app()->getWebsite($scopeParams['website']);
             if ($website->getId()) {
                 $scopeParams['website_id'] = $website->getId();
             }
             $scopeParams['scope'] = 'website';
-        } elseif ($scopeParams['group']) {
+        } elseif ($scopeParams['group'] !== false) {
             $group = Mage::app()->getGroup($scopeParams['group']);
             if ($group->getId()) {
                 $scopeParams['group_id'] = $group->getId();
@@ -1088,13 +1118,19 @@ class Bronto_Common_Helper_Data
             // current Magento version element
             $internalMatch = false;
             foreach ($value as $option) {
+                $edition = false;
                 $operator = '==';
                 $compare  = $option;
 
                 // If the current compare value is an array, 
                 // get the operator and value provided
                 if (is_array($option)) {
-                    list ($operator, $compare) = $option;
+                    if (array_key_exists('edition', $option)) {
+                        $edition = $option['edition'];
+                        $compare = $option['major'];
+                    } else {
+                        list ($operator, $compare) = $option;
+                    }
                 }
 
                 if ($index == 'edition') {
@@ -1119,6 +1155,9 @@ class Bronto_Common_Helper_Data
                     // Use version_compare to compare the Magento version to the
                     // Current compare version using the provided operator
                     $internalMatch = version_compare($mValue, $compare, $operator);
+                    if ($edition && $internalMatch) {
+                        $internalMatch = ($mageVersion['edition'] == $edition);
+                    }
                 }
 
                 if ($internalMatch) {

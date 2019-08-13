@@ -28,6 +28,19 @@
       });
     });
 
+    function resetAllSuppressed()
+    {
+        if (confirm("This will reset all suppressed entries in the queue.\n\nYou can then click on Run Now to perform an immediate retry.\n\nAre you sure you want to do this?")) {
+            new Ajax.Request('<?php echo $this->getResetUrl(); ?>', {
+                method: 'post',
+                parameters: { suppressed: 1 },
+                onComplete: function(transport) {
+                    window.location.reload(true);
+                }
+            });
+        }
+    }
+
     function loadSuppressionTable(page)
     {
         new Ajax.Request('<?php echo $this->getAjaxUrl() ?>page/' + page + '/', {

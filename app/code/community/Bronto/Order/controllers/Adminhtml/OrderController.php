@@ -62,6 +62,7 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
         $adapter  = $resource->getWriteAdapter();
 
         $queue_id = $this->getRequest()->getParam('queue_id', false);
+        $suppressed = $this->getRequest()->getParam('suppressed', false);
 
         $where = array();
         if ($storeIds) {
@@ -70,6 +71,10 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
 
         if ($queue_id) {
             $where['queue_id = ?'] = $queue_id;
+        }
+
+        if ($suppressed) {
+            $where['bronto_suppressed IS NOT NULL'] = '';
         }
 
         try {
@@ -82,6 +87,38 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
         } catch (Exception $e) {
             $helper->writeError($e);
             $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
+        }
+
+        $returnParams = array('section' => 'bronto_order');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
+    }
+
+    /**
+     * Mark all Orders as imported
+     */
+    public function markAction()
+    {
+        $helper   = Mage::helper('bronto_order');
+        $storeIds = $helper->getStoreIds();
+        $resource = Mage::getResourceModel('bronto_order/queue');
+        $adapter  = $resource->getWriteAdapter();
+
+        if ($storeIds) {
+            $where = array('store_id IN (?)' => $storeIds);
+        }
+        $where['bronto_suppressed IS NULL'] = '';
+
+        try {
+            $date = Mage::getSingleton('core/date')->gmtDate();
+            $adapter->update(
+                $resource->getTable('bronto_order/queue'),
+                array('bronto_imported' => $date),
+                $where
+            );
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Mark failed: ' . $e->getMessage());
         }
 
         $returnParams = array('section' => 'bronto_order');

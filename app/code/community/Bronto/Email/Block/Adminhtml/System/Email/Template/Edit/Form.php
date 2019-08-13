@@ -95,7 +95,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                 'title'    => Mage::helper('adminhtml')->__('Store View'),
                 'onchange' => "updateMessages();",
                 'required' => true,
-                'values'   => $this->_getActiveStoreValuesForForm(false, false),
+                'values'   => $this->_getActiveStoreValuesForForm(true, true),
             ));
         } else {
             $fieldset->addField('store_id', 'hidden', array(
@@ -126,9 +126,11 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                     // Disable Some
                     $('bronto_message_id').disable();
                     $('sales_rule').disable();
+                    $('product_recommendation').disable();
                     $('orig_template_text').disable();
                     $('container_bronto_message_id').hide();
                     $('container_sales_rule').hide();
+                    $('container_product_recommendation').hide();
                     $('container_orig_template_text').hide();
                     
                     // Enable Others
@@ -146,9 +148,11 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                     // Enable Some
                     $('bronto_message_id').enable();
                     $('sales_rule').enable();
+                    $('product_recommendation').enable();
                     $('orig_template_text').enable();
                     $('container_bronto_message_id').show();
                     $('container_sales_rule').show();
+                    $('container_product_recommendation').show();
                     $('container_orig_template_text').show();
                     
                     // Disable Others
@@ -205,6 +209,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         // Add hidden fields to hold backups of the necessary values
         $fieldset->addField('bronto_message_id_hidden', 'hidden', array('name' => 'bronto_message_id_hidden'));
         $fieldset->addField('sales_rule_hidden', 'hidden', array('name' => 'sales_rule_hidden'));
+        $fieldset->addField('product_recommendation_hidden', 'hidden', array('name' => 'product_recommendation_hidden'));
         $fieldset->addField('template_subject_hidden', 'hidden', array('name' => 'template_subject_hidden'));
         $fieldset->addField('template_text_hidden', 'hidden', array('name' => 'template_text_hidden'));
         $fieldset->addField('template_styles_hidden', 'hidden', array('name' => 'template_styles_hidden'));
@@ -235,9 +240,21 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
             'note'         => $this->__('Use API tag <em>%%%%#couponCode%%%%</em> within your message in Bronto. You are responsible for ensuring the shopping cart price rule is active and valid, or else it may appear blank.'),
             'container_id' => 'container_sales_rule',
             'onchange'     => "syncHiddenValue(this);",
-            'values'       => Mage::helper('bronto_common/salesrule')->getRuleOptionsArray(),
+            'values'       => Mage::getModel('bronto_common/system_config_source_coupon')->toOptionArray(true),
             'required'     => false,
         ));
+
+        if (Mage::helper('bronto_product')->isEnabledForAny()) {
+            $fieldset->addField('product_recommendation', 'select', array(
+                'name' => 'product_recommendation',
+                'container_id' => 'container_product_recommendation',
+                'onchange'     => "syncHiddenValue(this);",
+                'label' => Mage::helper('adminhtml')->__('Product Recommendations'),
+                'required' => false,
+                'values' => Mage::getModel('bronto_product/recommendation')->toOptionArray(true),
+                'note' => $this->__('Inject related product content into this message. Recommendations are created in <strong>Promotions</strong> &raquo; <strong>Bronto Product Recommendations')
+            ));
+        }
 
         // Display Variables that are available for the original template
         $fieldset->addField('template_variables_key', 'label', array(
@@ -304,6 +321,12 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         }
 
         if ($templateId) {
+            if ($this->getEmailTemplate()->getUseDefaultSalesRule()) {
+                $this->getEmailTemplate()->setSalesRule('default');
+            }
+            if ($this->getEmailTemplate()->getUseDefaultRec()) {
+                $this->getEmailTemplate()->setProductRecommendation('default');
+            }
             $form->addValues($this->getEmailTemplate()->getData());
             $form->addValues(array(
                 'template_variables'       => Zend_Json::encode($this->getEmailTemplate()->getVariablesOptionArray(true)),
@@ -313,6 +336,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                 'template_subject_hidden'  => $this->getEmailTemplate()->getTemplateSubject(),
                 'template_text_hidden'     => $this->getEmailTemplate()->getTemplateText(),
                 'template_styles_hidden'   => $this->getEmailTemplate()->getTemplateStyles(),
+                'product_recommendation_hidden' => $this->getEmailTemplate()->getProductRecommendation(),
             ));
         }
 

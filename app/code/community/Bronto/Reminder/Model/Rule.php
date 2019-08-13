@@ -34,7 +34,7 @@ class Bronto_Reminder_Model_Rule
         if (Mage::helper('bronto_verify')->isVersionMatch(
             Mage::getVersionInfo(),
             1,
-            array(array('<=', 6), 9, 10, 11)
+            array(array('<=', 6), array('edition' => 'Enterprise', 'major' => 9), 10, 11)
         )
         ) {
             $conditionsArr = unserialize($this->getConditionsSerialized());
@@ -66,6 +66,9 @@ class Bronto_Reminder_Model_Rule
 
         if (!$this->getSalesruleId()) {
             $this->setSalesruleId(null);
+        }
+        if (!$this->getProductRecommendationId()) {
+            $this->setProductRecommendationId(null);
         }
         parent::_beforeSave();
     }
@@ -108,13 +111,14 @@ class Bronto_Reminder_Model_Rule
      * Get array of Registered User abandons and then Guest abandons
      *
      * @param int $limit
+     * @param int $threshold (Optional)
      *
      * @return array
      */
-    protected function _getRecipients($limit)
+    protected function _getRecipients($limit, $threshold = null)
     {
         // Pull in array of customers who abandoned their cart
-        return (array)$this->_getResource()->getCustomersForNotification($limit, $this->getRuleId());
+        return (array)$this->_getResource()->getCustomersForNotification($limit, $this->getRuleId(), $threshold);
     }
 
     /**
@@ -169,9 +173,10 @@ class Bronto_Reminder_Model_Rule
         }
 
         /* @var $mail Bronto_Reminder_Model_Email_Message */
-        $mail     = Mage::getModel('bronto_reminder/email_message');
-        $limit    = Mage::helper('bronto_reminder')->getOneRunLimit();
-        $identity = Mage::helper('bronto_reminder')->getEmailIdentity();
+        $mail      = Mage::getModel('bronto_reminder/email_message');
+        $limit     = Mage::helper('bronto_reminder')->getOneRunLimit();
+        $identity  = Mage::helper('bronto_reminder')->getEmailIdentity();
+        $threshold = Mage::helper('bronto_reminder')->getSendFailureThreshold();
 
         $this->_matchCustomers();
 
@@ -180,7 +185,7 @@ class Bronto_Reminder_Model_Rule
         }
 
         // Get Array of Recipients
-        $recipients = $this->_getRecipients($limit);
+        $recipients = $this->_getRecipients($limit, $threshold);
 
         $total   = 0;
         $success = 0;
@@ -196,7 +201,7 @@ class Bronto_Reminder_Model_Rule
             $store = Mage::getModel('core/store')->load($recipient['store_id']);
 
             // If Sending not allowed for this store
-            if (!Mage::helper('bronto_reminder')->isAllowSend($store)) {
+            if (!Mage::helper('bronto_reminder')->isAllowSend('store', $store->getId())) {
                 $error++;
                 continue;
             }
@@ -267,6 +272,8 @@ class Bronto_Reminder_Model_Rule
                     $store->getWebsiteId()
                 );
                 $mail->setTemplateSendType($messageData['send_type']);
+                $mail->setSalesRule($recipient['coupon_id']);
+                $mail->setProductRecommendation($recipient['product_recommendation_id']);
                 $mail->sendTransactional(
                     $message,
                     $identity,

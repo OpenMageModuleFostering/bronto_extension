@@ -17,23 +17,31 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Magecron
      */
     protected function _getFooterHtml($element)
     {
+        $cronPath = Mage::getBaseDir() . '/shell/bronto/cron.php';
+        $phpPath = exec('which php');
         $html = "<tr><td>&nbsp;</td>
-            <td id=\"bronto-magecron-example\" colspan=\"3\"><strong style=\"margin:5px;\">To setup the cron script, you will need to add a command to your crontab file.  Here are some examples:</strong>
+          <td id=\"bronto-magecron-example\" colspan=\"3\">
+          <em style=\"margin:5px;\">* Note: You will need to change the \$CRON_USER to match the cron user in your environment.</em>
+          <br/>
+          <strong style=\"margin:5px;\">To setup the cron script, you will need to add a command to your crontab file.  Here are some examples:</strong>
             <div style=\"border:1px solid #ccc; padding:5px; margin:5px;\">
+<strong>To run the API Send Cron every minute:</strong>
+<pre>* * * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t send</pre>
 <strong>To run the API Retry Cron every 2 minutes:</strong>
-<pre>*/2 * * * * rot /usr/bin/php /var/www/magento/shell/bronto/cron.php -a run -t api</pre>
+<pre>*/2 * * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t api</pre>
 <strong>To run the Reminder Cron every 15 minutes:</strong>
-<pre>*/15 * * * * root /usr/bin/php /var/www/magento/shell/bronto/cron.php -a run -t reminder</pre>
+<pre>*/15 * * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t reminder</pre>
 <strong>To run the Order Import Cron once Daily at Midnight:</strong>
-<pre>0 0 * * * root /usr/bin/php /var/www/magento/shell/bronto/cron.php -a run -t order</pre>
+<pre>0 0 * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t order</pre>
+<strong>To run the Product Recommendation Cron once Daily at Midnight:</strong>
+<pre>0 0 * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t product</pre>
 <strong>To run the Customer Import Cron twice Daily:</strong>
-<pre>0 */2 * * * root /usr/bin/php /var/www/magento/shell/bronto/cron.php -a run -t customer</pre>
+<pre>0 */2 * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t customer</pre>
 <strong>To run the Newsletter Opt-In Cron every 30 minutes:</strong>
-<pre>*/30 * * * * root /usr/bin/php /var/www/magento/shell/bronto/cron.php -a run -t newsletter</pre>
+<pre>*/30 * * * * \$CRON_USER {$phpPath} {$cronPath} -a run -t newsletter</pre>
 <strong>To run all Module Crons once Daily:</strong>
-<pre>0 0 * * * root /usr/bin/php /var/www/magento/shell/bronto/cron.php -a run</pre>
+<pre>0 0 * * * \$CRON_USER {$phpPath} {$cronPath} -a run</pre>
 </div>
-<em style=\"margin:5px;\">* Note: You will need to change the owner, php path, and path to magento to match your environment.</em>
 </td></tr>";
 
         return $html . parent::_getFooterHtml($element);

@@ -52,6 +52,34 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
     }
 
     /**
+     * Marks all Customers as imported
+     */
+    public function markAction()
+    {
+        $helper = Mage::helper('bronto_customer');
+        $resource = Mage::getResourceModel('bronto_customer/queue');
+        $adapter = $resource->getWriteAdapter();
+
+        try {
+            $date = Mage::getSingleton('core/date')->gmtDate();
+            $adapter->update(
+                $resource->getTable('bronto_customer/queue'),
+                array('bronto_imported' => $date),
+                array(
+                    'bronto_imported IS NULL' => '',
+                    'bronto_suppressed IS NULL' => ''
+                ));
+        } catch (Exception $e) {
+            $helper->writeError($e);
+            $this->_getSession()->addError('Mark All failed: ' . $e->getMessage());
+        }
+
+        $returnParams = array('section' => 'bronto_customer');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
+    }
+
+    /**
      * Reset all Customers
      */
     public function resetAction()
@@ -62,6 +90,7 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
         $adapter  = $resource->getWriteAdapter();
 
         $queue_id = $this->getRequest()->getParam('queue_id', false);
+        $suppressed = $this->getRequest()->getParam('suppressed', false);
 
         $where = array();
         if ($storeIds) {
@@ -70,6 +99,10 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
 
         if ($queue_id) {
             $where['queue_id = ?'] = $queue_id;
+        }
+
+        if ($suppressed) {
+            $where['bronto_suppressed IS NOT NULL'] = '';
         }
 
         try {

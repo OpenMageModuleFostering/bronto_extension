@@ -16,4 +16,12 @@ class Bronto_Order_Block_Adminhtml_System_Config_Suppressed
     {
         return Mage::helper('bronto_common')->getScopeUrl('adminhtml/order/suppression');
     }
+
+    /**
+     * @see parent
+     */
+    public function getResetUrl()
+    {
+        return Mage::helper('bronto_common')->getScopeUrl('adminhtml/order/reset');
+    }
 }

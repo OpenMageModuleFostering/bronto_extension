@@ -125,14 +125,14 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
         // Final flush (for any we miss)
         if (!empty($customerCache)) {
-            $results = $this->_flushCustomers($contactObject, $customerCache, $result);
+            $result = $this->_flushCustomers($contactObject, $customerCache, $result);
         }
 
-        Mage::helper('bronto_customer')->writeDebug('  Success: ' . $results['success']);
-        Mage::helper('bronto_customer')->writeDebug('  Error:   ' . $results['error']);
-        Mage::helper('bronto_customer')->writeDebug('  Total:   ' . $results['total']);
+        Mage::helper('bronto_customer')->writeDebug('  Success: ' . $result['success']);
+        Mage::helper('bronto_customer')->writeDebug('  Error:   ' . $result['error']);
+        Mage::helper('bronto_customer')->writeDebug('  Total:   ' . $result['total']);
 
-        return $results;
+        return $result;
     }
 
     /**
@@ -273,6 +273,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
         $_attributeType = $attribute->getFrontendInput();
         $_attributeCode = $attribute->getAttributeCode();
+        $_attributeBack = $attribute->getBackendType();
 
         // Pick up Website/Store/Group Values
         switch ($_attributeCode) {
@@ -300,6 +301,10 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 break;
         }
 
+        if ($_attributeBack == 'datetime' || $_attributeType == 'date') {
+            $value = $this->_formatDateValue($value);
+        }
+
         // Format Attribute Values
         switch ($_attributeType) {
             case 'select':
@@ -321,19 +326,27 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
                 return implode(', ', $values);
                 break;
-            case 'date':
-                $dates = explode(' ', $value);
-                $date  = $dates[0];
-
-                if (!preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $date)) {
-                    return '';
-                } else {
-                    return implode('T', $dates) . Mage::getSingleton('core/date')->date('P');
-                }
-                break;
             default:
                 return $value;
                 break;
+        }
+    }
+
+    /**
+     * Format the value into a Bronto acceptable date
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function _formatDateValue($value)
+    {
+        $dates = explode(' ', $value);
+        $date  = $dates[0];
+
+        if (!preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $date)) {
+            return '';
+        } else {
+            return implode('T', $dates) . Mage::getSingleton('core/date')->date('P');
         }
     }
 

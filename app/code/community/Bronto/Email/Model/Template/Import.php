@@ -15,17 +15,18 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
      *
      * @param int   $templateId
      * @param mixed $storeId
+     * @param bool $force
      *
      * @return string
      * @throws Exception
      */
-    public function importTemplate($templateId, $storeId = false)
+    public function importTemplate($templateId, $storeId = false, $force = false)
     {
         /** @var $template Bronto_Email_Model_Template_Import */
         $template = $this->load($templateId);
 
         try {
-            return $this->processMessage($template, $storeId);
+            return $this->processMessage($template, $storeId, $force);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -39,7 +40,7 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
      *
      * @return bool
      */
-    protected function processMessage(Bronto_Email_Model_Template $template, $storeId = false)
+    protected function processMessage(Bronto_Email_Model_Template $template, $storeId = false, $force = false)
     {
         $data = $template->getData();
         $emt  = Mage::getModel('bronto_common/email_template_templatefilter');
@@ -54,7 +55,7 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
         }
 
         // If module is not enabled for this store, don't proceed
-        if (!Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
+        if (!$force && !Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
             return false;
         }
 

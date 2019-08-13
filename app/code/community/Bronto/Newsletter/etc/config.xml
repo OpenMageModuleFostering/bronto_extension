@@ -109,6 +109,16 @@
                 <label_text>Sign up for our newsletter</label_text>
                 <use_custom_template>0</use_custom_template>
                 <billing_template>checkout/onepage/billing.phtml</billing_template>
+                <css_selector>#billing_address</css_selector>
+                <checkbox_style><![CDATA[
+.col1-layout .billing_is_subscribed_box {
+    margin-left: 240px !important;
+    float:left;
+    width:auto;
+    margin: 2px 8px 0 0; }
+.col1-layout #billing_subscribed_label {
+    width: auto;
+    text-align: left; }]]></checkbox_style>
             </checkout>
             <contacts>
                 <update_status>1</update_status>

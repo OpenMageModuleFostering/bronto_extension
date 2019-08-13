@@ -61,6 +61,7 @@
                 <bronto_customer-settings-mage_cron>1</bronto_customer-settings-mage_cron>
                 <bronto_newsletter-settings-mage_cron>1</bronto_newsletter-settings-mage_cron>
                 <bronto_order-settings-mage_cron>1</bronto_order-settings-mage_cron>
+                <bronto_product-settings-mage_cron>1</bronto_product-settings-mage_cron>
                 <bronto_reminder-settings-mage_cron>1</bronto_reminder-settings-mage_cron>
             </cron_settings>
             <permissionchecker>

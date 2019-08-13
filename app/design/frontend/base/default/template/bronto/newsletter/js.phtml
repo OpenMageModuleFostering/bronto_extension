@@ -5,16 +5,22 @@
 //<![CDATA[
 // Observe Page and fetch checkbox code
 Event.observe(window, 'load', function() {    
-    // Check if we are on One-Step-Checkout
-    if($('billing_address') != undefined) {
-        var billingFieldset = $$('#billing_address ul');
+    var selector = "<?php echo $this->getCssSelector(); ?>";
+    var billingId = 'billing-newsletter-signup';
+    if (selector == '#billing_address') {
+        // Check if we are on One-Step-Checkout
+        if($('billing_address') != undefined) {
+            var billingFieldset = $$('#billing_address ul');
+        } else {
+            var billingFieldset = $$('#co-billing-form fieldset ul.form-list');
+        }
+        // Build checkbox container
+        var newRow = document.createElement('li').writeAttribute('id', billingId);
+        billingFieldset[0].insert(newRow);
     } else {
-        var billingFieldset = $$('#co-billing-form fieldset ul.form-list');
+        var content = document.createElement('div').writeAttribute('id', billingId);
+        $$(selector)[0].insert(content);
     }
-    
-    // Build checkbox container
-    var newRow = document.createElement('li').writeAttribute('id', 'billing-newsletter-signup');
-    billingFieldset[0].insert(newRow);
 
     // If Register/Guest button is clicked, Load Checkbox Code
     if ($('onepage-guest-register-button') != null) {

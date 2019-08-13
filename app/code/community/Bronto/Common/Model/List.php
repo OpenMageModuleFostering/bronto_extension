@@ -46,7 +46,7 @@ class Bronto_Common_Model_List
                       if ($list->hasError()) {
                           continue;
                       }
-                      $this->_helper->writeDebug('Excluding list: ' . $list->id);
+                      $this->_helper->writeDebug("Excluding list: {$list->name} ({$list->id})");
                       $recipients[] = array(
                           'type' => 'list',
                           'id' => $list->id,

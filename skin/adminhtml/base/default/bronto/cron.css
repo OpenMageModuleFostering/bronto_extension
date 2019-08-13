@@ -49,7 +49,7 @@
 .bronto-cron .form-buttons {
     margin-bottom: 10px;
     padding-right: 4px;
-    width: 45%;
+    width: 60%;
     text-align: right;
 }
 
@@ -78,7 +78,7 @@
 
 .bronto-progress-bar {
     float: left;
-    width: 48%;
+    width: 34%;
     background-color: #ccc;
     border-radius: 2px;
     padding: 2px;

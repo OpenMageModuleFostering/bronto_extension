@@ -35,6 +35,9 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
             $redirectUrl = Mage::app()->getStore()->getUrl('checkout/cart');
         } else if ($wishlist = $this->_handleWishlist($wishlistId, $storeId)) {
             $redirectUrl = Mage::app()->getStore()->getUrl('wishlist');
+        } else {
+            $this->_redirectUrl(Mage::app()->getStore()->getUrl('checkout/cart'));
+            return;
         }
 
         // Get Customer ID from Quote/Wishlist

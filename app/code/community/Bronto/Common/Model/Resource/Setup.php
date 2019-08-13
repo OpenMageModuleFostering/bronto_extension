@@ -4,8 +4,82 @@
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
  */
-class Bronto_Common_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
+class Bronto_Common_Model_Resource_Setup extends Bronto_Common_Model_Resource_Abstract
 {
+
+    /**
+     * @see parent
+     * @return string
+     */
+    protected function _module()
+    {
+        return 'bronto_common';
+    }
+
+    /**
+     * Gets all of the create table definititions at this version
+     *
+     * @see parent
+     * @return array
+     */
+    protected function _tables()
+    {
+        return array(
+            'api' => "
+            CREATE TABLE `{table}` (
+              `token` varchar(36) NOT NULL,
+              `session_id` varchar(36) NOT NULL,
+              `created_at` datetime NOT NULL,
+              PRIMARY KEY (`token`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Bronto API Session table'",
+            'error' => "
+            CREATE TABLE `{table}` (
+              `error_id` int(11) NOT NULL AUTO_INCREMENT,
+              `email_class` varchar(100) NULL,
+              `object` mediumtext NOT NULL DEFAULT '',
+              `attempts` smallint(1) NOT NULL,
+              `last_attempt` datetime NOT NULL,
+              PRIMARY KEY (`error_id`),
+              KEY `IDX_BRONTO_ERROR_ATTEMPT` (`attempts`),
+              KEY `IDX_BRONTO_ERROR_TIMESTAMP` (`last_attempt`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Bronto API Error log'",
+            'queue' => "
+            CREATE TABLE `{table}` (
+              `queue_id` int(11) NOT NULL AUTO_INCREMENT,
+              `store_id` int(11) NOT NULL DEFAULT '1',
+              `email_class` varchar(100) NOT NULL,
+              `email_data` mediumtext NOT NULL DEFAULT '',
+              `holding` smallint(1) NOT NULL DEFAULT 0,
+              `created_at` datetime NOT NULL,
+              PRIMARY KEY (`queue_id`),
+              KEY `IDX_BRONTO_SEND_QUEUE_STORE` (`store_id`),
+              KEY `IDX_BRONTO_SEND_QUEUE_HOLDING` (`holding`),
+              KEY `IDX_BRONTO_SEND_QUEUE_TIMESTAMP` (`created_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Bronto API Send queue'"
+        );
+    }
+
+    /**
+     * Updates the appropriate tables
+     *
+     * @see parent
+     * @return array
+     */
+    protected function _updates()
+    {
+        return array(
+            '2.3.0' => array(
+                'error' => array(
+                    'sql' => 'ALTER TABLE {table} MODIFY COLUMN `object` mediumtext'
+                ),
+                'queue' => array(
+                    'before' => 'dropTable',
+                    'after' => 'createTable',
+                )
+            )
+        );
+    }
+
     public function handleOld()
     {
         // Look if Bronto folder exists in local codepool and recursively remove if it is

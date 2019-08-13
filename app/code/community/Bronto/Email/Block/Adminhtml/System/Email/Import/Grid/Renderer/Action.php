@@ -43,13 +43,13 @@ class Bronto_Email_Block_Adminhtml_System_Email_Import_Grid_Renderer_Action exte
             'caption' => $this->__('Edit'),
         );
 
-        $stores = Mage::app()->getStores();
+        $stores = Mage::app()->getStores(true);
         if (is_array($stores) && count($stores) >= 1) {
             foreach ($stores as $store) {
                 if (Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
                     $actions[] = array(
                         'url'     => $this->getUrl('*/*/massImport', array('template_id' => $row->getId(), 'store_id' => $store->getId())),
-                        'caption' => $this->__('Import For Store: ' . $store->getName()),
+                        'caption' => $this->__('Import For Store: ' . (!$store->getId() ? 'Default' : $store->getName())),
                         'confirm' => Mage::helper('bronto_email')->__('Are you sure you want to import the selected template?'),
                     );
                 }

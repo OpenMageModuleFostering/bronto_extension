@@ -53,6 +53,19 @@ class Bronto_Common_Adminhtml_DebugController extends Mage_Adminhtml_Controller_
     }
 
     /**
+     * Runs the API send queue
+     */
+    public function sendAction()
+    {
+        $helper = Mage::helper('bronto_common/api');
+        $result = Mage::getModel('bronto_common/observer')->processSendForScope();
+        $this->_getSession()->addSuccess(sprintf("Processed %d Deliveries (%d Error / %d Success)", $result['total'], $result['error'], $result['success']));
+        $returnParams = array('section' => 'bronto_api');
+        $returnParams = array_merge($returnParams, $helper->getScopeParams());
+        $this->_redirect('*/system_config/edit', $returnParams);
+    }
+
+    /**
      * Sends an archive to the browser
      */
     public function archiveAction()

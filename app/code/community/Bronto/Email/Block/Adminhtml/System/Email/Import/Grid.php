@@ -7,6 +7,16 @@
 class Bronto_Email_Block_Adminhtml_System_Email_Import_Grid extends Mage_Adminhtml_Block_System_Email_Template_Grid
 {
 
+    /**
+     * Turn off AJAX for this grid, as it kicks back to the Dashboard
+     * @see parent
+     */
+    protected function _construct()
+    {
+        parent::_construct();
+        $this->setUseAjax(false);
+    }
+
     protected function _prepareCollection()
     {
         /* @var $collection Bronto_Email_Model_Mysql4_Template_Collection */
@@ -16,7 +26,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Import_Grid extends Mage_Adminht
         $brontoTable   = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
 
         // Apply conditional logic to handle 1.9 overriding collection _construct
-        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
             $collection->getSelect()->joinLeft(
                 $brontoTable,
                 "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
@@ -60,13 +70,13 @@ class Bronto_Email_Block_Adminhtml_System_Email_Import_Grid extends Mage_Adminht
         $this->setMassactionIdField('template_id');
         $this->getMassactionBlock()->setFormFieldName('template_id');
 
-        $stores = Mage::app()->getStores();
+        $stores = Mage::app()->getStores(true);
         if (is_array($stores) && count($stores) >= 1) {
             foreach ($stores as $store) {
                 if (Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
                     $this->getMassactionBlock()->addItem('import|' . $store->getCode(), array(
                             'url'     => $this->getUrl('*/*/massImport', array('template_id' => '', 'store_id' => $store->getId())),
-                            'label'   => Mage::helper('bronto_email')->__('Import For Store: ' . $store->getName()),
+                            'label'   => Mage::helper('bronto_email')->__('Import For Store: ' . (!$store->getId() ? 'Default' : $store->getName())),
                             'confirm' => Mage::helper('bronto_email')->__('Are you sure?  This will import the selected template(s) to Bronto for the specified store.'),
                         ));
                 }

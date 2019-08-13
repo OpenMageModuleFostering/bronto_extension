@@ -16,6 +16,8 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
     const XML_PATH_SHOW_REGISTRAR  = 'bronto_newsletter/checkout/show_to_registrars';
     const XML_PATH_SHOW_SUBSCRIBED = 'bronto_newsletter/checkout/show_if_subscribed';
     const XML_PATH_LABEL_TEXT      = 'bronto_newsletter/checkout/label_text';
+    const XML_PATH_CHECKBOX_CSS    = 'bronto_newsletter/checkout/css_selector';
+    const XML_PATH_CHECKBOX_STYLE  = 'bronto_newsletter/checkout/checkbox_style';
     const XML_PATH_INSTALL_DATE    = 'bronto_newsletter/settings/install_date';
     const XML_PATH_UPGRADE_DATE    = 'bronto_newsletter/settings/upgrade_date';
 
@@ -83,6 +85,30 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
     public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
     {
         return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
+    }
+
+    /**
+     * Gets the CSS selector for the checkbox
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return string
+     */
+    public function getCssSelector($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_CHECKBOX_CSS, $scope, $scopeId);
+    }
+
+    /**
+     * Gets the Checkbox styles
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return string
+     */
+    public function getCheckboxStyle($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_CHECKBOX_STYLE, $scope, $scopeId);
     }
 
     /**

@@ -39,34 +39,6 @@ class Bronto_Reviews_Model_Observer
     }
 
     /**
-     * Get Contact Row Object to use
-     *
-     * @return Bronto_Api_Contact_Row
-     */
-    public function getContact()
-    {
-        if (!$this->_contact) {
-            // Retrieve Store's configured API Token
-            $token = $this->_helper->getApiToken('store', $this->getOrder()->getStoreId());
-
-            /** @var Bronto_Common_Model_Api $api */
-            $api = $this->_helper->getApi($token, 'store', $this->getOrder()->getStoreId());
-
-            /** @var Bronto_Api_Contact $contactObject */
-            $contactObject = $api->getContactObject();
-
-            /** @var Bronto_Api_Contact_Row $brontoContact */
-            $brontoContact        = $contactObject->createRow(array());
-            $brontoContact->email = $this->getOrder()->getCustomerEmail();
-            $brontoContact->save();
-
-            $this->setContact($brontoContact);
-        }
-
-        return $this->_contact;
-    }
-
-    /**
      * Set Order to use
      *
      * @param Mage_Sales_Model_Order $order
@@ -259,7 +231,11 @@ class Bronto_Reviews_Model_Observer
             $delivery = $this->getDeliveryObject();
             $result = $delivery->update(array('id' => $deliveryId, 'status' => 'skipped'));
             if ($result->hasErrors()) {
-                $error = implode('<br />', $result->getErrors());
+                $errors = array();
+                foreach ($result->getErrors() as $soapFault) {
+                    $errors[] = $soapFault['code'] . ": " . $soapFault['message'];
+                }
+                $error = implode('<br />', $errors);
 
                 Mage::throwException($error);
             }
@@ -268,159 +244,46 @@ class Bronto_Reviews_Model_Observer
         }
     }
 
-    protected function _setIneligibleRecipients($delivery, $storeId)
-    {
-        $helper = Mage::helper('bronto_reviews');
-        $listIds = $helper->getExclusionLists('store', $storeId);
-        if ($listIds) {
-            $listObject = $delivery->getApi()->getListObject();
-            try {
-                $lists = $listObject->read(array('id' => $listIds));
-                foreach ($lists as $list) {
-                    if ($list->hasError()) {
-                        continue;
-                    }
-                    $delivery->recipients[] = array(
-                        'type' => 'list',
-                        'id' => $list->id,
-                        'deliveryType' => 'ineligible'
-                    );
-                }
-            } catch (Exception $e) {
-                $helper->writeError('Failed to exlude lists: ' . $e->getMessage());
-            }
-        }
-    }
-
     /**
      * Create Delivery With Order Details
      */
     protected function _makeDelivery()
     {
+        $helper = $this->_helper;
         try {
-            // Get Delivery Object
-            $this->_helper->writeDebug('    Creating Delivery Row');
 
-            /** @var $deliveryRow Bronto_Api_Delivery_Row */
-            $deliveryRow = $this->getDeliveryRow();
-
-            // Get Order Object
-            /** @var $order Mage_Sales_Model_Order */
             $order = $this->getOrder();
-
-            // Get Contact Object
-            $this->_helper->writeDebug('    Creating Contact Object for email: ' . $order->getCustomerEmail());
-            /** @var $contact Bronto_Api_Contact_Row */
-            $contact = $this->getContact();
-
-            // Create Recipient
-            $deliveryRecipientObject = array(
-                'type' => 'contact',
-                'id'   => $contact->id
+            $storeId = $order->getStoreId();
+            $sender = array(
+                'name' => $helper->getReviewSenderName('store', $storeId),
+                'email' => $helper->getReviewSenderEmail('store', $storeId)
             );
-            $exclusionRecipients = Mage::getModel('bronto_common/list', 'bronto_reviews')
-                ->addAdditionalRecipients($order->getStoreId());
-            array_unshift($exclusionRecipients, $deliveryRecipientObject);
 
-            // Create Send Time
-            $sendTime = date('c', strtotime('+' . abs($this->_helper->getReviewSendPeriod('store', $order->getStoreId())) . ' days'));
-            $this->_helper->writeDebug('    Delivery being set for ' . $sendTime);
+            $message = new Bronto_Api_Message_Row();
+            $message->id = $helper->getReviewSendMessage('store', $storeId);
 
-            // Create Delivery Row
-            $deliveryRow->start      = $sendTime;
-            $deliveryRow->messageId  = $this->_helper->getReviewSendMessage('store', $order->getStoreId());
-            $deliveryRow->type       = 'marketing';
-            $deliveryRow->fromEmail  = $this->_helper->getReviewSenderEmail('store', $order->getStoreId());
-            $deliveryRow->fromName   = $this->_helper->getReviewSenderName('store', $order->getStoreId());
-            $deliveryRow->replyEmail = $this->_helper->getReviewReplyTo('store', $order->getStoreId());
-            $deliveryRow->recipients = $exclusionRecipients;
-            $deliveryRow->fields     = $this->_buildFields();
-
-            // Save Delivery
-            $this->_helper->writeDebug('    Saving Delivery Row');
-            $deliveryRow->save();
-
-            // Verbose Logging
-            $this->_helper->writeVerboseDebug('===== FLUSH =====', 'bronto_reviews_api.log');
-            $this->_helper->writeVerboseDebug(var_export($this->getDeliveryObject()->getApi()->getLastRequest(), true), 'bronto_reviews_api.log');
-            $this->_helper->writeVerboseDebug(var_export($this->getDeliveryObject()->getApi()->getLastResponse(), true), 'bronto_reviews_api.log');
-
-            if ($deliveryRow->hasError()) {
-                Mage::throwException($deliveryRow->getErrorCode() . ' ' . $deliveryRow->getErrorMessage());
+            $helper->writeDebug(' Creating review delivery...');
+            $message = Mage::getModel('bronto_reviews/message')
+                ->setDesignConfig(array('area' => 'frontend', 'store' => $storeId))
+                ->setSalesRule($helper->getDefaultRule('store', $storeId))
+                ->setProductRecommendation($helper->getDefaultRecommendation('store', $storeId))
+                ->setTemplateSendType('marketing')
+                ->setOrderId($order->getId())
+                ->sendTransactional(
+                    $message,
+                    $sender,
+                    array($order->getCustomerEmail()),
+                    array($order->getCustomerName()),
+                    array('order' => $order),
+                    $storeId
+                );
+            if ($message->getSentSuccess()) {
+                $helper->writeDebug(' Successfully created delivery.');
             } else {
-                $this->setDeliveryId($deliveryRow->id);
-                $this->_helper->writeLog("Review Request sent to {$order->getCustomerEmail()}. Delivery ID: {$deliveryRow->id}");
+                $helper->writeError(' Failed to sent the message.');
             }
         } catch (Exception $e) {
-            $this->_helper->writeError('Bronto Failed creating apiObject:' . $e->getMessage());
+            $helper->writeError('Bronto Failed creating apiObject:' . $e->getMessage());
         }
-    }
-
-    /**
-     * Get array of fields for delivery
-     *
-     * @return array
-     */
-    protected function _buildFields()
-    {
-        /** @var $order Mage_Sales_Model_Order */
-        $order = $this->getOrder();
-
-        // Build Fields
-        $fields = array(
-            array('name' => 'orderCustomerName', 'type' => 'html', 'content' => $order->getCustomerName()),
-            array('name' => 'orderIncrementId', 'type' => 'html', 'content' => $order->getIncrementId()),
-            array('name' => 'orderCreatedAt', 'type' => 'html', 'content' => $order->getCreatedAt()),
-        );
-
-        // Cycle through order items and create fields
-        $productInc = 1;
-        foreach ($order->getAllVisibleItems() as $item) {
-            // Get Store ID from Order
-            $storeId    = $order->getStoreId();
-
-            /** @var Mage_Catalog_Model_Product $product */
-            $product    = Mage::getModel('catalog/product')->setStoreId($storeId)->load($item->getProductId());
-
-            // Build Product URL with Suffix Config
-            $productUrl = Mage::helper('bronto_order')->getItemUrl($item, $product, $storeId);
-            $productUrl .= ltrim($this->_helper->getProductUrlSuffix('store', $storeId), '/');
-
-            $reviewUrl = $this->_helper->getReviewsUrl($product, $storeId);
-            $reviewUrl .= ltrim($this->_helper->getProductUrlSuffix('store', $storeId), '/');
-
-            // Add Reviews Url
-            $fields[] = array(
-                'name' => 'reviewUrl_' . $productInc,
-                'type' => 'html',
-                'content' => $reviewUrl
-            );
-
-            // Add Product Name Field
-            $fields[] = array(
-                'name' => 'productName_' . $productInc,
-                'type' => 'html',
-                'content' => $item->getName()
-            );
-
-            // Add Product Image Field
-            $fields[] = array(
-                'name' => 'productImgUrl_' . $productInc,
-                'type' => 'html',
-                'content' => Mage::helper('bronto_order')->getItemImg($item, $product, $storeId)
-            );
-
-            // Add Product URL Field
-            $fields[] = array(
-                'name' => 'productUrl_' . $productInc,
-                'type' => 'html',
-                'content' => $productUrl
-            );
-
-            // Increment Count
-            $productInc++;
-        }
-
-        return $fields;
     }
 }

@@ -251,9 +251,15 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
                     ->setOrigTemplateText($origTemplateText);
             }
 
-            $brontoTemplate
-                ->setTemplateSendType($sendType)
-                ->setSalesRule($request->getParam('sales_rule', null));
+            // Only set if the module is enabled, essentially
+            if ($request->has('product_recommendation')) {
+                $rec = $request->getParam('product_recommendation', null);
+                $brontoTemplate->setProductRecommendation($rec);
+            }
+
+            $salesRule = $request->getParam('sales_rule', null);
+            $brontoTemplate->setSalesRule($salesRule);
+            $brontoTemplate->setTemplateSendType($sendType);
 
             // If Template doesn't exist or added_at is not set, set it
             if (!$template->getId() || !$template->getAddedAt()) {

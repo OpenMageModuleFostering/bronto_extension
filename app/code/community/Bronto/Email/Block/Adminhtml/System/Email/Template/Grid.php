@@ -9,8 +9,8 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Grid extends Mage_Admin
     protected function _construct()
     {
         parent::_construct();
-
         $this->setId('systemBrontoEmailTemplateGrid');
+        $this->setUseAjax(false);
     }
 
     protected function _prepareCollection()
@@ -22,7 +22,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Grid extends Mage_Admin
         $brontoTable   = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
 
         // Apply conditional logic to handle 1.9 overriding collection _construct
-        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+        if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, array('edition' => 'Enterprise', 'major' => 9), 10))) {
             $collection->getSelect()->joinLeft(
                 $brontoTable,
                 "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
@@ -88,24 +88,15 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Grid extends Mage_Admin
             )
         );
 
-        $storeCodes = array();
-        foreach (Mage::app()->getStores() as $id => $store) {
-            $storeName = $store->getName();
-            if (!Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
-                $storeName .= ' (Disabled)';
-            }
-            $storeCodes[$id] = $storeName;
+        if (!Mage::app()->isSingleStoreMode()) {
+            $this->addColumn('store_id', array(
+                'header' => Mage::helper('adminhtml')->__('Store View'),
+                'type' => 'store',
+                'index' => 'store_id',
+                'sortable' => true,
+                'store_view' => true
+            ));
         }
-
-        $this->addColumn(
-            'store', array(
-                'header'   => Mage::helper('adminhtml')->__('Store'),
-                'index'    => 'store_id',
-                'type'     => 'options',
-                'options'  => $storeCodes,
-                'renderer' => 'bronto_email/adminhtml_system_email_template_grid_renderer_storename',
-            )
-        );
 
         $this->addColumn(
             'template_send_type',

@@ -27,6 +27,22 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
     }
 
     /**
+     * @return string
+     */
+    public function getCssSelector()
+    {
+        return Mage::helper('bronto_newsletter')->getCssSelector();
+    }
+
+    /**
+     * @return string
+     */
+    public function getCheckboxStyle()
+    {
+        return Mage::helper('bronto_newsletter')->getCheckboxStyle();
+    }
+
+    /**
      * @return bool
      */
     public function isEnabledCheckedByDefault()
@@ -83,7 +99,8 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
      */
     public function getRequestUrl()
     {
-        return Mage::getSingleton('core/url')->getUrl('btnewsletter/index/checkbox', array('_secure' => true));
+        $store = Mage::app()->getStore();
+        return Mage::getSingleton('core/url')->getUrl('btnewsletter/index/checkbox', array('_secure' => $store->isCurrentlySecure()));
     }
 
     /**
@@ -93,7 +110,8 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
      */
     public function getSubscribeUrl()
     {
-        return Mage::getSingleton('core/url')->getUrl('btnewsletter/index/subscribe', array('_secure' => true));
+        $store = Mage::app()->getStore();
+        return Mage::getSingleton('core/url')->getUrl('btnewsletter/index/subscribe', array('_secure' => $store->isCurrentlySecure()));
     }
 
     /**

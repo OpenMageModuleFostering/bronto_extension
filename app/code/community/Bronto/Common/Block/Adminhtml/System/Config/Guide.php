@@ -22,7 +22,9 @@ class Bronto_Common_Block_Adminhtml_System_Config_Guide extends Mage_Adminhtml_B
         'bronto_reminder',
         'bronto_email',
         'bronto_verify',
+        'bronto_coupon',
         'bronto_popup',
+        'bronto_product',
         'bronto_reviews',
     );
 

@@ -8,15 +8,17 @@ class Bronto_Reviews_Helper_Data
     extends Bronto_Common_Helper_Data
     implements Bronto_Common_Helper_DataInterface
 {
-    const XML_PATH_ENABLED       = 'bronto_reviews/settings/enabled';
-    const XML_PATH_STATUS        = 'bronto_reviews/settings/status';
-    const XML_PATH_CANCEL_STATUS = 'bronto_reviews/settings/cancel_status';
-    const XML_PATH_URL_SUFFIX    = 'bronto_reviews/settings/url_suffix';
-    const XML_PATH_PERIOD        = 'bronto_reviews/settings/period';
-    const XML_PATH_MESSAGE       = 'bronto_reviews/settings/message';
-    const XML_PATH_SENDER_EMAIL  = 'bronto_reviews/settings/sender_email';
-    const XML_PATH_SENDER_NAME   = 'bronto_reviews/settings/sender_name';
-    const XML_PATH_REPLY_TO      = 'bronto_reviews/settings/reply_to';
+    const XML_PATH_ENABLED        = 'bronto_reviews/settings/enabled';
+    const XML_PATH_STATUS         = 'bronto_reviews/settings/status';
+    const XML_PATH_CANCEL_STATUS  = 'bronto_reviews/settings/cancel_status';
+    const XML_PATH_URL_SUFFIX     = 'bronto_reviews/settings/url_suffix';
+    const XML_PATH_PERIOD         = 'bronto_reviews/settings/period';
+    const XML_PATH_MESSAGE        = 'bronto_reviews/settings/message';
+    const XML_PATH_SENDER_EMAIL   = 'bronto_reviews/settings/sender_email';
+    const XML_PATH_SENDER_NAME    = 'bronto_reviews/settings/sender_name';
+    const XML_PATH_REPLY_TO       = 'bronto_reviews/settings/reply_to';
+    const XML_PATH_DEFAULT_COUPON = 'bronto_reviews/settings/default_coupon';
+    const XML_PATH_DEFAULT_REC    = 'bronto_reviews/settings/default_recommendation';
 
     /**
      * Gets the canonical name for the Bronto Review module
@@ -67,6 +69,30 @@ class Bronto_Reviews_Helper_Data
     public function getReviewSendStatus($scope = 'default', $scopeId = 0)
     {
         return $this->getAdminScopedConfig(self::XML_PATH_STATUS, $scope, $scopeId);
+    }
+
+    /**
+     * Gets the coupon code selected for this review
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return string
+     */
+    public function getDefaultRule($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_DEFAULT_COUPON, $scope, $scopeId);
+    }
+
+    /**
+     * Gets the product recommendation selected for this review
+     *
+     * @param string $scope
+     * @param int $scopeId
+     * @return string
+     */
+    public function getDefaultRecommendation($scope = 'default', $scopeId)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_DEFAULT_REC, $scope, $scopeId);
     }
 
     /**

@@ -18,9 +18,11 @@ class Bronto_Cron_Os_Script extends Mage_Shell_Abstract {
      */
     protected $_validCronTasks = array(
         'api',
+        'send',
         'customer',
         'newsletter',
         'order',
+        'product',
         'reminder',
     );
 
@@ -57,6 +59,8 @@ USAGE;
     {
         if ($task == 'api') {
             $task = 'common/' . $task;
+        } else if ($task == 'send') {
+            return Mage::helper('bronto_common/api')->getSendName();
         }
         return Mage::helper('bronto_' . $task)->getName();
     }
@@ -74,9 +78,11 @@ USAGE;
 Tasks:
 
   api           {$this->_getTaskName('api')}
+  send          {$this->_getTaskName('send')}
   customer      {$this->_getTaskName('customer')}
   newsletter    {$this->_getTaskName('newsletter')}
   order         {$this->_getTaskName('order')}
+  product       {$this->_getTaskName('product')}
   reminder      {$this->_getTaskName('reminder')}
 
 
@@ -123,6 +129,9 @@ LIST;
                     case 'api':
                         $result = Mage::getModel('bronto_common/observer')->processApiErrors();
                         break;
+                    case 'send':
+                        $result = Mage::getModel('bronto_common/observer')->processSendQueue();
+                        break;
                     case 'customer':
                         $result = Mage::getModel('bronto_customer/observer')->processCustomers(true);
                         break;
@@ -131,6 +140,9 @@ LIST;
                         break;
                     case 'order':
                         $result = Mage::getModel('bronto_order/observer')->processOrders(true);
+                        break;
+                    case 'product':
+                        $result = Mage::getModel('bronto_product/observer')->processContentTags();
                         break;
                     case 'reminder':
                         $result = Mage::getModel('bronto_reminder/observer')->scheduledNotification(true);

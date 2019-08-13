@@ -7,6 +7,27 @@
 class Bronto_Newsletter_IndexController extends Mage_Core_Controller_Front_Action
 {
     /**
+     * Endpoint for integrated popup submissions
+     */
+    public function SubmitAction()
+    {
+        $email = $this->getRequest()->getParam('emailAddress');
+        try {
+            if (Mage::helper('bronto_common')->isSubscribeToMagento()) {
+                // Note: this will send email confirmation or success, depending
+                $subscriber = Mage::getModel('newsletter/subscriber')
+                    ->loadByEmail($email)
+                    ->setSubscribeSource('popup')
+                    ->subscribe($email);
+            }
+            $this->getResponse()->setBody('success');
+        } catch (Exception $e) {
+            Mage::helper('bronto_newsletter')->writeError($e);
+            $this->getResponse()->setBody($e->getMessage());
+        }
+    }
+
+    /**
      * Retrieve Checkbox HTML
      */
     public function CheckboxAction()

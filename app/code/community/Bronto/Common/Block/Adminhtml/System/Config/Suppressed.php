@@ -37,8 +37,11 @@ class Bronto_Common_Block_Adminhtml_System_Config_Suppressed
         $this->setElement($element);
         $html = $this->_getHeaderHtml($element);
 
-        $html .= $this->toHtml();
+        foreach ($element->getSortedElements() as $elem) {
+            $html .= $elem->toHtml();
+        }
 
+        $html .= $this->toHtml();
         $html .= $this->_getFooterHtml($element);
 
         return $html;
@@ -50,6 +53,16 @@ class Bronto_Common_Block_Adminhtml_System_Config_Suppressed
      * @return string
      */
     public function getAjaxUrl()
+    {
+        return '';
+    }
+
+    /**
+     * Get URL for reset AJAX call
+     *
+     * @return string
+     */
+    public function getResetUrl()
     {
         return '';
     }

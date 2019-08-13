@@ -1012,7 +1012,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * @return Bronto_Verify_Model_Core_Config_Base|Mage_Core_Model_Config_Base
      */
-    public function loadModulesConfiguration($fileName, Mage_Core_Model_Config_Base $mergeToObject = null, $mergeModel = null)
+    public function loadModulesConfiguration($fileName, Bronto_Verify_Model_Core_Config_Base $mergeToObject = null, $mergeModel = null)
     {
         $disableLocalModules = !$this->_canUseLocalModules();
 

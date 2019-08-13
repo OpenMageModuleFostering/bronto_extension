@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Reminder>
-            <version>1.4.16</version>
+            <version>1.4.17</version>
         </Bronto_Reminder>
     </modules>
     <global>
@@ -52,8 +52,19 @@
             <bronto_reminder_setup>
                 <setup>
                     <module>Bronto_Reminder</module>
+                    <class>Bronto_Reminder_Model_Resource_Setup</class>
                 </setup>
             </bronto_reminder_setup>
+            <bronto_reminder_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </bronto_reminder_write>
+            <bronto_reminder_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </bronto_reminder_read>
         </resources>
         <events>
             <salesrule_rule_get_coupon_types>

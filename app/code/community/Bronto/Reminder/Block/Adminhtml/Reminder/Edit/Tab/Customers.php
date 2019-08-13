@@ -56,6 +56,15 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Customers extends Mage_A
             'renderer' => 'bronto_reminder/adminhtml_widget_grid_column_renderer_email'
         ));
 
+        $this->addColumn('grid_store', array(
+            'header' => Mage::helper('bronto_reminder')->__('Store View'),
+            'type' => 'store',
+            'skipAllStoresLabel' => true,
+            'index' => 'store_id',
+            'sortable' => false,
+            'store_view' => true,
+        ));
+
         $this->addColumn('grid_associated_at', array(
             'header'  => Mage::helper('bronto_reminder')->__('Matched At'),
             'align'   => 'left',

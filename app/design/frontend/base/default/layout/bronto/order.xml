@@ -9,5 +9,14 @@
             </block>
         </reference>
     </default>
+    <checkout_onepage_success>
+        <reference name="content">
+          <block type="bronto_order/redemption" name="bronto.redemption" as="bronto_redemption" after="-">
+            <action method="setTemplate">
+              <template>bronto/order/redemption.phtml</template>
+            </action>
+          </block>
+        </reference>
+    </checkout_onepage_success>
 </layout>
 

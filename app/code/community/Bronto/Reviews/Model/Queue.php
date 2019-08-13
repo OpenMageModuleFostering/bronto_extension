@@ -12,15 +12,14 @@ class Bronto_Reviews_Model_Queue extends Mage_Core_Model_Abstract
         parent::_construct();
         $this->_init('bronto_reviews/queue');
     }
-    
-    public function load($id = false, $column = false)
+
+    public function load($id, $column = null)
     {
         parent::load($id, 'order_id');
-        
         if (!$this->getId()) {
             $this->setId($id);
         }
-        
+
         return $this;
     }
 }

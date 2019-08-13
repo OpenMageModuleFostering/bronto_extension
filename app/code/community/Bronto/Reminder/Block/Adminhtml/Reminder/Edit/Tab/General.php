@@ -41,6 +41,16 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
             'values'   => Mage::helper('bronto_common/salesrule')->getRuleOptionsArray(),
         ));
 
+        if (Mage::helper('bronto_product')->isEnabledForAny()) {
+            $fieldset->addField("product_recommendation_id", 'select', array(
+                'name' => "product_recommendation_id",
+                'required' => false,
+                'label' => $this->__('Product Recommendations'),
+                'values' => Mage::getModel('bronto_product/recommendation')->toOptionArray('None Selected'),
+                'note' => $this->__('Inject related product content into this message. Recommendations are created in <strong>Promotions</strong> &raquo; <strong>Bronto Product Recommendations')
+            ));
+        }
+
         if (!Mage::app()->isSingleStoreMode()) {
             $fieldset->addField('website_ids', 'multiselect', array(
                 'name'     => 'website_ids',

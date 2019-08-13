@@ -42,7 +42,7 @@ class Bronto_Common_Model_Observer
         $sentry->disableModules($scope, $scopeId, true);
 
         // Unlink all Emails
-        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, 9)) {
+        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('edition' => 'Enterprise', 'major' => 9)))) {
             $sentry->unlinkEmails(
                 Mage::getModel('bronto_email/message')->getCollection(),
                 $scope,
@@ -149,6 +149,113 @@ class Bronto_Common_Model_Observer
             $results['total']++;
         }
 
+        return $results;
+    }
+
+    /**
+     * Cron to process email sending
+     *
+     * @return array
+     */
+    public function processSendQueue($cron = null)
+    {
+        $results = array(
+            'total' => 0,
+            'success' => 0,
+            'error' => 0
+        );
+        $stores = Mage::app()->getStores(true);
+        foreach ($stores as $store) {
+            foreach ($this->processSendForStore($store) as $field => $count) {
+                $results[$field] += $count;
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * Processes the website sends
+     *
+     * @param int $websiteId
+     * @return array
+     */
+    public function processSendForSite($websiteId)
+    {
+        $results = array(
+            'total' => 0,
+            'success' => 0,
+            'error' => 0,
+        );
+        $website = Mage::app()->getWebsite($websiteId);
+        foreach ($website->getStores() as $store) {
+            foreach ($this->processSendForStore($store) as $field => $count) {
+                $results[$field] += $count;
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * Processes the send queue for a given scope
+     *
+     * @return array
+     */
+    public function processSendForScope()
+    {
+        $scopeParams = Mage::helper('bronto_common')->getScopeParams();
+        if ($scopeParams['store']) {
+            return $this->processSendForStore($scopeParams['store_id']);
+        } else if ($scopeParams['website']) {
+            return $this->processSendForSite($scopeParams['website_id']);
+        } else {
+            return $this->processSendQueue();
+        }
+    }
+
+    /**
+     * Processes the send queue for a given store
+     *
+     * @param int storeId
+     * @return array
+     */
+    public function processSendForStore($storeId)
+    {
+        $results = array(
+            'total' => 0,
+            'success' => 0,
+            'error' => 0,
+        );
+        $helper = Mage::helper('bronto_common/api');
+        $singleton = Mage::getModel('bronto_common/queue');
+        $store = Mage::app()->getStore($storeId);
+        if (!$helper->canUseQueue('store', $store->getId())) {
+            return $results;
+        }
+
+        $api = $helper->getApi(null, 'store', $store->getId());
+        $collection = $singleton->getCollection()
+            ->orderByOldest()
+            ->getReadyEntries()
+            ->getEntriesForStore($store->getId())
+            ->setPageSize($helper->getSendLimit('store', $store->getId()))
+            ->getItems();
+        $singleton->flagForHolding($collection);
+
+        foreach ($collection as $queue) {
+            $results['total']++;
+            try {
+                if ($queue->setApi($api)->send()) {
+                    $results['success']++;
+                } else {
+                    $results['error']++;
+                }
+            } catch (Exception $e) {
+                $helper->writeError('Error in delivery for store ' . $store->getId() . ': ' . $e->getMessage());
+                $results['error']++;
+            }
+            // Pop, in either case
+            $queue->delete();
+        }
         return $results;
     }
 

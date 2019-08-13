@@ -23,6 +23,7 @@ class Bronto_Fix_Os_Script extends Mage_Shell_Abstract {
         'news',
         'newsletter',
         'order',
+        'product',
         'reminder',
         'reviews',
     );
@@ -69,7 +70,7 @@ USAGE;
      * @see run
      */
     public function run() {
-        $action = $this->getArg('action') ?: $this->getArg('a');
+        $action = $this->getArg('action') ? $this->getArg('action') : $this->getArg('a');
 
         switch ($action) {
             case 'list':
@@ -84,6 +85,7 @@ Tasks:
   news          {$this->_getTaskName('news')}
   newsletter    {$this->_getTaskName('newsletter')}
   order         {$this->_getTaskName('order')}
+  product       {$this->_getTaskName('product')}
   reminder      {$this->_getTaskName('reminder')}
   reviews       {$this->_getTaskName('reviews')}
 
