@@ -21,12 +21,12 @@
                 <settings translate="label">
                     <label>Settings</label>
                     <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_reminder/adminhtml_system_config_settings</frontend_model>
                     <sort_order>1</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <expanded>1</expanded>
-                    <comment><![CDATA[Additional configuration located at: <strong>Promotions &rsaquo; <a href="/admin/reminders/">Bronto Reminder Emails</a></strong><br/><br/>]]></comment>
                     <fields>
                         <enabled translate="label">
                             <label>Enable Module</label>
@@ -38,13 +38,23 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </enabled>
+                        <allow_send translate="label">
+                            <label>Allow Sending Reminders</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Selecting 'Yes' will allow emails to being sending.  'No' will allow matching customers but will not send emails</comment>
+                        </allow_send>
                         <frequency translate="label">
                             <label>Frequency</label>
                             <depends><enabled>1</enabled></depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_frequency</source_model>
                             <backend_model>bronto_reminder/system_config_backend_cron</backend_model>
-                            <sort_order>2</sort_order>
+                            <sort_order>3</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -55,7 +65,7 @@
                             <depends><frequency>I</frequency></depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_minutes</source_model>
-                            <sort_order>3</sort_order>
+                            <sort_order>4</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -63,9 +73,10 @@
                         </interval>
                         <minutes translate="label">
                             <label>Minute of the Hour</label>
+                            <depends><enabled>1</enabled></depends>
                             <depends><frequency>H</frequency></depends>
                             <frontend_type>text</frontend_type>
-                            <sort_order>3</sort_order>
+                            <sort_order>5</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -75,7 +86,7 @@
                             <label>Start Time</label>
                             <depends><enabled>1</enabled></depends>
                             <frontend_type>time</frontend_type>
-                            <sort_order>4</sort_order>
+                            <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
@@ -84,7 +95,7 @@
                             <label>Maximum Emails per Run</label>
                             <depends><enabled>1</enabled></depends>
                             <frontend_type>text</frontend_type>
-                            <sort_order>5</sort_order>
+                            <sort_order>7</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -93,7 +104,7 @@
                             <label>Email Send Failure Threshold</label>
                             <depends><enabled>1</enabled></depends>
                             <frontend_type>text</frontend_type>
-                            <sort_order>6</sort_order>
+                            <sort_order>8</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>

@@ -46,11 +46,11 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Itemsquantity extends Bronto_Rem
     /**
      * Get SQL select for matching shopping cart items count
      *
-     * @param $customer
+     * @param $rule
      * @param int              | Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
         $table = $this->getResource()->getTable('sales/quote');
         $operator = $this->getResource()->getSqlOperator($this->getOperator());
@@ -61,7 +61,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Itemsquantity extends Bronto_Rem
         $this->_limitByStoreWebsite($select, $website, 'quote.store_id');
         $select->where('quote.is_active = 1');
         $select->where("quote.items_count {$operator} ?", $this->getValue());
-        $select->where($this->_createCustomerFilter($customer, 'quote.customer_id'));
+        $select->where('quote.entity_id = root.quote_id');
         $select->limit(1);
 
         return $select;

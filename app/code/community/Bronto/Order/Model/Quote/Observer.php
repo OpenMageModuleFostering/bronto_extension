@@ -20,11 +20,12 @@ class Bronto_Order_Model_Quote_Observer
         
         /* @var $contactQueue Bronto_Order_Model_Queue */
         $orderRow = Mage::getModel('bronto_order/queue')
-                ->getOrderRow($quote->getReservedOrderId(), $quote->getId(), $quote->getStoreId());
+                ->getOrderRow(null, $quote->getId(), $quote->getStoreId());
         
         foreach (Mage::getModel('core/cookie')->get() as $key => $value) {
             if (stripos($key, "tid_") !== false) {
                 $orderRow->setBrontoTid($value)->save();
+                
                 break;
             }
         }

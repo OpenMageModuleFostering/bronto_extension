@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+        <reference name="before_body_end">
+            <block type="bronto_order/bta" name="bronto.bta" as="bronto_bta"/>
+        </reference>
+    </default>
+</layout>
+

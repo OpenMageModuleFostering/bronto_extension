@@ -16,6 +16,6 @@ class Bronto_Reminder_Block_Adminhtml_Widget_Grid_Column_Renderer_Email extends 
     protected function _getValue(Varien_Object $row)
     {
         $customerEmail = $this->htmlEscape($row->getData($this->getColumn()->getIndex()));
-        return '<a href="mailto:' . $customerEmail . '">' . $this->htmlEscape($customerEmail) . '</a>';
+        return $this->htmlEscape($customerEmail);
     }
 }

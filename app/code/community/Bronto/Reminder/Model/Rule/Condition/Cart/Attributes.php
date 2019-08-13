@@ -63,11 +63,11 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
     /**
      * Build condition limitations sql string for specific website
      *
-     * @param $customer
+     * @param $rule
      * @param int              | Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
         $quoteTable = $this->getResource()->getTable('sales/quote');
         $quoteItemTable = $this->getResource()->getTable('sales/quote_item');
@@ -105,7 +105,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
         $this->_limitByStoreWebsite($select, $website, 'quote.store_id');
         $select->where('quote.is_active = 1');
         $select->where("{$field} {$operator} ?", $this->getValue());
-        $select->where($this->_createCustomerFilter($customer, 'quote.customer_id'));
+        $select->where('quote.entity_id = root.quote_id');
         $select->limit(1);
         return $select;
     }

@@ -41,10 +41,18 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
                 if ($limit = Mage::helper('bronto_reminder')->getOneRunLimit()) {
                     $confirm .= ' ' . Mage::helper('bronto_reminder')->__('Up to %s customers may receive a reminder email after this action.', $limit);
                 }
-                $this->_addButton('run_now', array(
-                    'label'   => Mage::helper('bronto_reminder')->__('Send Now'),
-                    'onclick' => "confirmSetLocation('{$confirm}', '{$this->getRunUrl()}')"
-                ), -1);
+
+                $sendButtonSettings = array(
+                    'label'   => Mage::helper('bronto_reminder')->__('Send Now')
+                );
+
+                if (!Mage::helper('bronto_reminder')->isAllowSend()) {
+                    $sendButtonSettings['disabled'] = 'disabled';
+                } else {
+                    $sendButtonSettings['onclick'] = "confirmSetLocation('{$confirm}', '{$this->getRunUrl()}')";
+                }
+
+                $this->_addButton('run_now', $sendButtonSettings, -1);
             }
 
             $this->_addButton('save_and_continue_edit', array(

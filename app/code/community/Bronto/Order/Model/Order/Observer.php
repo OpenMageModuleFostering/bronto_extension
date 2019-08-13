@@ -54,7 +54,17 @@ class Bronto_Order_Model_Order_Observer
         
         /* @var $contactQueue Bronto_Order_Model_Queue */
         $orderRow = Mage::getModel('bronto_order/queue')
-                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId());
+        
+        foreach (Mage::getModel('core/cookie')->get() as $key => $value) {
+            if (stripos($key, "tid") !== false) {
+                $orderRow->setBrontoTid($value);
+                
+                break;
+            }
+        }
+        
+        $orderRow
                 ->setCreatedAt($order->getCreatedAt())
                 ->setUpdatedAt($order->getUpdatedAt())
                 ->setBrontoImported(null)

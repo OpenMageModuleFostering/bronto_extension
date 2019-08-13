@@ -40,18 +40,22 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
         if (!Mage::helper('bronto_newsletter')->isEnabled()) {
             return;
         }
-        Mage::getSingleton('checkout/session')->unsIsSubscribed();
-        $params = Mage::app()->getRequest()->getParams();
         
-        if (
-            isset($params['billing']['is_subscribed']) && 
-            ($params['billing']['is_subscribed'] === '1' ||
-            $params['billing']['is_subscribed'] === '0')
-        ) {
-            $isSubscribed = (int) $params['billing']['is_subscribed'];
-            Mage::getSingleton('checkout/session')->setIsSubscribed($isSubscribed);
-        } else {
-            Mage::getSingleton('checkout/session')->setIsSubscribed(self::BOX_NOT_CHANGED);
+        $controllerAction = $observer->getControllerAction();
+        if ($controllerAction instanceof Mage_Checkout_OnepageController) {
+            Mage::getSingleton('checkout/session')->unsIsSubscribed();
+            $params = Mage::app()->getRequest()->getParams();
+
+            if (
+                isset($params['billing']['is_subscribed']) && 
+                ($params['billing']['is_subscribed'] === '1' ||
+                $params['billing']['is_subscribed'] === '0')
+            ) {
+                $isSubscribed = (int) $params['billing']['is_subscribed'];
+                Mage::getSingleton('checkout/session')->setIsSubscribed($isSubscribed);
+            } else {
+                Mage::getSingleton('checkout/session')->setIsSubscribed(self::BOX_NOT_CHANGED);
+            }
         }
         
         return $observer;
@@ -85,6 +89,14 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             return;
         }
         
+        // Get Subscription status from session
+        $isSubscribed = Mage::getSingleton('checkout/session')->getIsSubscribed();
+        
+        // If Subscription status isn't set, we do nothing
+        if (!is_int($isSubscribed)) {
+            return $observer;
+        }
+        
         try {
             // Get e-mail address we are working with
             $email = $observer->getEvent()->getOrder()->getData('customer_email');
@@ -105,9 +117,6 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
                 Mage::helper('bronto_newsletter')->writeError('Unable to create contact object');
                 return false;
             }
-            
-            // Get Subscription status
-            $isSubscribed = Mage::getSingleton('checkout/session')->getIsSubscribed();
             
             // Determine action
             switch ($isSubscribed) {

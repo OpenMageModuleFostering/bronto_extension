@@ -210,6 +210,11 @@ class Bronto_Common_Model_Email_Message_Filter
                     $this->_filterQuote($value);
                 }
 
+                // Wishlist
+                if ($value instanceOf Mage_Wishlist_Model_Wishlist) {
+                    $this->_filterWishlist($value);
+                }
+
                 // Product
                 if ($value instanceOf Mage_Catalog_Model_Product) {
                     $this->_filterProduct($value);
@@ -416,7 +421,7 @@ class Bronto_Common_Model_Email_Message_Filter
                     $index++;
                 }
             }
-
+            
             $queryParams       = $this->getQueryParams();
             $queryParams['id'] = urlencode(base64_encode(Mage::helper('core')->encrypt($quote->getId())));
             if ($store = $this->getStore()) {
@@ -466,6 +471,75 @@ class Bronto_Common_Model_Email_Message_Filter
         if (!$product) {
             $product = Mage::getModel('catalog/product')->load($item->getProductId());
         }
+        $this->_filterProduct($product, $index);
+
+        return $this;
+    }
+
+    /**
+     * @param Mage_Wishlist_Model_Wishlist              $wishlist
+     * @return Bronto_Common_Model_Email_Message_Filter
+     */
+    protected function _filterWishlist(Mage_Wishlist_Model_Wishlist $wishlist)
+    {
+        if (!in_array('wishlist', $this->_filteredObjects)) {
+            $index = 1;
+            foreach ($wishlist->getItemCollection() as $item /* @var $item Mage_Wishlist_Model_Item */) {
+                if (!$item->getParentItem()) {
+                    $this->_filterWishlistItem($item, $index);
+                    $index++;
+                }
+            }
+
+            $queryParams                = $this->getQueryParams();
+            $queryParams['wishlist_id'] = urlencode(base64_encode(Mage::helper('core')->encrypt($wishlist->getId())));
+            if ($store = $this->getStore()) {
+                $this->setField('wishlistURL', $store->getUrl('reminder/load/index', $queryParams));
+            } else {
+                $this->setField('wishlistURL', Mage::getUrl('reminder/load/index', $queryParams));
+            }
+
+            // Setup wishlist items as a template
+            if (class_exists('Bronto_Reminder_Block_Wishlist_Items', false)) {
+                $layout = Mage::getSingleton('core/layout');
+
+                /* @var $items Mage_Sales_Block_Items_Abstract */
+                $items = $layout->createBlock('bronto/bronto_reminder_wishlist_items', 'items');
+                $items->setTemplate('bronto/reminder/items.phtml');
+                $items->setWishlist($item->getWishlist());
+
+                // When emailing from the admin, we need to ensure that we're using templates from the frontend
+                Mage::getDesign()->setArea('frontend');
+                $this->setField("wishlistItems", $items->toHtml());
+            }
+
+            $this->_filteredObjects[] = 'wishlist';
+        }
+        return $this;
+    }
+
+    /**
+     * @param Mage_Wishlist_Model_Item              $item
+     * @return Bronto_Common_Model_Email_Message_Filter
+     */
+    protected function _filterWishlistItem(Mage_Wishlist_Model_Item $item, $index = null)
+    {
+        if ($item->getParentItem()) {
+            return $this;
+        }
+        
+        $this->setField("productName_{$index}",  $item->getName());
+        $this->setField("productPrice_{$index}", number_format($item->getPrice(), 2));
+        $this->setField("productQty_{$index}",   $item->getQty());
+        $this->setField("productUrl_{$index}",   $this->_getWishlistItemUrl($item));
+
+        /* @var $product Mage_Catalog_Model_Product */
+        $product = $item->getProduct();
+        if (!$product) {
+            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+        }
+        $this->setField("productSku_{$index}",   $product->getSku()); 
+        
         $this->_filterProduct($product, $index);
 
         return $this;
@@ -651,6 +725,25 @@ class Bronto_Common_Model_Email_Message_Filter
      * @return string
      */
     protected function _getQuoteItemUrl(Mage_Sales_Model_Quote_Item $item)
+    {
+        if ($item->getRedirectUrl()) {
+            return $item->getRedirectUrl();
+        }
+
+        $product = $item->getProduct();
+        $option  = $item->getOptionByCode('product_type');
+        if ($option) {
+            $product = $option->getProduct();
+        }
+
+        return $product->getUrlModel()->getUrl($product);
+    }
+
+    /**
+     * @param Mage_Wishlist_Model_Item $item
+     * @return string
+     */
+    protected function _getWishlistItemUrl(Mage_Wishlist_Model_Item $item)
     {
         if ($item->getRedirectUrl()) {
             return $item->getRedirectUrl();

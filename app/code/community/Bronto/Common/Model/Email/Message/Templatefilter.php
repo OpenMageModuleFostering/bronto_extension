@@ -97,6 +97,11 @@ class Bronto_Common_Model_Email_Message_Templatefilter extends Mage_Core_Model_E
             switch (trim($params['url'],'/')) {
                 case 'checkout/cart':
                     return $this->_addBrontoStyle('cartURL');
+                case 'wishlist/wishlist':
+                case 'wishlist/index':
+                case 'wishlist/index/index':
+                case 'wishlist':
+                    return $this->_addBrontoStyle('wishlistURL');
                 case 'customer/account':
                     return $this->_addBrontoStyle('customerURL');
                 case 'adminhtml/index/resetpassword':

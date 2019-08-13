@@ -48,7 +48,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Cus
     private function _getCustomerAttributes()
     {
         if ($this->_customerAttributes === null) {
-            $this->_customerAttributes = Mage::getModel('customer/entity_attribute_collection')->addVisibleFilter();
+            $this->_customerAttributes = Mage::getModel('customer/entity_attribute_collection');
         }
 
         return $this->_customerAttributes;

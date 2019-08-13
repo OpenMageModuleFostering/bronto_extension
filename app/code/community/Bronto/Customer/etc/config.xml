@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Customer>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </Bronto_Customer>
     </modules>
     <global>
@@ -21,6 +21,11 @@
                 <class>Bronto_Customer_Model</class>
                 <resourceModel>bronto_customer_mysql4</resourceModel>
             </bronto_customer>
+            <bronto_customer_resource>
+                <rewrite>
+                    <customer_resource>Bronto_Company_Model_Resource_Customer</customer_resource>
+                </rewrite>
+            </bronto_customer_resource>
             <bronto_customer_mysql4>
                 <class>Bronto_Customer_Model_Mysql4</class>
                 <entities>
@@ -79,9 +84,9 @@
                             <children>
                                 <config>
                                     <children>
-                                        <bronto>
+                                        <bronto_customer>
                                             <title>Bronto Customer Import Section</title>
-                                        </bronto>
+                                        </bronto_customer>
                                     </children>
                                 </config>
                             </children>

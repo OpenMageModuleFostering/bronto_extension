@@ -15,6 +15,10 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
      */
     protected function _prepareLayout()
     {
+        $missingCustomers = $this->helper('bronto_customer')->getMissingCustomers(true);        
+        if ($missingCustomers > 0) {
+            $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_sync'));
+        }
         $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_reset'));
         $this->addButton($this->getLayout()->createBlock('bronto_customer/adminhtml_widget_button_run'));
 
@@ -27,6 +31,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
     protected function getProgressBarTotal()
     {
         return $this->getCustomerResourceCollection()
+            ->addBrontoNotSuppressedFilter()
             ->getSize()
         ;
     }
@@ -38,6 +43,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
     {
         return $this->getCustomerResourceCollection()
             ->addBrontoNotImportedFilter()
+            ->addBrontoNotSuppressedFilter()
             ->getSize();
     }
 

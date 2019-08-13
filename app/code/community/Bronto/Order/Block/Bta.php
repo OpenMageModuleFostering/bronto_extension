@@ -15,17 +15,16 @@ class Bronto_Order_Block_Bta extends Mage_Core_Block_Text
      */
     protected function _toHtml()
     {
-        $siteId = '';
-        $host   = '';
+        if (!Mage::helper('bronto_order')->isModuleEnabled()) {
+            return;
+        }
 
         return "
-            <script>
-            (function(d,t){
-                var b=d.createElement(t), s=d.getElementsByTagName(t)[0];
-                b.src='//p.bm23.com/bta.js';
-                b.onload = function(){ var bta = new __bta('{$siteId}'); bta.setHost('{$host}'); };
-                s.parentNode.insertBefore(b,s)
-            }(document,'script'));
-            </script>";
+<script type=\"text/javascript\">
+	document.write(unescape(\"%3Cscript src='\"
+		+ ((document.location.protocol == \"https:\") ? \"https:\" : \"http:\")
+		+ \"//p.bm23.com/bta.js' type='text/javascript'%3E%3C/script%3E\"));
+</script>
+";
     }
 }

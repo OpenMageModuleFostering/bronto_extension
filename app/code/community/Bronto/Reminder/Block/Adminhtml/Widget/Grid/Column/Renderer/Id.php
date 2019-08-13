@@ -16,6 +16,9 @@ class Bronto_Reminder_Block_Adminhtml_Widget_Grid_Column_Renderer_Id extends Mag
     protected function _getValue(Varien_Object $row)
     {
         $customerId = $this->htmlEscape($row->getData($this->getColumn()->getIndex()));
+        if (is_null($customerId)) {
+            return 'Guest';
+        }
         return '<a href="' . Mage::getSingleton('adminhtml/url')->getUrl('*/customer/edit',
             array('id' => $customerId)) . '">' . $customerId . '</a>';
     }

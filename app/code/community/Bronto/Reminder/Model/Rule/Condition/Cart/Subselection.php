@@ -65,11 +65,11 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Subselection extends Bronto_Remi
     /**
      * Build query for matching shopping cart items
      *
-     * @param $customer
+     * @param $rule
      * @param int              | Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    protected function _prepareConditionsSql($customer, $website)
+    protected function _prepareConditionsSql($rule, $website)
     {
         $select = $this->getResource()->createSelect();
         $quoteTable = $this->getResource()->getTable('sales/quote');
@@ -85,7 +85,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Subselection extends Bronto_Remi
 
         $this->_limitByStoreWebsite($select, $website, 'quote.store_id');
         $select->where('quote.is_active = 1');
-        $select->where($this->_createCustomerFilter($customer, 'quote.customer_id'));
+        $select->where('quote.entity_id = root.quote_id');
         $select->limit(1);
 
         return $select;

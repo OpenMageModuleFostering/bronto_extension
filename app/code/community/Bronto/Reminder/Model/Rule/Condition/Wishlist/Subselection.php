@@ -65,11 +65,11 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Subselection extends Bronto_
     /**
      * Build query for matching wishlist items
      *
-     * @param $customer
+     * @param $rule
      * @param int              | Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    protected function _prepareConditionsSql($customer, $website)
+    protected function _prepareConditionsSql($rule, $website)
     {
         $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
@@ -84,7 +84,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Subselection extends Bronto_
         );
 
         $this->_limitByStoreWebsite($select, $website, 'item.store_id');
-        $select->where($this->_createCustomerFilter($customer, 'list.customer_id'));
+        $select->where($this->_createCustomerFilter('list.customer_id'));
         $select->limit(1);
 
         return $select;

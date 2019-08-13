@@ -22,6 +22,10 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
      */
     protected function _prepareLayout()
     {
+        $missingOrders = $this->helper('bronto_order')->getMissingOrders(true);   
+        if ($missingOrders > 0) {
+            $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_sync'));
+        }
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_reset'));
         $this->addButton($this->getLayout()->createBlock('bronto_order/adminhtml_widget_button_run'));
 
@@ -34,6 +38,8 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     protected function getProgressBarTotal()
     {
         return $this->getOrderResourceCollection()
+            ->addBrontoNotSuppressedFilter()
+            ->addBrontoHasOrderFilter()
             ->getSize();
     }
 
@@ -44,6 +50,8 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     {
         return $this->getOrderResourceCollection()
             ->addBrontoNotImportedFilter()
+            ->addBrontoNotSuppressedFilter()
+            ->addBrontoHasOrderFilter()
             ->getSize();
     }
 

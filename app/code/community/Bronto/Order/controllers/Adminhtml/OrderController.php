@@ -66,6 +66,39 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
         
         $this->_redirect('*/system_config/edit', array('section' => 'bronto_order'));
     }
+    
+    /**
+     * Pull Orders from Order Table if not in queue
+     */
+    public function syncAction()
+    {
+        $imported = 0;
+        $waiting  = 0;
+        
+        try {
+            $orders = Mage::helper('bronto_order')->getMissingOrders();             
+            $waiting   = $orders->count();
+            
+            if ($waiting > 0) {
+                foreach ($orders as $order) {
+                    Mage::getModel('bronto_order/queue')->getOrderRow($order->getEntityId(), null, $order->getStoreId())
+                        ->setQuoteId($order->getQuoteId())
+                        ->setCreatedAt($order->getCreatedAt())
+                        ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
+                        ->setBrontoImported(0)
+                        ->save();
+
+                    $imported++;
+                }
+            }
+        } catch (Exception $e) {
+            Mage::helper('bronto_order')->writeError($e);
+            $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
+        }
+        
+        $this->_getSession()->addSuccess(sprintf("%d of %d Orders were added to the Queue", $imported, $waiting));
+        $this->_redirect('*/system_config/edit', array('section' => 'bronto_order'));
+    }
 
     /**
      * @return bool

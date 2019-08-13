@@ -101,24 +101,24 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_General extends Mage_Adm
             'format'       => $dateFormatIso
         ));
 
-        $subfieldset = $form->addFieldset('sub_fieldset', array(
-            'legend'  => Mage::helper('bronto_reminder')->__('Repeat Schedule'),
-            'comment' => '
-                By default, a rule will only send a Reminder Email to a customer once.
-                To allow a rule to re-send a message (as long as the conditions still match) to a customer, you must configure the Repeat Schedule.
-            ',
-        ));
-
-        $subfieldset->addField('schedule', 'text', array(
-            'name'  => 'schedule',
-            'label' => Mage::helper('bronto_reminder')->__('Schedule (Days)'),
-            'note'  => '
-                Enter days, comma-separated.<br/>
-                <strong>Examples:</strong><br/>
-                "<span style="font-family:monospace">0</span>": Message to be sent again the same day.<br/>
-                "<span style="font-family:monospace">1</span>": Message to be sent again the next day.<br/>
-            ',
-        ));
+//        $subfieldset = $form->addFieldset('sub_fieldset', array(
+//            'legend'  => Mage::helper('bronto_reminder')->__('Repeat Schedule'),
+//            'comment' => '
+//                By default, a rule will only send a Reminder Email to a customer once.
+//                To allow a rule to re-send a message (as long as the conditions still match) to a customer, you must configure the Repeat Schedule.
+//            ',
+//        ));
+//
+//        $subfieldset->addField('schedule', 'text', array(
+//            'name'  => 'schedule',
+//            'label' => Mage::helper('bronto_reminder')->__('Schedule (Days)'),
+//            'note'  => '
+//                In what number of days to repeat reminder email, if the rule condition still matches. Enter days, comma-separated.<br/>
+//                <strong>Examples:</strong><br/>
+//                "<span style="font-family:monospace">0</span>": Message to be sent again the same day.<br/>
+//                "<span style="font-family:monospace">1</span>": Message to be sent again the next day.<br/>
+//            ',
+//        ));
 
         $form->setValues($model->getData());
         $this->setForm($form);

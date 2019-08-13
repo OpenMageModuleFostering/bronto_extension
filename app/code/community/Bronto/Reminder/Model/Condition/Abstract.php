@@ -38,9 +38,9 @@ class Bronto_Reminder_Model_Condition_Abstract extends Mage_Rule_Model_Condition
      * @param string    $fieldName
      * @return string
      */
-    protected function _createCustomerFilter($customer, $fieldName)
+    protected function _createCustomerFilter($fieldName)
     {
-        return "{$fieldName} = root.entity_id";
+        return "{$fieldName} = root.customer_id";
     }
 
     /**

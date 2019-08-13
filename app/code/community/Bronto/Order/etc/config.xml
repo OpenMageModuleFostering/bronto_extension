@@ -2,18 +2,10 @@
 <config>
     <modules>
         <Bronto_Order>
-            <version>1.1.7</version>
+            <version>1.1.8</version>
         </Bronto_Order>
     </modules>
     <global>
-        <fieldsets>
-            <sales_convert_quote>
-                <bronto_tid><to_order>*</to_order></bronto_tid>
-            </sales_convert_quote>
-            <sales_convert_order>
-                <bronto_tid><to_quote>*</to_quote></bronto_tid>
-            </sales_convert_order>
-        </fieldsets>
         <helpers>
             <bronto_order>
                 <class>Bronto_Order_Helper</class>
@@ -88,6 +80,13 @@
         </events>
     </global>
     <frontend>
+        <layout>
+            <updates>
+                <bronto_order>
+                    <file>bronto/order.xml</file>
+                </bronto_order>
+            </updates>
+        </layout>
         <events>
             <sales_quote_save_after>
                 <observers>

@@ -23,6 +23,10 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Add
         'region_id',
         'suffix',
         'vat_id',
+        'vat_is_valid',
+        'vat_request_id',
+        'vat_request_date',
+        'vat_request_success',
     );
     
     protected $_configPath = Bronto_Customer_Helper_Data::XML_PREFIX_ADDRESS_ATTR;
@@ -42,7 +46,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Add
     private function _getAddressAttributes()
     {
         if ($this->_addressAttributes === null) {
-            $this->_addressAttributes = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
+            $this->_addressAttributes = Mage::getModel('customer/entity_address_attribute_collection');
         }
 
         return $this->_addressAttributes;

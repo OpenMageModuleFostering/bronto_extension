@@ -57,13 +57,45 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
         
         foreach ($collection->getItems() as $customerRow) {
             try {
-                $customerRow->setBrontoImported(null)->save();
+                $customerRow->setBrontoImported(null)->setBrontoSuppressed(null)->save();
             } catch (Exception $e) {
                 Mage::helper('bronto_customer')->writeError($e);
                 $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
             }
         }
 
+        $this->_redirect('*/system_config/edit', array('section' => 'bronto_customer'));
+    }
+    
+    /**
+     * Pull Customers from Customer Table if not in queue
+     */
+    public function syncAction()
+    {
+        $imported = 0;
+        $waiting  = 0;
+        
+        try {
+            $customers = Mage::helper('bronto_customer')->getMissingCustomers();             
+            $waiting   = $customers->count();
+            
+            if ($waiting > 0) {
+                foreach ($customers as $customer) {
+                    Mage::getModel('bronto_customer/queue')->getCustomerRow($customer->getEntityId(), $customer->getStoreId())
+                        ->setCreatedAt($customer->getCreatedAt())
+                        ->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate())
+                        ->setBrontoImported($customer->getBrontoImported())
+                        ->save();
+
+                    $imported++;
+                }
+            }
+        } catch (Exception $e) {
+            Mage::helper('bronto_customer')->writeError($e);
+            $this->_getSession()->addError('Sync failed: ' . $e->getMessage());
+        }
+        
+        $this->_getSession()->addSuccess(sprintf("%d of %d Customers were added to the Queue", $imported, $waiting));
         $this->_redirect('*/system_config/edit', array('section' => 'bronto_customer'));
     }
 

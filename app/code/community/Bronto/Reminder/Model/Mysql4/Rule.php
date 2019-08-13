@@ -201,17 +201,23 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
 
     /**
      * @param int    $ruleId
+     * @param int    $storeId
      * @param int    $customerId
      * @param string $messageId
      * @return array
      */
-    public function getRuleLogItemsData($ruleId, $customerId, $messageId = null)
+    public function getRuleLogItemsData($ruleId, $storeId, $customerId, $messageId = null)
     {
+        $couponTable = $this->getTable('bronto_reminder/coupon');
         $logTable = $this->getTable('bronto_reminder/log');
 
         $select = $this->createSelect()->from(array('l' => $logTable));
+        $select->joinInner(
+            array('c' => $couponTable),
+            "c.rule_id = {$ruleId} AND c.store_id = {$storeId} AND c.customer_id = {$customerId} AND c.unique_id = l.unique_id",
+            array()
+        );
         $select->where('l.rule_id = ?', $ruleId);
-        $select->where('l.customer_id = ?', $customerId);
         if (!empty($messageId)) {
             $select->where('l.bronto_message_id = ?', $messageId);
         }
@@ -311,14 +317,12 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
      */
     public function saveMatchedCustomers($rule, $salesRule, $websiteId, $threshold=null)
     {
-        /* This was moved out to Bronto_Reminder_Model_Rule::_matchCustomers() */
-//         $rule->setConditions(null);
-//         $rule->afterLoad();
-        $select = $rule->getConditions()->getConditionsSql(null, $websiteId);
+        $select = $rule->getConditions()->getConditionsSql($rule, $websiteId);
 
         if (!$rule->getConditionSql()) {
             return $this;
         }
+        
         if ($threshold) {
             $select->where('c.emails_failed IS NULL OR c.emails_failed < ? ', $threshold);
         }
@@ -330,9 +334,10 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
         $dataToInsert = array();
         Mage::helper('bronto_reminder')->writeDebug('ruleId: ' . $rule->getId() . ' website: ' . $websiteId, 'bronto_reminder_sql.log');
         Mage::helper('bronto_reminder')->writeDebug($select->__toString(), 'bronto_reminder_sql.log');
+
         /* @var $stmt Varien_Db_Statement_Pdo_Mysql */
         $stmt = $adapter->query($select, array('rule_id' => $ruleId));
-
+        
         Mage::helper('bronto_reminder')->writeDebug('saveMatchedCustomers():', 'bronto_reminder_sql.log');
 
         try {
@@ -349,7 +354,12 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
                 $dataToInsert[] = array(
                     'rule_id'       => $ruleId,
                     'coupon_id'     => $couponId,
-                    'customer_id'   => $row['entity_id'],
+                    'unique_id'     => $row['unique_id'],
+                    'store_id'      => $row['store_id'],
+                    'customer_id'   => $row['customer_id'],
+                    'quote_id'      => $row['quote_id'],
+                    'wishlist_id'   => $row['wishlist_id'],
+                    'visitor_id'    => $row['visitor_id'],
                     'associated_at' => $currentDate,
                     'is_active'     => '1'
                 );
@@ -362,6 +372,7 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
                     $dataToInsert = array();
                 }
             }
+            
             $this->_saveMatchedCustomerData($dataToInsert);
             $adapter->commit();
         } catch (Exception $e) {
@@ -402,7 +413,7 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
 
         $select = $this->createSelect()->from(
             array('c' => $couponTable),
-            array('customer_id', 'coupon_id', 'rule_id')
+            array('rule_id', 'coupon_id', 'unique_id', 'store_id', 'customer_id', 'quote_id', 'wishlist_id', 'visitor_id')
         );
 
         $select->join(
@@ -413,7 +424,7 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
 
         $select->joinLeft(
             array('l' => $logTable),
-            'c.rule_id=l.rule_id AND c.customer_id=l.customer_id',
+            'c.rule_id=l.rule_id AND c.unique_id=l.unique_id',
             array()
         );
 
@@ -422,7 +433,7 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
         }
 
         $select->where('c.is_active = 1');
-        $select->group(array('c.customer_id', 'c.rule_id'));
+        $select->group(array('c.unique_id', 'c.rule_id'));
         $select->having("(MAX(l.sent_at) IS NULL) OR (FIND_IN_SET(TO_DAYS('{$currentDate}') - TO_DAYS(MIN(l.sent_at)), r.schedule))");
 
         if ($limit) {
@@ -452,11 +463,11 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
      * @param int                               $customerId
      * @return Bronto_Reminder_Model_Mysql4_Rule
      */
-    public function addNotificationLog($ruleId, $customerId, $deliveryId = null, $messageId = null)
+    public function addNotificationLog($ruleId, $uniqueId, $deliveryId = null, $messageId = null)
     {
         $data = array(
             'rule_id'            => $ruleId,
-            'customer_id'        => $customerId,
+            'unique_id'          => $uniqueId,
             'sent_at'            => $this->formatDate(time()),
             'bronto_delivery_id' => $deliveryId,
             'bronto_message_id'  => $messageId,
@@ -496,5 +507,21 @@ class Bronto_Reminder_Model_Mysql4_Rule extends Mage_Core_Model_Mysql4_Abstract
         );
         $select->where('r.salesrule_id = ?', $salesruleId);
         return $this->_getReadAdapter()->fetchOne($select);
+    }
+    
+    /**
+     * Remove row from coupon table by column, value and store_id
+     * 
+     * @param type $column
+     * @param type $value
+     * @param type $storeId
+     * @return Bronto_Reminder_Model_Mysql4_Rule
+     */
+    public function removeFromReminders($column, $value, $storeId)
+    {
+        $where = "$column = $value AND store_id = $storeId";
+        $this->_getWriteAdapter()->delete($this->getTable('bronto_reminder/coupon'), $where);
+        
+        return $this;
     }
 }

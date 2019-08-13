@@ -27,6 +27,15 @@ class Bronto_Customer_Model_Mysql4_Queue_Collection
         $this->addFieldToFilter('bronto_imported', array('notnull' => true));
         return $this;
     }
+    
+    /**
+     * @return Bronto_Order_Model_Mysql4_Queue_Collection
+     */
+    public function addBrontoSuppressedFilter()
+    {
+        $this->addFieldToFilter('bronto_suppressed', array('notnull' => true));
+        return $this;
+    }
 
     /**
      * @return Bronto_Order_Model_Mysql4_Queue_Collection
@@ -34,6 +43,15 @@ class Bronto_Customer_Model_Mysql4_Queue_Collection
     public function addBrontoNotImportedFilter()
     {
         $this->addFieldToFilter('bronto_imported', array('null' => true));
+        return $this;
+    }
+
+    /**
+     * @return Bronto_Order_Model_Mysql4_Queue_Collection
+     */
+    public function addBrontoNotSuppressedFilter()
+    {
+        $this->addFieldToFilter('bronto_suppressed', array('null' => true));
         return $this;
     }
 

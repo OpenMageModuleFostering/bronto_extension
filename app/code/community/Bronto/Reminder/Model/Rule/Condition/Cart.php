@@ -54,10 +54,10 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     {
         $this->setOperatorOption(array(
             '==' => Mage::helper('rule')->__('for'),
-            '>'  => Mage::helper('rule')->__('for greater than'),
-            '>=' => Mage::helper('rule')->__('for or greater than'),
-            '<'  => Mage::helper('rule')->__('for less than'),
-            '<=' => Mage::helper('rule')->__('for or less than'),
+//            '>'  => Mage::helper('rule')->__('for greater than'),
+//            '>=' => Mage::helper('rule')->__('for or greater than'),
+//            '<'  => Mage::helper('rule')->__('for less than'),
+//            '<=' => Mage::helper('rule')->__('for or less than'),
         ));
         return $this;
     }
@@ -95,8 +95,8 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Shopping cart is not empty and abandoned %s %s %s and %s of these conditions match:',
-                $this->getOperatorElementHtml(),
+            . Mage::helper('bronto_reminder')->__('Shopping cart is not empty and abandoned for %s %s and %s of these conditions match:',
+//                $this->getOperatorElementHtml(),
                 $this->getValueElementHtml(),
                 $this->getAttributeElementHtml(),
                 $this->getAggregatorElement()->getHtml())
@@ -106,11 +106,11 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     /**
      * Get condition SQL select
      *
-     * @param int|Zend_Db_Expr $customer
+     * @param $rule
      * @param int|Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    protected function _prepareConditionsSql($customer, $website)
+    protected function _prepareConditionsSql($rule, $website)
     {
         $interval       = Mage::helper('bronto_reminder')->getCronInterval();
         $attributeValue = strtolower($this->getAttribute());
@@ -136,7 +136,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
                 break;
             case 'days':
             default:
-                $currentDateStart = now(true);
+                $currentDateStart = now(false);
                 $durationSql      = 'DAY';
                 $conditionValue   = (int) $this->getValue();
                 if ($conditionValue < 1) {
@@ -150,7 +150,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
         }
 
         $table = $this->getResource()->getTable('sales/quote');
-        $operator = $this->getResource()->getSqlOperator($this->getOperator());
+        $operator = '='; //$this->getResource()->getSqlOperator($this->getOperator());
 
         $select = $this->getResource()->createSelect();
         $select->from(array('quote' => $table), array(new Zend_Db_Expr(1)));
@@ -163,35 +163,31 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
                     // cart + X hour(s) <= [now] <= cart + (X hour(s) * 60) + interval minute(s)
                     // 3 hours: cart + 180 minutes <= [now] <= cart + 195 minutes
                     $conditionValueInMinutes = $conditionValue * 60;
-                    $select->where("'{$currentDateStart}' >= DATE_ADD(quote.updated_at, INTERVAL ? HOUR)",   $conditionValue);
-                    $select->where("'{$currentDateStart}' <= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValueInMinutes + $interval);
+                    $select->where("STR_TO_DATE('{$currentDateStart}',GET_FORMAT(DATETIME,'ISO')) >= DATE_ADD(quote.updated_at, INTERVAL ? HOUR)",   $conditionValue);
+                    $select->where("STR_TO_DATE('{$currentDateStart}',GET_FORMAT(DATETIME,'ISO')) <= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValueInMinutes + $interval);
                     break;
                 case 'minutes':
                     // cart + X minute(s) <= [now] <= cart + X minute(s) + interval minute(s)
                     // 60 minutes: cart + 60 minutes <= [now] <= cart + 75 minutes
-                    $select->where("'{$currentDateStart}' >= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValue);
-                    $select->where("'{$currentDateStart}' <= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValue + $interval);
+                    $select->where("STR_TO_DATE('{$currentDateStart}',GET_FORMAT(DATETIME,'ISO')) >= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValue);
+                    $select->where("STR_TO_DATE('{$currentDateStart}',GET_FORMAT(DATETIME,'ISO')) <= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValue + $interval);
                     break;
                 case 'days':
                 default:
                     // cart + X day(s) <= [now] <= cart + (X day(s) * 1440) + interval minute(s)
                     // 1 day: cart + 1 day <= [now] <= cart + 1455 minutes
                     $conditionValueInMinutes = $conditionValue * 1440;
-                    $select->where("'{$currentDateStart}' >= DATE_ADD(quote.updated_at, INTERVAL ? DAY)",    $conditionValue);
-                    $select->where("'{$currentDateStart}' <= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValueInMinutes + $interval);
+                    $select->where("STR_TO_DATE('{$currentDateStart}',GET_FORMAT(DATETIME,'ISO')) >= DATE_ADD(quote.updated_at, INTERVAL ? DAY)",    $conditionValue);
+                    $select->where("STR_TO_DATE('{$currentDateStart}',GET_FORMAT(DATETIME,'ISO')) <= DATE_ADD(quote.updated_at, INTERVAL ? MINUTE)", $conditionValueInMinutes + $interval);
                     break;
             }
         } else {
             if ($operator == '>=') {
-                if ($conditionValue > 0) {
-                    $conditionValue--;
-                } else {
+                if (!$conditionValue > 0) {
                     $currentDateStart = now();
                 }
             } elseif ($operator == '<=') {
-                if ($conditionValue > 0) {
-                    $conditionValue++;
-                } else {
+                if (!$conditionValue > 0) {
                     $currentDateStart = now();
                 }
             }
@@ -201,7 +197,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
 
         $select->where('quote.is_active = 1');
         $select->where('quote.items_count > 0');
-        $select->where($this->_createCustomerFilter($customer, 'quote.customer_id'));
+        $select->where('quote.entity_id = root.quote_id');
         $select->limit(1);
 
         return $select;
@@ -210,20 +206,20 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     /**
      * Get base SQL select
      *
-     * @param int|Zend_Db_Expr $customer
+     * @param $rule
      * @param int|Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
-        $select     = $this->_prepareConditionsSql($customer, $website);
+        $select     = $this->_prepareConditionsSql($rule, $website);
         $required   = $this->_getRequiredValidation();
         $aggregator = ($this->getAggregator() == 'all') ? ' AND ' : ' OR ';
         $operator   = $required ? '=' : '<>';
         $conditions = array();
 
         foreach ($this->getConditions() as $condition) {
-            if ($sql = $condition->getConditionsSql($customer, $website)) {
+            if ($sql = $condition->getConditionsSql($rule, $website)) {
                 $conditions[] = "(IFNULL(($sql), 0) {$operator} 1)";
             }
         }
@@ -231,7 +227,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
         if (!empty($conditions)) {
             $select->where(implode($aggregator, $conditions));
         }
-
+        
         return $select;
     }
 }

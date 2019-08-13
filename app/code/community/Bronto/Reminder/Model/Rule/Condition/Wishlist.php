@@ -54,8 +54,8 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
     {
         $this->setOperatorOption(array(
             '==' => Mage::helper('rule')->__('for'),
-            '>'  => Mage::helper('rule')->__('for greater than'),
-            '>=' => Mage::helper('rule')->__('for or greater than')
+//            '>'  => Mage::helper('rule')->__('for greater than'),
+//            '>=' => Mage::helper('rule')->__('for or greater than')
         ));
         return $this;
     }
@@ -78,8 +78,8 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
     public function asHtml()
     {
         return $this->getTypeElementHtml()
-            . Mage::helper('bronto_reminder')->__('Wishlist is not empty and abandoned %s %s days and %s of these conditions match:',
-                $this->getOperatorElementHtml(),
+            . Mage::helper('bronto_reminder')->__('Wishlist is not empty and abandoned for %s day(s) and %s of these conditions match:',
+//                $this->getOperatorElementHtml(),
                 $this->getValueElementHtml(),
                 $this->getAggregatorElement()->getHtml())
             . $this->getRemoveLinkHtml();
@@ -88,20 +88,21 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
      /**
      * Get condition SQL select
      *
-     * @param $customer
+     * @param $rule
      * @param $website
      * @return Varien_Db_Select
      */
-    protected function _prepareConditionsSql($customer, $website)
+    protected function _prepareConditionsSql($rule, $website)
     {
+        $interval       = Mage::helper('bronto_reminder')->getCronInterval();
         $conditionValue = (int)$this->getValue();
         if ($conditionValue < 1) {
             Mage::throwException(Mage::helper('bronto_reminder')->__('Root wishlist condition should have days value at least 1.'));
         }
 
-        $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
+        $wishlistTable     = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
-        $operator = $this->getResource()->getSqlOperator($this->getOperator());
+        $operator = '='; //$this->getResource()->getSqlOperator($this->getOperator());
 
         $select = $this->getResource()->createSelect();
         $select->from(array('item' => $wishlistItemTable), array(new Zend_Db_Expr(1)));
@@ -111,31 +112,34 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
             'item.wishlist_id = list.wishlist_id',
             array()
         );
-
+        
         $this->_limitByStoreWebsite($select, $website, 'item.store_id');
-        $select->where("UNIX_TIMESTAMP('" . now() . "' - INTERVAL ? DAY) {$operator} UNIX_TIMESTAMP(list.updated_at)", $conditionValue);
-        $select->where($this->_createCustomerFilter($customer, 'list.customer_id'));
+        $conditionValueInMinutes = $conditionValue * 1440;
+        $select->where("STR_TO_DATE('".now()."',GET_FORMAT(DATETIME,'ISO')) >= DATE_ADD(list.updated_at, INTERVAL ? DAY)",    $conditionValue);
+        $select->where("STR_TO_DATE('".now()."',GET_FORMAT(DATETIME,'ISO')) <= DATE_ADD(list.updated_at, INTERVAL ? MINUTE)", $conditionValueInMinutes + $interval);
+        $select->where($this->_createCustomerFilter('list.customer_id'));
         $select->limit(1);
+        
         return $select;
     }
 
     /**
      * Get base SQL select
      *
-     * @param $customer
+     * @param $rule
      * @param $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
-        $select     = $this->_prepareConditionsSql($customer, $website);
+        $select     = $this->_prepareConditionsSql($rule, $website);
         $required   = $this->_getRequiredValidation();
         $aggregator = ($this->getAggregator() == 'all') ? ' AND ' : ' OR ';
         $operator   = $required ? '=' : '<>';
         $conditions = array();
 
         foreach ($this->getConditions() as $condition) {
-            if ($sql = $condition->getConditionsSql($customer, $website)) {
+            if ($sql = $condition->getConditionsSql($rule, $website)) {
                 $conditions[] = "(IFNULL(($sql), 0) {$operator} 1)";
             }
         }

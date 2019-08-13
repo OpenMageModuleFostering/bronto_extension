@@ -136,7 +136,7 @@ class Bronto_Roundtrip_Helper_Data
      */
     public function setRoundtripStatus($path, $value, $scope = null, $scopeId = null)
     {
-        $scope   = (in_array($scope, 'default', 'websites', 'stores')) ? $scope : 'default';
+        $scope   = (in_array($scope, array('default', 'websites', 'stores'))) ? $scope : 'default';
         $scopeId = (is_int($scopeId)) ? $scopeId : 0;
         
         return Mage::getSingleton('core/config')

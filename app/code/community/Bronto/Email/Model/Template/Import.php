@@ -46,6 +46,7 @@ class Bronto_Email_Model_Template_Import extends Mage_Core_Model_Email_Template
     public function importTemplates()
     {
         $allStores = Mage::app()->getStores();
+        
         //process existing
         $token = Mage::helper('bronto_common')->getApiToken();
         if($token) {
@@ -60,8 +61,9 @@ class Bronto_Email_Model_Template_Import extends Mage_Core_Model_Email_Template
                 $this->processMessage($template);
             }
         }
+        
         //process defaults
-        foreach ($allStores as $_eachStoreId => $val)
+        foreach (array_keys($allStores) as $_eachStoreId)
         {
             $_storeCode = Mage::app()->getStore($_eachStoreId)->getCode();
             $_storeId = Mage::app()->getStore($_eachStoreId)->getId();
@@ -74,14 +76,13 @@ class Bronto_Email_Model_Template_Import extends Mage_Core_Model_Email_Template
 
                 //process default
                 $templates = Mage::getModel('bronto_common/email_message')->getDefaultTemplates();
-                $i = 0;
-                foreach($templates as $templateToLoad => $temp) {
+                foreach(array_keys($templates) as $templateToLoad) {
                     $template = Mage::getModel('bronto_common/email_message');
                     $template->loadDefault($templateToLoad);
                     $template->setOrigTemplateCode($templateToLoad);
                     $template->setTemplateCode($_storeCode . '_' . $templateToLoad);
-                    $template->setAddedAt(Varien_Date::formatDate(true, true));
-                    $template->unsTemplateId();
+                    $template->setAddedAt(Mage::getModel('core/date')->date('Y-m-d H:i:s'));
+                    //$template->unsTemplateId();
                     $template->setStoreId($_storeId);
                     $this->processMessage($template);
                 }
@@ -94,7 +95,7 @@ class Bronto_Email_Model_Template_Import extends Mage_Core_Model_Email_Template
     protected function processMessage($template)
     {
         $data = $template->getData();
-        $emt = Mage::getModel('bronto_common/email_message_templatefilter');
+        $emt  = Mage::getModel('bronto_common/email_message_templatefilter');
 
         if(!isset($data['bronto_message_id']) || $data['bronto_message_id'] == '') {
             try{
@@ -103,26 +104,40 @@ class Bronto_Email_Model_Template_Import extends Mage_Core_Model_Email_Template
                     'apiObject' => $this->_apiObject
                 ));
 
-                $message->name = $data['template_code'];
-                $message->status = 'active';
-                $message->content = array(
-                    array(
-                        'type' => 'html',
-                        'subject' => $emt->filter($data['template_subject']),
-                        'content' => $emt->filter($data['template_text']),
-                    ),
-                    array(
-                        'type' => 'text',
-                        'subject' => $emt->filter($data['template_subject']),
-                        'content' => $emt->filter($this->ripTags($data['template_text'])),
-                    )
-                );
-                $message->subject = $emt->filter($data['template_subject']);
-                $message->save();
-                $template->setBrontoMessageId($message->id);
-                $template->setBrontoMessageName($message->name);
-                $template->setBrontoMessageApproved(0);
-                $template->save();
+                // Add Check for required fields
+                if (array_key_exists('template_text', $data) && array_key_exists('template_subject', $data)) {                
+                    $message->name = $data['template_code'];
+                    $message->status = 'active';
+                    
+                    // Define variables for filtered Subject and Text
+                    $templateSubject = $emt->filter($data['template_subject']);
+                    $templateText    = $emt->filter($data['template_text']);
+                    $templateTextRip = $emt->filter($this->ripTags($data['template_text']));
+                    
+                    // Template has invalid or missing required attributes
+                    if ('' == $templateSubject || '' == $templateText || '' == $templateTextRip) {
+                        return;
+                    }
+                    
+                    $message->content = array(
+                        array(
+                            'type' => 'html',
+                            'subject' => $templateSubject,
+                            'content' => $templateText,
+                        ),
+                        array(
+                            'type' => 'text',
+                            'subject' => $templateSubject,
+                            'content' => $templateTextRip,
+                        )
+                    );
+                    $message->subject = $templateSubject;
+                    $message->save();
+                    $template->setBrontoMessageId($message->id);
+                    $template->setBrontoMessageName($message->name);
+                    $template->setBrontoMessageApproved(0);
+                    $template->save();
+                }
             }
             catch(Exception $e) {
                 Mage::log('Bronto Import:' . $e->getMessage());

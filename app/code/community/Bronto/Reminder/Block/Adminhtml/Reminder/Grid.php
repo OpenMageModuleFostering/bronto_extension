@@ -13,6 +13,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Grid extends Mage_Adminhtml_Block
         $this->setId('reminderGrid');
         $this->setIdFieldName('rule_id');
         $this->setDefaultSort('rule_id', 'asc');
+        $this->setDefaultFilter('is_active', '1');
     }
 
     protected function _prepareCollection()

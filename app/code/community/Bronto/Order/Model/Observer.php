@@ -30,13 +30,8 @@ class Bronto_Order_Model_Observer
      */
     public function processOrdersForStore($storeId = null)
     {
-        if (is_object($storeId)) {
-            $store   = $storeId;
-            $storeId = $store->getId();
-        } else {
-            $store   = Mage::app()->getStore($storeId);
-            $storeId = $store->getId();
-        }
+        $store   = Mage::app()->getStore($storeId);
+        $storeId = $store->getId();
         
         // Set the current store ID
         Mage::app()->setCurrentStore($storeId);
@@ -67,6 +62,8 @@ class Bronto_Order_Model_Observer
         $orderRows = Mage::getModel('bronto_order/queue')
             ->getCollection()
             ->addBrontoNotImportedFilter()
+            ->addBrontoNotSuppressedFilter()
+            ->addBrontoHasOrderFilter()
             ->orderByUpdatedAt()
             ->setPageSize($limit)
             ->addStoreFilter($storeId)
@@ -107,19 +104,54 @@ class Bronto_Order_Model_Observer
 
                     default:
                         // loop through the items. if it's a bundled item, replace the parent item with the child items.
-                        $items = $order->getAllVisibleItems();
-                        $i = 0;
-                        foreach ($items as $item) {
-                            if (count($item->getChildrenItems()) > 0) {
-                                unset($items[0]);
-                                foreach ($item->getChildrenItems() as $child_item) {
-                                    $items[] = $child_item;
-                                }
-                            }
-                            $i++;
-                        }
+                        $items     = $order->getAllVisibleItems();
+                        $fullItems = array(); // Keep product order by using a new array
+                        foreach ($items as $item) {                            
+                            $itemProduct = Mage::getModel('catalog/product')->load($item->getProductId());
+                            switch ($itemProduct->getTypeId()) {
+                                case Mage_Catalog_Model_Product_Type::TYPE_BUNDLE:
+                                    if (count($item->getChildrenItems()) > 0) {
+                                        foreach ($item->getChildrenItems() as $child_item) {
+                                            $fullItems[] = $child_item;
+                                        }
+                                    }
+                                    break;
+                                case Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE:
+                                    $childItems = $item->getChildrenItems();                                    
+                                    if (1 === count($childItems)) {
+                                        $childItem = $childItems[0];
+                                        
+                                        // Collect options applicable to the configurable product
+                                        $productAttributeOptions = $itemProduct->getTypeInstance(true)->getConfigurableAttributesAsArray($itemProduct);
 
-                        foreach ($items as $item /* @var $item Mage_Sales_Model_Order_Item */) {
+                                        // Build Selected Options Name
+                                        $nameWithOptions = array();
+                                        foreach ($productAttributeOptions as $productAttribute) {
+                                            $itemValue = $productHelper->getProductAttribute($childItem->getProductId(), $productAttribute['attribute_code']);
+                                            $nameWithOptions[] = $productAttribute['label'] . ': ' . $itemValue;
+                                        }
+                                        
+                                        // Set parent product name to include selected options
+                                        $parentName = $item->getName() . ' [' . implode(', ', $nameWithOptions) . ']';
+                                        $item->setName($parentName);
+                                    }
+                                    
+                                    $fullItems[] = $item;
+                                    break;
+                                case Mage_Catalog_Model_Product_Type::TYPE_GROUPED:
+                                    // This condition probably never gets hit, parent grouped items don't show in order
+                                    $fullItems[] = $item;
+                                    foreach ($item->getChildrenItems() as $child_item) {
+                                        $fullItems[] = $child_item;
+                                    }
+                                    break;
+                                default:
+                                    $fullItems[] = $item;
+                                    break;
+                            }
+                        }
+                        
+                        foreach ($fullItems as $item /* @var $item Mage_Sales_Model_Order_Item */) {
                             /* @var $product Mage_Catalog_Model_Product */
                             $product     = Mage::getModel('catalog/product')->load($item->getProductId());
                             $categoryIds = $product->getCategoryIds();
@@ -140,8 +172,8 @@ class Bronto_Order_Model_Observer
                                 'name'        => $item->getName(),
                                 'description' => $productHelper->getProductAttribute($item->getProductId(), $descriptionAttr),
                                 'category'    => implode(' ', $categories),
-                                'image'       => $productHelper->getProductAttribute($item->getProductId(), 'image'),
-                                'url'         => $productHelper->getProductAttribute($item->getProductId(), 'url'),
+                                'image'       => Mage::helper('bronto_order')->getItemImg($item, $product),//$productHelper->getProductAttribute($item->getProductId(), 'image'),
+                                'url'         => Mage::helper('bronto_order')->getItemUrl($item, $product),//$productHelper->getProductAttribute($item->getProductId(), 'url'),
                                 'quantity'    => (int)   $item->getQtyOrdered(),
                                 'price'       => (float) $item->getPrice(),
                             );
@@ -150,7 +182,7 @@ class Bronto_Order_Model_Observer
                         $brontoOrder->persist();
                         break;
                 }
-
+                
                 try {
                     // Mark order as imported
                     $orderRow->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
@@ -166,6 +198,8 @@ class Bronto_Order_Model_Observer
 
                     // Mark import as *not* imported
                     $orderRow->setBrontoImported(null);
+                    // Do not suppress on Exception
+                    //$orderRow->setBrontoSuppressed($e->getMessage());
                     $orderRow->save();
 
                     $result['error']++;
@@ -214,6 +248,7 @@ class Bronto_Order_Model_Observer
                     $orderRow = Mage::getModel('bronto_order/queue')
                         ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
                         ->setBrontoImported(null)
+                        ->setBrontoSuppressed($errorMessage)
                         ->save();
                     
                     Mage::helper('bronto_order')->writeError("[{$errorCode}] {$errorMessage} ({$order->getIncrementId})");

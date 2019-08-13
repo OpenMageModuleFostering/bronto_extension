@@ -32,8 +32,16 @@ abstract class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attri
             if (in_array($_attributeCode, $skips)) {
                 continue;
             } else {
-                $order = $order+5;
-                $html.= $this->_getFieldHtml($element, $_attribute, $order);
+                
+                try {
+                    $order = $order+5;
+                    $html.= $this->_getFieldHtml($element, $_attribute, $order);
+                } catch(Exception $e) {
+                    Mage::helper('bronto_customer')->writeDebug('Creating field failed: ' . $e->getMessage());
+                    
+                    continue;
+                }
+                
             }
         }
         
@@ -104,14 +112,14 @@ abstract class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attri
      * @param int $order
      * @return string
      */
-    protected function _getFieldHtml(Varien_Data_Form_Element_Abstract $fieldset, Mage_Eav_Model_Entity_Attribute $attribute, int $order)
+    protected function _getFieldHtml(Varien_Data_Form_Element_Abstract $fieldset, Mage_Eav_Model_Entity_Attribute $attribute, $order)
     {
         // Create Select Field
-        $e = $this->_getDummyElement($order);
+        $e     = $this->_getDummyElement($order);
         $field = $this->_createField($fieldset, $e, $attribute);
         
         // Create New Field
-        $en = $this->_getDummyNewElement($order+1);
+        $en       = $this->_getDummyNewElement($order+1);
         $newField = $this->_createField($fieldset, $en, $attribute, 'newfield');
         
         // Define Field Dependencies
@@ -140,7 +148,9 @@ abstract class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attri
     {
         // Get Config Data
         $configData = $this->getConfigData();
-        
+        if ('' == $attribute->getFrontendLabel()) {
+            Mage::throwException("Field has no label: " . $attribute->getAttributeCode() . (string)$e->backend_model);
+        }
         // Define Attribute Code
         $attributeCode = $attribute->getAttributeCode();
         $attributeCode = ($fieldStep == 'newfield') ? "dynamic_new_{$attributeCode}" : $attributeCode;
@@ -176,8 +186,8 @@ abstract class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attri
             $model->setPath($path)->setValue($data)->afterLoad();
             $data = $model->getValue();
         }
-                
-        // Select Field for Existing attributes
+        
+        // Select Field for Existing attributes.
         $field = $fieldset->addField($attributeCode, $fieldType,
             array(
                 'name'          => $name,

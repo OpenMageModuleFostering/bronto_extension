@@ -78,50 +78,43 @@ class Bronto_Reminder_Model_Observer
         }
         Mage::helper('bronto_reminder')->writeDebug('Done!');
     }
-
+    
     /**
-     * @return void
+     * If a Quote/Wishlist becomes inactive/deleted/checked-out/converted,
+     * remove from bronto_reminder_rule_coupon
+     * 
+     * @param Varien_Event_Observer $observer
+     * @return Varien_Event_Observer
      */
-    public function storeGuestEmailCheckout($observer)
+    public function updateReminderQueue(Varien_Event_Observer $observer)
     {
-        $quote = $observer->getQuote();
-        $postData = Mage::app()->getRequest()->getPost();
-        if (   Mage_Checkout_Model_Type_Onepage::METHOD_GUEST == $quote->getCheckoutMethod()
-            && isset($postData['billing'])
-        ) {
-            $session = Mage::getSingleton('core/session');
-            $guestCheck = Mage::getModel('bronto_reminder/guest')
-                ->getCollection()
-                ->addFieldToFilter('session_id', $session->getSessionId());
-
-            if ($guestCheck->count() == 0) {
-                $guestModel = Mage::getModel('bronto_reminder/guest');
-                $guestModel->setEmailAddress($quote->getCustomerEmail())
-                    ->setFirstname($quote->getCustomerFirstname())
-                    ->setLastname($quote->getCustomerLastname())
-                    ->setSessionId($session->getSessionId())
-                    ->setStoreId(Mage::app()->getStore()->getStoreId())
-                    ->setQuoteId(Mage::getSingleton('checkout/session')->getQuote()->getId())
-                    ->save();
+        $object   = $observer->getEvent()->getDataObject();
+        $filterField = false;
+        $filterValue = false;
+        
+        if ($object instanceof Mage_Wishlist_Model_Wishlist) {
+            $wishlist = $object;
+            $collection = $wishlist->getItemCollection();
+            
+            if (0 === $collection->count()) {
+                $filterField = 'wishlist_id';
+                $filterValue = $wishlist->getId();
+            }
+        } elseif ($object instanceof Mage_Sales_Model_Quote) {
+            $quote = $object;
+            
+            if (0 === $quote->getIsActive() || 0 === $quote->getItemsCount()) {
+                $filterField = 'quote_id';
+                $filterValue = $quote->getId();
             }
         }
-    }
-
-    /**
-     * @return void
-     */
-    public function guestCheckoutCompleted(Varien_Event_Observer $observer)
-    {
-        if (!Mage::helper('customer')->isLoggedIn()) {
-            // Remove this guest from the extended table
-            // so that they do not get reminder emails
-            $guests = Mage::getModel('bronto_reminder/guest')
-                ->getCollection()
-                ->addFieldToFilter('session_id', session_id());
-
-            foreach ($guests as $guest) {
-                $guest->delete();
-            }
+        
+        if ($filterField && $filterValue) {
+            // Quote is not active, so remove from queue if exists
+            Mage::getModel('bronto_reminder/rule')
+                ->removeFromReminders($filterField, $filterValue, Mage::app()->getStore()->getId());
         }
+        
+        return $observer;
     }
 }

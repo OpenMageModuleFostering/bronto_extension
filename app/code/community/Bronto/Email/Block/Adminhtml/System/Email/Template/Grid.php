@@ -25,7 +25,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Grid extends Mage_Admin
         $mainTable = $resource->getTableName('core/email_template');
         $version = Mage::getVersionInfo();
         
-        if (1 == $version['major'] && 9 != $version['minor'] && 10 != $version['minor'] && 11 != $version['minor']) {
+        if (1 == $version['major'] && 9 != $version['minor'] && 10 != $version['minor']) {
             $mainTable = 'main_table';
         }
         $collection->getSelect()

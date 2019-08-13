@@ -65,18 +65,18 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Sharing extends Bronto_Remin
     /**
      * Get SQL select
      *
-     * @param $customer
+     * @param $rule
      * @param int              | Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
         $table = $this->getResource()->getTable('wishlist/wishlist');
 
         $select = $this->getResource()->createSelect();
         $select->from(array('list' => $table), array(new Zend_Db_Expr(1)));
         $select->where("list.shared = ?", $this->getValue());
-        $select->where($this->_createCustomerFilter($customer, 'list.customer_id'));
+        $select->where($this->_createCustomerFilter('list.customer_id'));
         $select->limit(1);
 
         return $select;

@@ -97,4 +97,32 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
         }
         return false;
     }
+    
+    /**
+     * Get Customers who aren't in contact queue
+     * @param boolean $getCount
+     * @return int|Mage_Customer_Model_Resource_Customer_Collection
+     */
+    public function getMissingCustomers($getCount = false)
+    {
+        $queue = Mage::getModel('bronto_customer/queue');
+        $ids   = $queue->getExistingIds();
+
+        // If just getting count, don't limit results
+        if ($getCount) { 
+            $limit = false; 
+        } else { 
+            $limit = 250;
+        }
+        
+        // Get Collection of active customers not already in queue
+        /* @var Mage_Customer_Model_Resource_Customer_Collection */
+        $customers = $queue->getMissingCustomers($ids, $limit);
+        
+        if ($getCount) {
+            return $customers->count();
+        }
+        
+        return $customers;
+    }
 }

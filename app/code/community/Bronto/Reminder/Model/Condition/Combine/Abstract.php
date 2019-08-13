@@ -55,28 +55,27 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
     /**
      * Get filter by customer condition for rule matching sql
      *
-     * @param int|Zend_Db_Expr $customer
      * @param string           $fieldName
      * @return string
      */
-    protected function _createCustomerFilter($customer, $fieldName)
+    protected function _createCustomerFilter($fieldName)
     {
-        return "{$fieldName} = root.entity_id";
+        return "{$fieldName} = root.customer_id";
     }
 
     /**
      * Build query for matching customer to rule condition
      *
-     * @param $customer
+     * @param $rule
      * @param $website
      * @return Varien_Db_Select
      */
-    protected function _prepareConditionsSql($customer, $website)
+    protected function _prepareConditionsSql($rule, $website)
     {
         $select = $this->getResource()->createSelect();
         $table = $this->getResource()->getTable('customer/entity');
         $select->from($table, array(new Zend_Db_Expr(1)));
-        $select->where($this->_createCustomerFilter($customer, 'entity_id'));
+        $select->where($this->_createCustomerFilter('entity_id'));
         return $select;
     }
 
@@ -93,16 +92,16 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
     /**
      * Get SQL select for matching customer to rule condition
      *
-     * @param $customer
+     * @param $rule
      * @param $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
         /**
          * Build base SQL
          */
-        $select         = $this->_prepareConditionsSql($customer, $website);
+        $select         = $this->_prepareConditionsSql($rule, $website);
         $required       = $this->_getRequiredValidation();
         $whereFunction  = ($this->getAggregator() == 'all') ? 'where' : 'orWhere';
         $operator       = $required ? '=' : '<>';
@@ -114,7 +113,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
          * Add children subselects conditions
          */
         foreach ($this->getConditions() as $condition) {
-            if ($sql = $condition->getConditionsSql($customer, $website)) {
+            if ($sql = $condition->getConditionsSql($rule, $website)) {
                 $criteriaSql = "(IFNULL(($sql), 0) {$operator} 1)";
                 $select->$whereFunction($criteriaSql);
                 $gotConditions = true;

@@ -87,11 +87,11 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Storeview extends Bronto_Rem
     /**
      * Get SQL select
      *
-     * @param $customer
+     * @param $rule
      * @param int              | Zend_Db_Expr $website
      * @return Varien_Db_Select
      */
-    public function getConditionsSql($customer, $website)
+    public function getConditionsSql($rule, $website)
     {
         $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
@@ -108,7 +108,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Storeview extends Bronto_Rem
 
         $this->_limitByStoreWebsite($select, $website, 'item.store_id');
         $select->where("item.store_id {$operator} ?", $this->getValue());
-        $select->where($this->_createCustomerFilter($customer, 'list.customer_id'));
+        $select->where($this->_createCustomerFilter('list.customer_id'));
         $select->limit(1);
 
         return $select;

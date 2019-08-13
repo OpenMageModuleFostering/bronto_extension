@@ -80,6 +80,10 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             return $this->_redirect('*/*/');
         }
 
+        if (!Mage::helper('bronto_reminder')->isAllowSend()) {
+            Mage::getSingleton('adminhtml/session')->addNotice(Mage::helper('bronto_reminder')->getNotAllowedText());
+        }
+        
         $this->_title($model->getId() ? $model->getName() : $this->__('New Rule'));
 
         // set entered data if was error when we do save
@@ -226,7 +230,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
                 $total   = $result['total'];
                 $success = $result['success'];
                 $error   = $result['error'];
-                Mage::getSingleton('adminhtml/session')->addSuccess(sprintf("Processed %d Customers (%d Error / %d Success)", $total, $error, $success));
+                Mage::getSingleton('adminhtml/session')->addSuccess(sprintf("Processed %d Reminders (%d Error / %d Success)", $total, $error, $success));
             } else {
                 Mage::getSingleton('adminhtml/session')->addError('Reminder rule sending failed.');
             }
@@ -271,6 +275,19 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     {
         if ($this->_initRule('rule_id')) {
             $block = $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tab_customers');
+            $this->getResponse()->setBody($block->toHtml());
+        }
+    }
+
+    /**
+     * Customer grid ajax action
+     *
+     * @return void
+     */
+    public function guestGridAction()
+    {
+        if ($this->_initRule('rule_id')) {
+            $block = $this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tab_guests');
             $this->getResponse()->setBody($block->toHtml());
         }
     }

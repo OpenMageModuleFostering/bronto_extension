@@ -20,6 +20,9 @@ class Bronto_Reminder_Model_Mysql4_Customer_Collection extends Mage_Customer_Mod
         $customerTable = $this->getTable('customer/entity');
         $couponTable   = $this->getTable('bronto_reminder/coupon');
         $logTable      = $this->getTable('bronto_reminder/log');
+        // Used for gathering guest data
+        $quoteTable    = $this->getResource()->getTable('sales/quote');
+        $logQuoteTable = Mage::getResourceSingleton('log/log')->getTable('log/quote_table');
 
         try {
             $salesRuleCouponTable = $this->getTable('salesrule/coupon');
@@ -27,29 +30,44 @@ class Bronto_Reminder_Model_Mysql4_Customer_Collection extends Mage_Customer_Mod
             $salesRuleCouponTable = false;
         }
 
-        $select->from(array('c' => $couponTable), array('associated_at', 'emails_failed', 'is_active'));
+        $select->from(array('c' => $couponTable), array('store_id', 'unique_id', 'customer_id', 'visitor_id', 'associated_at', 'emails_failed', 'is_active'));
         $select->where('c.rule_id = ?', $rule->getId());
 
-        $select->joinInner(
+        // Select Guest Data
+        $guestSelect = $this->getConnection()->select();
+        $guestSelect->from(
+            array('q' => $quoteTable),
+            array('email' => 'q.customer_email')
+        )->where('lq.visitor_id = c.visitor_id');
+        $guestSelect->joinInner(
+            array('lq' => $logQuoteTable),
+            'q.entity_id = lq.quote_id',
+            array()
+        );        
+        
+        $select->joinLeft(
             array('e' => $customerTable),
             'e.entity_id = c.customer_id',
-            array('entity_id', 'email')
+            array(
+                'entity_id', 
+                'email' => new Zend_Db_Expr("IF(e.email IS NULL, ($guestSelect), e.email)")
+            )
         );
 
         $subSelect = $this->getConnection()->select();
         $subSelect->from(array('g' => $logTable), array(
-            'customer_id',
+            'unique_id',
             'rule_id',
             'emails_sent' => new Zend_Db_Expr('COUNT(log_id)'),
             'last_sent' => new Zend_Db_Expr('MAX(sent_at)')
         ));
 
         $subSelect->where('rule_id = ?', $rule->getId());
-        $subSelect->group(array('customer_id', 'rule_id'));
+        $subSelect->group(array('unique_id', 'rule_id'));
 
         $select->joinLeft(
             array('l' => $subSelect),
-            'l.rule_id = c.rule_id AND l.customer_id = c.customer_id',
+            'l.rule_id = c.rule_id AND l.unique_id = c.unique_id',
             array('l.emails_sent', 'l.last_sent')
         );
 

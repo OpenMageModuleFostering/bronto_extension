@@ -15,10 +15,9 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Tab_Customers extends Mage_A
         parent::__construct();
         $this->setId('customerGrid');
         $this->setUseAjax(true);
-        $this->setDefaultSort('entity_id');
-        $this->setDefaultDir('ASC');
-        // Commented out because for some reason all matched are defaulting to active = 0;
-        //$this->setDefaultFilter(array('grid_is_active' => 1));
+        $this->setDefaultSort('email');
+        $this->setDefaultDir('ASC');        
+        $this->setDefaultFilter(array('grid_is_active' => 1));
     }
 
     /**

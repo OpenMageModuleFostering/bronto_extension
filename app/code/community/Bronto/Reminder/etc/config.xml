@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Reminder>
-            <version>1.4.11</version>
+            <version>1.4.12</version>
         </Bronto_Reminder>
     </modules>
     <global>
@@ -92,14 +92,24 @@
             </bronto_reminder>
         </routers>
         <events>
-            <sales_quote_save_before>
+            <sales_quote_save_after>
                 <observers>
-                    <bronto_reminder_capture_guest_email_on_checkout>
+                    <bronto_reminder_update_reminder_queue>
                         <class>bronto_reminder/observer</class>
-                        <method>storeGuestEmailCheckout</method>
-                    </bronto_reminder_capture_guest_email_on_checkout>
+                        <method>updateReminderQueue</method>
+                    </bronto_reminder_update_reminder_queue>
                 </observers>
-            </sales_quote_save_before>
+            </sales_quote_save_after>
+        </events>
+        <events>
+            <wishlist_save_after>
+                <observers>
+                    <bronto_reminder_update_reminder_queue>
+                        <class>bronto_reminder/observer</class>
+                        <method>updateReminderQueue</method>
+                    </bronto_reminder_update_reminder_queue>
+                </observers>
+            </wishlist_save_after>
         </events>
     </frontend>
     <admin>
