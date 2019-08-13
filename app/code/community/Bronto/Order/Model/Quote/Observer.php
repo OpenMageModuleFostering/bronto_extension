@@ -3,7 +3,7 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.5
+ * @version   1.1.7
  */
 class Bronto_Order_Model_Quote_Observer
 {
@@ -17,10 +17,14 @@ class Bronto_Order_Model_Quote_Observer
     {
         /* @var $quote Mage_Sales_Model_Quote */
         $quote = $observer->getQuote();
-
+        
+        /* @var $contactQueue Bronto_Order_Model_Queue */
+        $orderRow = Mage::getModel('bronto_order/queue')
+                ->getOrderRow($quote->getReservedOrderId(), $quote->getId(), $quote->getStoreId());
+        
         foreach (Mage::getModel('core/cookie')->get() as $key => $value) {
             if (stripos($key, "tid_") !== false) {
-                $quote->setBrontoTid($value);
+                $orderRow->setBrontoTid($value)->save();
                 break;
             }
         }

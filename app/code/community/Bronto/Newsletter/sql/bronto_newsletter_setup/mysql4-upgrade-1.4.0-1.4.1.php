@@ -23,7 +23,7 @@ try {
     ");
 
 } catch (Exception $e) {
-    //
+    throw new RuntimeException('Table Already Exists');
 }
 
 $installer->endSetup();

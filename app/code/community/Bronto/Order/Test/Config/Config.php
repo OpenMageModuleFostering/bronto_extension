@@ -24,6 +24,8 @@ class Bronto_Order_Test_Config_Config
         return array(
 	    array('bronto_order_resource/setup', 'Bronto_Order_Model_Resource_Setup'),
 	    array('bronto_order_resource/order_collection', 'Bronto_Order_Model_Resource_Order_Collection'),
+            array('bronto_order_mysql4/queue', 'Bronto_Order_Model_Mysql4_Queue'),
+	    array('bronto_order_mysql4/queue_collection', 'Bronto_Order_Model_Mysql4_Queue_Collection'),
 	);
     }
 
@@ -36,6 +38,7 @@ class Bronto_Order_Test_Config_Config
             array('bronto_order/system_config_backend_cron', 'Bronto_Order_Model_System_Config_Backend_Cron'),
 	    array('bronto_order/system_config_source_description', 'Bronto_Order_Model_System_Config_Source_Description'),
 	    array('bronto_order/system_config_source_limit', 'Bronto_Order_Model_System_Config_Source_Limit'),
+            array('bronto_order/queue', 'Bronto_Order_Model_Queue'),
         );
     }
 

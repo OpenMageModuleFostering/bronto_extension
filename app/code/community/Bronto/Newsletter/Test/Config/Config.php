@@ -9,6 +9,8 @@ class Bronto_Newsletter_Test_Config_Config
         return array(
             array('bronto_newsletter/adminhtml_system_config_about', 'Bronto_Newsletter_Block_Adminhtml_System_Config_About'),
 	    array('bronto_newsletter/checkout_onepage_newsletter', 'Bronto_Newsletter_Block_Checkout_Onepage_Newsletter'),
+            array('bronto_newsletter/adminhtml_widget_button_run', 'Bronto_Newsletter_Block_Adminhtml_Widget_Button_Run'),
+            array('bronto_newsletter/adminhtml_widget_button_reset', 'Bronto_Newsletter_Block_Adminhtml_Widget_Button_Run'),
         );
     }
 

@@ -14,17 +14,28 @@ class Bronto_Customer_Test_Config_Config
 
     public function modelsProvider()
     {
-        return array();
+        return array(
+            array('bronto_customer/system_config_backend_cron', 'Bronto_Customer_Model_System_Config_Backend_Cron'),
+            array('bronto_customer/system_config_backend_newfield', 'Bronto_Customer_Model_System_Config_Backend_Newfield'),
+            array('bronto_customer/queue', 'Bronto_Customer_Model_Queue'),
+        );
     }
 
     public function resourceModelProvider()
     {
-	return array();
+	return array(
+            array('bronto_customer_resource/setup', 'Bronto_Customer_Model_Resource_Setup'),
+	    array('bronto_customer_resource/customer_collection', 'Bronto_Customer_Model_Resource_Customer_Collection'),
+            array('bronto_customer_mysql4/queue', 'Bronto_Customer_Model_Mysql4_Queue'),
+	    array('bronto_customer_mysql4/queue_collection', 'Bronto_Customer_Model_Mysql4_Queue_Collection'),
+        );
     }
 
     public function observersProvider()
     {
-	return array();
+	return array(
+            array('global', 'customer_save_after', 'bronto_customer/observer', 'markCustomerForReimport'),
+        );
     }
 
     public function helpersProvider()
@@ -48,7 +59,7 @@ class Bronto_Customer_Test_Config_Config
      */
     public function assertCustomerModuleVersionGreaterThanOrEquals()
     {
-        $this->assertModuleVersionGreaterThanOrEquals('1.0.0');
+        $this->assertModuleVersionGreaterThanOrEquals('1.0.1');
     }
 
 

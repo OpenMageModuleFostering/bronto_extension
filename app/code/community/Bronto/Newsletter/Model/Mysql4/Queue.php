@@ -20,10 +20,16 @@
  */
 /**
  * @author Jeff Lambert <jeff.lambert@atlanticbt.com>
- *         */
+ */
 class Bronto_Newsletter_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstract
 {
-
+    /**
+     * Primary key auto increment flag
+     *
+     * @var bool
+     */
+    protected $_isPkAutoIncrement = false;
+    
     /**
      * Short description for function
      * 
@@ -32,8 +38,8 @@ class Bronto_Newsletter_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstra
      * @return void  
      * @access public
      */
-	public function _construct()
-	{
-		$this->_init('bronto_newsletter/queue', 'subscriber_id');
-	}
+    public function _construct()
+    {
+        $this->_init('bronto_newsletter/queue', 'queue_id');
+    }
 }

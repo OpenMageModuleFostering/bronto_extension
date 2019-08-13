@@ -36,19 +36,9 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
      */
     protected function getProgressBarPending()
     {
-        $notImportedCustomersWithAttribute = Mage::getModel('bronto_customer/resource_customer_collection')            
+        return $this->getCustomerResourceCollection()
             ->addBrontoNotImportedFilter()
-            ->orderByUpdatedAt()
-            ->getAllIds();
-
-        //  This will find all customers who are missing the bronto_imported attribute on their entity
-        $notImportedCustomersWithoutAttribute = Mage::getModel('bronto_customer/resource_customer_collection')
-            ->addBrontoMissingImportedAttribute()
-            ->orderByUpdatedAt()
-            ->getAllIds();
-
-        $allCustomerIds = array_merge($notImportedCustomersWithAttribute, $notImportedCustomersWithoutAttribute);
-        return count($allCustomerIds);
+            ->getSize();
     }
 
     /**
@@ -56,17 +46,11 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
      */
     protected function getCustomerResourceCollection()
     {
-        $collection = Mage::getModel('bronto_customer/resource_customer_collection');
-
-        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-            $store = Mage::app()->getStore($storeCode);
-            $collection->addStoreFilter($store->getId());
-        } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-            $website = Mage::app()->getWebsite($websiteCode);
-            $collection->addStoreFilter($website->getStoreids());
-        } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-            $website = Mage::app()->getGroup($groupCode)->getWebsite();
-            $collection->addStoreFilter($website->getStoreids());
+        $collection = Mage::getModel('bronto_customer/queue')->getCollection();
+        $storeIds   = Mage::helper('bronto_customer')->getStoreIds();
+        
+        if ($storeIds) {
+            $collection->addStoreFilter($storeIds);
         }
 
         return $collection;

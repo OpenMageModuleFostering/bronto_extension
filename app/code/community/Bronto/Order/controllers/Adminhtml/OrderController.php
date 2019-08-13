@@ -14,21 +14,9 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
         try {
             $result = array('total' => 0, 'success' => 0, 'error' => 0);
             $model  = Mage::getModel('bronto_order/observer');
-
-            if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-                $store      = Mage::app()->getStore($storeCode);
-                $storeIds[] = $store->getId();
-            } elseif ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-                $website  = Mage::app()->getWebsite($websiteCode);
-                $storeIds = $website->getStoreIds();
-            } elseif ($groupCode = Mage::app()->getRequest()->getParam('group')){
-                $website  = Mage::app()->getGroup($groupCode)->getWebsite();
-                $storeIds = $website->getStoreIds();
-            } else {
-                $storeIds = false;
-            }
-
-            if ($storeIds) {
+            $helper = Mage::helper('bronto_order');
+            
+            if ($storeIds = $helper->getStoreIds()) {
                 foreach ($storeIds as $storeId) {
                     $storeResult = $model->processOrdersForStore($storeId);
                     $result['total']   += $storeResult['total'];
@@ -58,41 +46,24 @@ class Bronto_Order_Adminhtml_OrderController extends Mage_Adminhtml_Controller_A
      */
     public function resetAction()
     {
-        $storeIds        = array();
-        $writeConnection = Mage::getSingleton('core/resource')->getConnection('core_write');
-        $tablePrefix     = Mage::getConfig()->getTablePrefix();
+        $helper    = Mage::helper('bronto_order');
+        $storeIds  = $helper->getStoreIds();
+        
+        $collection = Mage::getModel('bronto_order/queue')->getCollection();
 
-        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-            $store      = Mage::app()->getStore($storeCode);
-            $storeIds[] = $store->getId();
-        } elseif ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-            $website  = Mage::app()->getWebsite($websiteCode);
-            $storeIds = $website->getStoreIds();
-        } elseif ($groupCode = Mage::app()->getRequest()->getParam('group')){
-            $website  = Mage::app()->getGroup($groupCode)->getWebsite();
-            $storeIds = $website->getStoreIds();
-        } else {
-            $storeIds[] = null;
+        if ($storeIds) {
+            $collection->addStoreFilter($storeIds);
         }
-
-        foreach ($storeIds as $storeId) {
-            $sql = "
-                UPDATE {$tablePrefix}sales_flat_order
-                SET bronto_imported = null
-            ";
-            if (!empty($storeId)) {
-                $storeId = (int) $storeId;
-                $sql    .= " WHERE store_id = {$storeId}";
-            }
-
+        
+        foreach ($collection->getItems() as $orderRow) {
             try {
-                $writeConnection->query($sql);
+                $orderRow->setBrontoImported(null)->save();
             } catch (Exception $e) {
                 Mage::helper('bronto_order')->writeError($e);
                 $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
             }
         }
-
+        
         $this->_redirect('*/system_config/edit', array('section' => 'bronto_order'));
     }
 

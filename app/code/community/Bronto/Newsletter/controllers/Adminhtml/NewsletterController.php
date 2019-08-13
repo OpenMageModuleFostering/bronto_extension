@@ -14,35 +14,23 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
         try {
             $result = array('total' => 0, 'success' => 0, 'error' => 0);
             $model  = Mage::getModel('bronto_newsletter/observer');
+            $helper = Mage::helper('bronto_common');
 
-            if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-                $store      = Mage::app()->getStore($storeCode);
-                $storeIds[] = $store->getId();
-            } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-                $website  = Mage::app()->getWebsite($websiteCode);
-                $storeIds = $website->getStoreIds();
-            } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-                $website  = Mage::app()->getGroup($groupCode)->getWebsite();
-                $storeIds = $website->getStoreIds();
-            } else {
-                $storeIds = false;
-            }
-
-            if ($storeIds) {
+            if ($storeIds = $helper->getStoreIds()) {
                 foreach ($storeIds as $storeId) {
-                    // $storeResult = $model->processCustomersForStore($storeId);
+                    $storeResult = $model->processSubscribersForStore($storeId);
                     $result['total']   += $storeResult['total'];
                     $result['success'] += $storeResult['success'];
                     $result['error']   += $storeResult['error'];
                 }
             } else {
-                // $result = $model->processCustomers();
+                $result = $model->processSubscribers();
             }
 
             if (is_array($result)) {
                 $this->_getSession()->addSuccess(sprintf("Processed %d Subscribers (%d Error / %d Success)", $result['total'], $result['error'], $result['success']));
             } else {
-                $this->_getSession()->addError('Scheduled Import failed: ' . $result);
+                $this->_getSession()->addError('Scheduled Sync failed: ' . $result);
             }
 
         } catch (Exception $e) {
@@ -58,25 +46,18 @@ class Bronto_Newsletter_Adminhtml_NewsletterController extends Mage_Adminhtml_Co
      */
     public function resetAction()
     {
-        $storeIds        = array();
-        $writeConnection = Mage::getSingleton('core/resource')->getConnection('core_write');
-        $tablePrefix     = Mage::getConfig()->getTablePrefix();
+        $subscribers = Mage::getModel('bronto_newsletter/queue')
+            ->getCollection()
+            ->addFilter('imported', 1);
 
-        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-            $store      = Mage::app()->getStore($storeCode);
-            $storeIds[] = $store->getId();
-        } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-            $website  = Mage::app()->getWebsite($websiteCode);
-            $storeIds = $website->getStoreIds();
-        } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-            $website  = Mage::app()->getGroup($groupCode)->getWebsite();
-            $storeIds = $website->getStoreIds();
-        } else {
-            $storeIds[] = null;
+        foreach($subscribers as $subscriber) {
+            try {
+                $subscriber->setImported(0)->save();
+            } catch(Exception $e) {
+                Mage::helper('bronto_newsletter')->writeError($e);
         }
 
-        foreach ($storeIds as $storeId) {
-            //
+        
         }
 
         $this->_redirect('*/system_config/edit', array('section' => 'bronto_newsletter'));

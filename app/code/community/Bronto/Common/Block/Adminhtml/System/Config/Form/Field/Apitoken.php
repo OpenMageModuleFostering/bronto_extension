@@ -26,20 +26,28 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Apitoken extends Ma
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
-        $_html = array();
-
-        if (!Mage::helper('bronto_common')->getApiToken()) {
-            $element->setComment('<span style="color:red;font-weight:bold">Please enter your Bronto API key here.</span>');
-            $element->setData('onchange', "toggleDisabled(this.form, this);");
-            $element->setData('after_element_html', "
-                <script>
+        $_html   = array();
+        
+        // Create form object to grab scope details
+        $form    = new Mage_Adminhtml_Block_System_Config_Form;
+        $scope   = $form->getScope();
+        $scopeId = $form->getScopeId();
+        
+        $element->setData('onchange', "validateToken(this.form, this);");
+        $element->setData('after_element_html', "
+            <div id=\"loadingmask\" style=\"display: none;\">
+                <div class=\"loader\" id=\"loading-mask-loader\"><img src=\"" . $this->getSkinUrl('bronto/images/ajax-loader-tr.gif') . "\" alt=\"" . $this->__('Loading...') . "\"/>" . $this->__('Loading...') . "</div>
+                <div id=\"loading-mask\"></div>
+            </div>
+            <script>
                 function toggleDisabled(form, element) {
-                    var disabled = (element.value.length < 36);
+                    var statusText = $('bronto-validation-status');
+                    var disabled = (statusText.className == 'invalid' || statusText.className == '');
+
                     for (i = 0; i < form.length; i++) {
                         if (form.elements[i].id != '{$element->getId()}' &&
                             form.elements[i].type != 'hidden' &&
                             form.elements[i].name.indexOf('groups') == 0) {
-                            console.log(form.elements[i]);
                             form.elements[i].disabled = disabled;
                         }
                     }
@@ -56,26 +64,59 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Apitoken extends Ma
                         console.log(i);
                         if (disabled) {
                             $(buttonP.children[i]).addClassName('disabled');
+                        } else {
+                            $(buttonP.children[i]).removeClassName('disabled');
                         }
                         buttonP.children[i].disabled = disabled;
                     }
-                }
-                </script>
-            ");
 
-            $button = $this
-                ->getLayout()
-                ->createBlock('bronto_roundtrip/adminhtml_widget_button_run')
-                ->setData('disabled', 'disabled')
-                ->toHtml()
-            ;
+                }
+                
+                function trim1 (str) {
+                    return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+                }
+
+                function validateToken(form, element) {
+                    var token      = trim1($('{$element->getId()}').value);
+                    var statusText = $('bronto-validation-status');
+                    var reloadurl  = '{$this->getUrl('*/roundtrip/ajaxvalidation')}';
+                    
+                    statusText.innerHTML = $('loadingmask').innerHTML;
+                    statusText.removeClassName('valid').removeClassName('invalid');
+
+                    new Ajax.Request(reloadurl, {
+                        method: 'post',
+                        parameters: {token: token, scope: '{$scope}', scopeid: '{$scopeId}'},
+                        onComplete: function(transport) {
+                            Element.hide('loadingmask');
+                            if (transport.responseText == '\"Passed Verification\"') {
+                                statusText.innerHTML = 'Passed Verification';
+                                statusText.addClassName('valid');
+                            } else if (transport.responseText == '\"Failed Verification\"') {
+                                statusText.innerHTML = 'Failed Verification';
+                                statusText.addClassName('invalid');
+                            } else {
+                                statusText.innerHTML = 'No Token Provided';
+                            }
+                            
+                            toggleDisabled(form, element);
+                        }
+                    });
+                    
+                    return false;
+                }
+            </script>
+        ");
+        
+        if (!$this->helper('bronto_common')->getApiToken()) {
+            $element->setComment('<span style="color:red;font-weight:bold">Please enter your Bronto API key here.</span>');
+            $buttonHtml = "";
         } else {
             try {
-                $button = $this
-                    ->getLayout()
-                    ->createBlock('bronto_roundtrip/adminhtml_widget_button_run')
-                    ->toHtml()
-                ;
+                $button = $this->getLayout()
+                        ->createBlock('bronto_roundtrip/adminhtml_widget_button_run')
+                        ->toHtml();
+                $buttonHtml = "<p class=\"form-buttons\" id=\"verify-button\">{$button}</p>";
 
                 $organization = null;
                 $name         = null;
@@ -124,17 +165,20 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Apitoken extends Ma
         }
 
         // Show Roundtrip Install Verification Status
-        $buttonHtml = "<p class=\"form-buttons\" id=\"verify-button\">{$button}</p>";
-        $_html[] = '<strong style="float: left; width: 88px">Install Status:</strong> ' .
-                Mage::helper('bronto_roundtrip')->getRoundtripStatusText() . $buttonHtml;
+        $_html[] = '<style>' . 
+                '#bronto-validation-status { color:grey; font-weight:bold; }'. 
+                '#bronto-validation-status.valid { color: green; }'. 
+                '#bronto-validation-status.invalid { color: red; }'. 
+                '</style>' . '<strong style="float: left; width: 88px">Install Status:</strong> ' .
+                $this->helper('bronto_roundtrip')->getAdminScopedRoundtripStatusText() . $buttonHtml;
 
         // Show everything Else
-                if (!empty($_html)) {
-                    $elementHtml  = $element->getElementHtml();
-                    $elementHtml .= '<div style="margin-top:10px">';
-                    $elementHtml .= implode('<br />', $_html);
-                    $elementHtml .= '</div>';
-                    return $elementHtml;
+        if (!empty($_html)) {
+            $elementHtml  = $element->getElementHtml();
+            $elementHtml .= '<div style="margin-top:10px">';
+            $elementHtml .= implode('<br />', $_html);
+            $elementHtml .= '</div>';
+            return $elementHtml;
         }
 
         return parent::_getElementHtml($element);

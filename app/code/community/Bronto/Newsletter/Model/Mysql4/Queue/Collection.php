@@ -23,8 +23,7 @@
  *         */
 class Bronto_Newsletter_Model_Mysql4_Queue_Collection 
 	extends Mage_Core_Model_Mysql4_Collection_Abstract
-{
-
+{    
     /**
      * Short description for function
      * 
@@ -33,8 +32,8 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
      * @return void  
      * @access public
      */
-	public function _construct() {
-		parent::_construct();
-		$this->_init('bronto_newsletter/queue');
-	}
+    public function _construct() {
+        parent::_construct();
+        $this->_init('bronto_newsletter/queue');
+    }
 }

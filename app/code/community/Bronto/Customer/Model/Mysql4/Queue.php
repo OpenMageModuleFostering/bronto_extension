@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @package   Bronto\Customer
+ * @copyright 2011-2013 Bronto Software, Inc.
+ * @version   1.0.2
+ */
+class Bronto_Customer_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstract
+{
+    /**
+     * Primary key auto increment flag
+     *
+     * @var bool
+     */
+    protected $_isPkAutoIncrement = false;
+    
+    /**
+     * Initialize Model
+     * 
+     * @return void  
+     * @access public
+     */
+    public function _construct()
+    {
+        $this->_init('bronto_customer/queue', 'queue_id');
+    }
+}

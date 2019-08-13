@@ -60,4 +60,23 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
     {
         return 'bronto_customer';
     }
+    
+    /**
+     * Get Human Readable label for attribute value option
+     * @param Mage_Eav_Model_Entity_Attribute $attribute
+     * @param int|string $attributeValueId
+     * @return string|boolean
+     */
+    public function getAttributeAdminLabel($attribute, $attributeValueId) {
+        $_collection = Mage::getResourceModel('eav/entity_attribute_option_collection')
+            ->setStoreFilter(0)
+            ->setAttributeFilter($attribute->getId())
+            ->load();
+
+        foreach( $_collection->toOptionArray() as $_cur_option ) {
+            if ($_cur_option['value'] == $attributeValueId){ return $_cur_option['label']; }
+          
+        }
+        return false;
+    }
 }

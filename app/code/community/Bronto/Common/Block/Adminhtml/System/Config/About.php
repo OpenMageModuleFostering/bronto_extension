@@ -3,7 +3,9 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   2.0.1
+ * @license http://opensource.org/licenses/OSL-3.0 Open Software License v. 3.0 (OSL-3.0)
+ * 
+ * @version   2.0.2.1
  */
 class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_Block_System_Config_Form_Fieldset
 {

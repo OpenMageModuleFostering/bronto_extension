@@ -16,6 +16,9 @@ function prepareNewsletterField() {
                 <?php if ($this->isSubscribed() || $this->isEnabledCheckedByDefault()): ?>
                     $('billing:is_subscribed_box').checked = true;
                     $('billing:is_subscribed').value       = 1;
+                <?php else: ?>
+                    $('billing:is_subscribed_box').checked = false;
+                    $('billing:is_subscribed').value       = 0;
                 <?php endif ?>
             <?php else: ?>
                 Element.hide('register-customer-newsletter');
@@ -28,16 +31,31 @@ function prepareNewsletterField() {
                 <?php if ($this->isSubscribed() || $this->isEnabledCheckedByDefault()): ?>
                     $('billing:is_subscribed_box').checked = true;
                     $('billing:is_subscribed').value       = 1;
+                <?php else: ?>
+                    $('billing:is_subscribed_box').checked = false;
+                    $('billing:is_subscribed').value       = 0;
                 <?php endif ?>
             <?php else: ?>
                 Element.hide('register-customer-newsletter');
                 $('billing:is_subscribed_box').checked = false;
                 $('billing:is_subscribed').value       = 0;
             <?php endif ?>
+        } else {
+            Element.show('register-customer-newsletter');
+            <?php if ($this->isSubscribed() || $this->isEnabledCheckedByDefault()): ?>
+                $('billing:is_subscribed_box').checked = true;
+                $('billing:is_subscribed').value       = 1;
+            <?php else: ?>
+                $('billing:is_subscribed_box').checked = false;
+                $('billing:is_subscribed').value       = 0;
+            <?php endif ?>
         }
     }
+    
     <?php if ($this->isSubscribed() && !$this->isEnabledIfAlreadySubscribed()): ?>
         Element.hide('register-customer-newsletter');
+        $('billing:is_subscribed_box').checked = true;
+        $('billing:is_subscribed').value       = 1;
     <?php endif; ?>
 }
 
@@ -47,8 +65,9 @@ Event.observe(window, 'load', function() {
             prepareNewsletterField();
         });
     }
-    $$('#co-billing-form fieldset')[0].insert('<style>.col1-layout .billing_is_subscribed_box { margin-left: 240px !important; } .col1-layout #billing_subscribed_label { text-align: left; }</style>');
-    $$('#co-billing-form fieldset')[0].insert('<input id="billing:is_subscribed" type="hidden" name="billing[is_subscribed]" value="1" /><input id="billing:is_subscribed_box" class="billing_is_subscribed_box" type="checkbox" onchange="$(\'billing:is_subscribed\').value = this.checked ? 1 : 0" checked="checked" title="<?php echo $this->__($this->getCheckboxLabelText()) ?>" style="float:left; width: auto; margin: 2px 8px 0 0;" /><label id="billing_subscribed_label" for="billing[is_subscribed]"><?php echo $this->__($this->getCheckboxLabelText()) ?></label>');
+    $$('#co-billing-form fieldset')[0].insert('<span id="register-customer-newsletter" style="display:none;"></span>')
+    $$('#co-billing-form fieldset #register-customer-newsletter')[0].insert('<style>.col1-layout .billing_is_subscribed_box { margin-left: 240px !important; } .col1-layout #billing_subscribed_label { text-align: left; }</style>');
+    $$('#co-billing-form fieldset #register-customer-newsletter')[0].insert('<input id="billing:is_subscribed" type="hidden" name="billing[is_subscribed]" value="1" /><input id="billing:is_subscribed_box" class="billing_is_subscribed_box" type="checkbox" onchange="$(\'billing:is_subscribed\').value = this.checked ? 1 : 0" checked="checked" title="<?php echo $this->__($this->getCheckboxLabelText()) ?>" style="float:left; width: auto; margin: 2px 8px 0 0;" /><label id="billing_subscribed_label" for="billing[is_subscribed]"><?php echo $this->__($this->getCheckboxLabelText()) ?></label>');
     prepareNewsletterField();
 });
 </script>

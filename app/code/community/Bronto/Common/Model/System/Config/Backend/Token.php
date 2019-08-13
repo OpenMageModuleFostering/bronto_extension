@@ -24,7 +24,9 @@ class Bronto_Common_Model_System_Config_Backend_Token extends Mage_Core_Model_Co
                 // reset the verified status
                 Mage::helper('bronto_roundtrip')->setRoundtripStatus(
                     Mage::helper('bronto_roundtrip')->getPath('status'),
-                    '2'
+                    '2',
+                    $this->getScope(),
+                    $this->getScopeId()
                 );
 
                 $sentry = Mage::getModel('bronto_common/keysentry');

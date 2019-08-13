@@ -73,7 +73,7 @@ class Bronto_Roundtrip_Model_Roundtrip
         $status = true;
         $helper = Mage::helper(self::NOTICE_IDENTIFER);
 
-		//  Run through all API's ups to ensure valid API tokens
+        //  Run through all API's ups to ensure valid API tokens
         //
         //  keep the '/data' on the helper alias else EcomDev_PHPUnit will
         //  not properly replace the correct registry key for unit test which
@@ -82,7 +82,7 @@ class Bronto_Roundtrip_Model_Roundtrip
             $helper->setRoundtripStatus($helper->getPath('sandbox_connect'), '0');
             return false;
         }
-
+        
         // Try Connecting to Sandbox Account
         $api = $this->_testSandboxConnect();
         if ($api) {

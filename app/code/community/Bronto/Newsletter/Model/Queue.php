@@ -20,7 +20,7 @@
  */
 /**
  * @author Jeff Lambert <jeff.lambert@atlanticbt.com>
- *         */
+ */
 class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
 {
 
@@ -32,10 +32,25 @@ class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
      * @return void  
      * @access public
      */
-	public function _construct()
-	{
-		parent::_construct();
-		$this->_init('bronto_newsletter/queue');
-	}
-
+    public function _construct()
+    {
+        parent::_construct();
+        $this->_init('bronto_newsletter/queue');
+    }
+    
+    public function getContactRow($subscriber_id, $store_id)
+    {
+        $collection = $this->getCollection()
+             ->addFieldToFilter('subscriber_id', $subscriber_id)
+             ->addFieldToFilter('store', $store_id);
+        
+        if ($collection->count() == 1) {
+            return $collection->getFirstItem();
+        } else {
+            $this->setSubscriberId($subscriber_id)
+                 ->setStore($store_id);
+        }
+        
+        return $this;
+    }
 }

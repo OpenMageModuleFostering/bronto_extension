@@ -14,21 +14,9 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
         try {
             $result = array('total' => 0, 'success' => 0, 'error' => 0);
             $model  = Mage::getModel('bronto_customer/observer');
+            $helper = Mage::helper('bronto_customer');
 
-            if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-                $store      = Mage::app()->getStore($storeCode);
-                $storeIds[] = $store->getId();
-            } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-                $website  = Mage::app()->getWebsite($websiteCode);
-                $storeIds = $website->getStoreIds();
-            } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-                $website  = Mage::app()->getGroup($groupCode)->getWebsite();
-                $storeIds = $website->getStoreIds();
-            } else {
-                $storeIds = false;
-            }
-
-            if ($storeIds) {
+            if ($storeIds = $helper->getStoreIds()) {
                 foreach ($storeIds as $storeId) {
                     $storeResult = $model->processCustomersForStore($storeId);
                     $result['total']   += $storeResult['total'];
@@ -58,25 +46,22 @@ class Bronto_Customer_Adminhtml_CustomerController extends Mage_Adminhtml_Contro
      */
     public function resetAction()
     {
-        $storeIds        = array();
-        $writeConnection = Mage::getSingleton('core/resource')->getConnection('core_write');
-        $tablePrefix     = Mage::getConfig()->getTablePrefix();
+        $helper   = Mage::helper('bronto_customer');
+        $storeIds = $helper->getStoreIds();
+        
+        $collection = Mage::getModel('bronto_customer/queue')->getCollection();
 
-        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-            $store      = Mage::app()->getStore($storeCode);
-            $storeIds[] = $store->getId();
-        } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-            $website  = Mage::app()->getWebsite($websiteCode);
-            $storeIds = $website->getStoreIds();
-        } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-            $website  = Mage::app()->getGroup($groupCode)->getWebsite();
-            $storeIds = $website->getStoreIds();
-        } else {
-            $storeIds[] = null;
+        if ($storeIds) {
+            $collection->addStoreFilter($storeIds);
         }
-
-        foreach ($storeIds as $storeId) {
-            //
+        
+        foreach ($collection->getItems() as $customerRow) {
+            try {
+                $customerRow->setBrontoImported(null)->save();
+            } catch (Exception $e) {
+                Mage::helper('bronto_customer')->writeError($e);
+                $this->_getSession()->addError('Reset failed: ' . $e->getMessage());
+            }
         }
 
         $this->_redirect('*/system_config/edit', array('section' => 'bronto_customer'));

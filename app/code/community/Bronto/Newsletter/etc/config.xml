@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Newsletter>
-            <version>1.4.1</version>
+            <version>1.4.4</version>
         </Bronto_Newsletter>
     </modules>
     <global>
@@ -108,15 +108,7 @@
                 <update_status>1</update_status>
             </contacts>
         </bronto_newsletter>
-    </default>
-    <crontab>
-        <jobs>
-            <bronto_newsletter_import>
-                <schedule><cron_expr>*/15 * * * *</cron_expr></schedule>
-                <run><model>bronto_newsletter/observer::processSubscribers</model></run>
-            </bronto_newsletter_import>
-        </jobs>
-    </crontab>
+    </default>    
     <adminhtml>
         <events>
             <controller_action_predispatch>
@@ -149,6 +141,15 @@
         </acl>
     </adminhtml>
     <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <bronto_newsletter before="Mage_Adminhtml">Bronto_Newsletter_Adminhtml</bronto_newsletter>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
         <fieldsets>
             <customer_account>
                 <bronto_contact_id><create>1</create></bronto_contact_id>
@@ -157,12 +158,9 @@
     </admin>
     <crontab>
         <jobs>
-            <bronto_newsletter_import>
-                <schedule>
-                    <cron_expr>*/5 * * * *</cron_expr>
-                </schedule>
+            <bronto_newsletter_import>                
                 <run>
-                    <model>bronto_newsletter/observer::cronImport</model>
+                    <model>bronto_newsletter/observer::processSubscribers</model>
                 </run>
             </bronto_newsletter_import>
         </jobs>

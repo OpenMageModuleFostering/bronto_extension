@@ -14,7 +14,7 @@ class Bronto_Common_Helper_Data extends Mage_Core_Helper_Abstract
     const XML_PATH_TEST            = 'bronto/settings/test';
     const XML_PATH_NOTICES         = 'bronto/settings/notices';
     const XML_PATH_ENABLED         = 'bronto/settings/enabled';
-
+    
     /**
      * @param string $path
      * @param mixed  $store
@@ -436,5 +436,27 @@ class Bronto_Common_Helper_Data extends Mage_Core_Helper_Abstract
             }
         }
         return Mage::log($message, $level, $file, true);
+    }
+    
+    /**
+     * Get Array of Store Ids based on current store/website/group
+     * @return boolean|array
+     */
+    public function getStoreIds()
+    {
+        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
+            $store      = Mage::app()->getStore($storeCode);
+            $storeIds[] = $store->getId();
+        } elseif ($websiteCode = Mage::app()->getRequest()->getParam('website')){
+            $website  = Mage::app()->getWebsite($websiteCode);
+            $storeIds = $website->getStoreIds();
+        } elseif ($groupCode = Mage::app()->getRequest()->getParam('group')){
+            $website  = Mage::app()->getGroup($groupCode)->getWebsite();
+            $storeIds = $website->getStoreIds();
+        } else {
+            $storeIds = false;
+        }
+        
+        return $storeIds;
     }
 }

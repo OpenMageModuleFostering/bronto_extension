@@ -25,6 +25,7 @@
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
+                    <expanded>1</expanded>
                     <fields>
                         <enabled>
                             <label>Enable Module</label>
@@ -41,7 +42,7 @@
                             <depends><enabled>1</enabled></depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_frequency</source_model>
-                            <backend_model>bronto_order/system_config_backend_cron</backend_model>
+                            <backend_model>bronto_newsletter/system_config_backend_cron</backend_model>
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
@@ -143,6 +144,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </label_text>
+                        <!-- Deprecated: Custom Billing Template not needed
                         <use_custom_template>
                             <label>Use Custom Billing Template?</label>
                             <frontend_type>select</frontend_type>
@@ -162,7 +164,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                             <comment><![CDATA[<strong>Magento Default:</strong> <code>checkout/onepage/billing.phtml</code>]]></comment>
-                        </billing_template>
+                        </billing_template>-->
                     </fields>
                 </checkout>
                 <contacts>

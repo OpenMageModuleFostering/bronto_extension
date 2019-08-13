@@ -90,18 +90,39 @@ class Bronto_Roundtrip_Helper_Data
     {
         switch ($this->_status) {
             case 1:
-                return '<span style="color:green; font-weight:bold;">Passed Verification</span>';
+                return '<span id="bronto-validation-status" class="valid">Passed Verification</span>';
                 break;
             case 0:
-                return '<span style="color:red; font-weight:bold;">Failed Verification</span>';
+                return '<span id="bronto-validation-status" class="invalid">Failed Verification</span>';
                 break;
             default:
-                return '<span style="color:grey; font-weight:bold;">Needs Verification</span>';
+                return '<span id="bronto-validation-status" class="">Needs Verification</span>';
                 break;
         }
     }
 
     //  }}}
+    
+    public function getAdminScopedRoundtripStatusText()
+    {
+        // Create form object to grab scope details
+        $form      = new Mage_Adminhtml_Block_System_Config_Form;
+        $scope     = $form->getScope();
+        $scopeCode = $form->getScopeCode();
+        $config = Mage::getConfig()->getNode(self::XML_PATH_ROUNDTRIP_ROOT . 'status', $scope, $scopeCode);
+        switch ($config) {
+            case 1:
+                return '<span id="bronto-validation-status" class="valid">Passed Verification</span>';
+                break;
+            case 0:
+                return '<span id="bronto-validation-status" class="invalid">Failed Verification</span>';
+                break;
+            default:
+                return '<span id="bronto-validation-status" class="">Needs Verification</span>';
+                break;
+        }
+    }
+
     //  {{{ setRoundtripStatus()
 
     /**
@@ -113,10 +134,13 @@ class Bronto_Roundtrip_Helper_Data
      * @return Mage_Core_Model_Config
      * @access public
      */
-    public function setRoundtripStatus($path, $value)
+    public function setRoundtripStatus($path, $value, $scope = null, $scopeId = null)
     {
+        $scope   = (in_array($scope, 'default', 'websites', 'stores')) ? $scope : 'default';
+        $scopeId = (is_int($scopeId)) ? $scopeId : 0;
+        
         return Mage::getSingleton('core/config')
-            ->saveConfig($path, $value);
+            ->saveConfig($path, $value, $scope, $scopeId);
     }
 
     //  }}}

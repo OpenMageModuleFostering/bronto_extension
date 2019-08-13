@@ -34,8 +34,7 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     protected function getProgressBarTotal()
     {
         return $this->getOrderResourceCollection()
-            ->getSize()
-        ;
+            ->getSize();
     }
 
     /**
@@ -45,8 +44,7 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     {
         return $this->getOrderResourceCollection()
             ->addBrontoNotImportedFilter()
-            ->getSize()
-        ;
+            ->getSize();
     }
 
     /**
@@ -54,19 +52,13 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
      */
     protected function getOrderResourceCollection()
     {
-        $collection = Mage::getModel('bronto_order/resource_order_collection');
-
-        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-            $store = Mage::app()->getStore($storeCode);
-            $collection->addStoreFilter($store->getId());
-        } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-            $website = Mage::app()->getWebsite($websiteCode);
-            $collection->addStoreFilter($website->getStoreids());
-        } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-            $website = Mage::app()->getGroup($groupCode)->getWebsite();
-            $collection->addStoreFilter($website->getStoreids());
+        $collection = Mage::getModel('bronto_order/queue')->getCollection();
+        $storeIds   = Mage::helper('bronto_order')->getStoreIds();
+        
+        if ($storeIds) {
+            $collection->addStoreFilter($storeIds);
         }
-
+        
         return $collection;
     }
 }

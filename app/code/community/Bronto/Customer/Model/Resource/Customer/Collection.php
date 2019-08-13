@@ -22,7 +22,7 @@ class Bronto_Customer_Model_Resource_Customer_Collection
      */
     public function addBrontoNotImportedFilter()
     {
-        $this->addAttributeToFilter('bronto_imported', array('null' => true));
+        $this->addFieldToFilter('bronto_imported', array('null' => true));
         return $this;
     }
 

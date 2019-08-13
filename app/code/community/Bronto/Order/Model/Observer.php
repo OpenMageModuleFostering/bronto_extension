@@ -3,7 +3,7 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.5
+ * @version   1.1.7
  */
 class Bronto_Order_Model_Observer
 {
@@ -61,13 +61,15 @@ class Bronto_Order_Model_Observer
             return $result;
         }
 
-        $orderIds = Mage::getModel('bronto_order/resource_order_collection')
-            ->addStoreFilter($storeId)
+        $orderRows = Mage::getModel('bronto_order/queue')
+            ->getCollection()
             ->addBrontoNotImportedFilter()
             ->orderByUpdatedAt()
-            ->getAllIds($limit);
-
-        if (empty($orderIds)) {
+            ->setPageSize($limit)
+            ->addStoreFilter($storeId)
+            ->getItems();
+        
+        if (empty($orderRows)) {
             Mage::helper('bronto_order')->writeVerboseDebug('  No Orders to process. Skipping...');
             return $result;
         }
@@ -77,7 +79,8 @@ class Bronto_Order_Model_Observer
         $descriptionAttr = $store->getConfig(Bronto_Order_Helper_Data::XML_PATH_DESCRIPTION);
         $orderCache      = array();
 
-        foreach ($orderIds as $orderId) {
+        foreach ($orderRows as $orderRow) {
+            $orderId = $orderRow->getOrderId();
             if ($order = Mage::getModel('sales/order')->load($orderId) /* @var $order Mage_Sales_Model_Order */) {
                 Mage::helper('bronto_order')->writeDebug("  Processing Order ID: {$orderId}");
                 $orderCache[] = $orderId;
@@ -87,7 +90,7 @@ class Bronto_Order_Model_Observer
                 $brontoOrder->email     = $order->getCustomerEmail();
                 $brontoOrder->id        = $order->getIncrementId();
                 $brontoOrder->orderDate = date('c', strtotime($order->getCreatedAt()));
-                if ($tid = $order->getBrontoTid()) {
+                if ($tid = $orderRow->getBrontoTid()) {
                     $brontoOrder->tid = $tid;
                 }
                 $brontoOrderItems = array();
@@ -147,9 +150,9 @@ class Bronto_Order_Model_Observer
 
                 try {
                     // Mark order as imported
-                    $order->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
-                    $order->save();
-
+                    $orderRow->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
+                    $orderRow->save();
+                    
                     // Flush every 10 orders
                     if ($result['total'] % 100 === 0) {
                         $result     = $this->flushOrders($orderObject, $orderCache, $result);
@@ -159,8 +162,8 @@ class Bronto_Order_Model_Observer
                     Mage::helper('bronto_order')->writeError($e);
 
                     // Mark import as *not* imported
-                    $order->setBrontoImported(null);
-                    $order->save();
+                    $orderRow->setBrontoImported(null);
+                    $orderRow->save();
 
                     $result['error']++;
                 }
@@ -168,15 +171,15 @@ class Bronto_Order_Model_Observer
                 $result['total']++;
             }
         }
-
+        
         // Final flush (for any we miss)
-        $result = $this->flushOrders($orderObject, $orderCache, $result);
+        $results = $this->flushOrders($orderObject, $orderCache, $result);
 
-        Mage::helper('bronto_order')->writeDebug('  Success: ' . $result['success']);
-        Mage::helper('bronto_order')->writeDebug('  Error:   ' . $result['error']);
-        Mage::helper('bronto_order')->writeDebug('  Total:   ' . $result['total']);
+        Mage::helper('bronto_order')->writeDebug('  Success: ' . $results['success']);
+        Mage::helper('bronto_order')->writeDebug('  Error:   ' . $results['error']);
+        Mage::helper('bronto_order')->writeDebug('  Total:   ' . $results['total']);
 
-        return $result;
+        return $results;
     }
 
     /**
@@ -198,10 +201,15 @@ class Bronto_Order_Model_Observer
                 $errorCode    = $flushResultRow->getErrorCode();
                 $errorMessage = $flushResultRow->getErrorMessage();
                 if (isset($orderCache[$i])) {
-                    // Reset Bronto Import status
+                    // Get Order Object
                     $order = Mage::getModel('sales/order')->load($orderCache[$i]);
-                    $order->setBrontoImported(null);
-                    $order->save();
+                    
+                    // Reset Bronto Import status
+                    $orderRow = Mage::getModel('bronto_order/queue')
+                        ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+                        ->setBrontoImported(null)
+                        ->save();
+                    
                     Mage::helper('bronto_order')->writeError("[{$errorCode}] {$errorMessage} ({$order->getIncrementId})");
                 } else {
                     Mage::helper('bronto_order')->writeError("[{$errorCode}] {$errorMessage}");
@@ -226,8 +234,8 @@ class Bronto_Order_Model_Observer
             'error'   => 0,
         );
 
-        $stores = Mage::app()->getStores();
-        foreach ($stores as $_storeId => $_store) {
+        $stores = Mage::app()->getStores(true);
+        foreach ($stores as $_store) {
             $storeResult = $this->processOrdersForStore($_store);
             $result['total']   += $storeResult['total'];
             $result['success'] += $storeResult['success'];

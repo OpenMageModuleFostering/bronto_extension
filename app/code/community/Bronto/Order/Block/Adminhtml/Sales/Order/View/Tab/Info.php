@@ -15,8 +15,10 @@ class Bronto_Order_Block_Adminhtml_Sales_Order_View_Tab_Info extends Mage_Adminh
     protected function _toHtml()
     {
         $order    = $this->getOrder();
-        $tid      = $order->getBrontoTid();
-        $imported = $order->getBrontoImported();
+        $orderRow = Mage::getModel('bronto_order/queue')->load($order->getId());
+        
+        $tid      = $orderRow->getBrontoTid();
+        $imported = $orderRow->getBrontoImported();
 
         $deliveryHtml = empty($tid)      ? $this->_getNoHtml() : $this->_getYesHtml();
         $importedHtml = empty($imported) ? $this->_getNoHtml() : $this->_getYesHtml();

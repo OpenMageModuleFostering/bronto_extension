@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Customer>
-            <version>1.0.0</version>
+            <version>1.0.2</version>
         </Bronto_Customer>
     </modules>
     <global>
@@ -20,15 +20,17 @@
             <bronto_customer>
                 <class>Bronto_Customer_Model</class>
                 <resourceModel>bronto_customer_resource</resourceModel>
+                <resourceModel>bronto_customer_mysql4</resourceModel>
             </bronto_customer>
             <bronto_customer_resource>
                 <class>Bronto_Customer_Model_Resource</class>
-                <entities>
-                    <imported>
-                        <table>bronto_imported</table>
-                    </imported>
-                </entities>
             </bronto_customer_resource>
+            <bronto_customer_mysql4>
+                <class>Bronto_Customer_Model_Mysql4</class>
+                <entities>
+                    <queue><table>bronto_customer_queue</table></queue>
+                </entities>
+            </bronto_customer_mysql4>
         </models>
         <resources>
             <bronto_customer_setup>
@@ -52,15 +54,15 @@
             </bronto_customer_read>
         </resources>
         <events>
-            <customer_save_before>
+            <customer_save_after>
                 <observers>
-                    <bronto_customer_sales_customer_save_before>
+                    <bronto_customer_sales_customer_save_after>
                         <type>singleton</type>
                         <class>bronto_customer/observer</class>
                         <method>markCustomerForReimport</method>
-                    </bronto_customer_sales_customer_save_before>
+                    </bronto_customer_sales_customer_save_after>
                 </observers>
-            </customer_save_before>
+            </customer_save_after>
         </events>
     </global>
     <adminhtml>
@@ -132,8 +134,7 @@
     </default>
     <crontab>
         <jobs>
-            <bronto_customer_import>
-                <schedule><cron_expr>*/15 * * * *</cron_expr></schedule>
+            <bronto_customer_import>                
                 <run><model>bronto_customer/observer::processCustomers</model></run>
             </bronto_customer_import>
         </jobs>

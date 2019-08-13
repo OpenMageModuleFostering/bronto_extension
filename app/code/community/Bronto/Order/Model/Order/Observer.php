@@ -3,7 +3,7 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.5
+ * @version   1.1.7
  */
 class Bronto_Order_Model_Order_Observer
 {
@@ -16,7 +16,12 @@ class Bronto_Order_Model_Order_Observer
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getCreditmemo()->getOrder();
-        $order->setBrontoImported(null);
+        
+        /* @var $contactQueue Bronto_Order_Model_Queue */
+        $orderRow = Mage::getModel('bronto_order/queue')
+                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+                ->setBrontoImported(null)
+                ->save();
     }
 
     /**
@@ -28,7 +33,12 @@ class Bronto_Order_Model_Order_Observer
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getPayment()->getOrder();
-        $order->setBrontoImported(null);
+        
+        /* @var $contactQueue Bronto_Order_Model_Queue */
+        $orderRow = Mage::getModel('bronto_order/queue')
+                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+                ->setBrontoImported(null)
+                ->save();
     }
 
     /**
@@ -41,6 +51,13 @@ class Bronto_Order_Model_Order_Observer
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getOrder();
-        $order->setBrontoImported(null);
+        
+        /* @var $contactQueue Bronto_Order_Model_Queue */
+        $orderRow = Mage::getModel('bronto_order/queue')
+                ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
+                ->setCreatedAt($order->getCreatedAt())
+                ->setUpdatedAt($order->getUpdatedAt())
+                ->setBrontoImported(null)
+                ->save();
     }
 }

@@ -1,5 +1,9 @@
 <?php /* var $this Bronto_Roundtrip_Block_Adminhtml_System_Config_Status */ ?>
-
+<style>
+    #bronto-validation-status { color:grey; font-weight:bold; }
+    #bronto-validation-status.valid { color: green; }
+    #bronto-validation-status.invalid { color: red; }
+</style>
 <div style="background-color: #f4f9f5; border: 1px solid #D6D6D6; margin-bottom: 10px; padding: 10px 5px 15px 30px; color: #666">
     <strong><?php echo $this->getRoundtripButton(); ?> Current Status: <?php echo $this->getRoundtripStatus(); ?></strong>
 </div>

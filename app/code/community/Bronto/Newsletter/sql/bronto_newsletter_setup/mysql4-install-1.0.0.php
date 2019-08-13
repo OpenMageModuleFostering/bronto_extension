@@ -17,7 +17,7 @@ try {
         $installer->getTable('newsletter/subscriber'), 'IDX_BRONTO_IMPORTED', 'bronto_imported'
     );
 } catch (Exception $e) {
-    // Already exists...
+    throw new RuntimeException('Table Already Exists');
 }
 
 $installer->endSetup();

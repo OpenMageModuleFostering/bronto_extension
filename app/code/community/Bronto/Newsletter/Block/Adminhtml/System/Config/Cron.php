@@ -15,7 +15,7 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common
      */
     protected function _prepareLayout()
     {
-        // $this->addButton($this->getLayout()->createBlock('bronto_newsletter/adminhtml_widget_button_reset'));
+        $this->addButton($this->getLayout()->createBlock('bronto_newsletter/adminhtml_widget_button_reset'));
         $this->addButton($this->getLayout()->createBlock('bronto_newsletter/adminhtml_widget_button_run'));
 
         return parent::_prepareLayout();

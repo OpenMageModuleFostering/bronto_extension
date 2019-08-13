@@ -21,7 +21,7 @@ CREATE TABLE `{$this->getTable('bronto_newsletter_queue')}` (
 ");
 
 } catch (Exception $e) {
-    //
+    throw new RuntimeException('Table Already Exists');
 }
 
 $installer->endSetup();

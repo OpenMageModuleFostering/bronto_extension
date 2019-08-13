@@ -177,8 +177,7 @@
     </adminhtml>
     <crontab>
         <jobs>
-            <bronto_reminder_send_notification>
-                <schedule><cron_expr>*/15 * * * *</cron_expr></schedule>
+            <bronto_reminder_send_notification>                
                 <run><model>bronto_reminder/observer::scheduledNotification</model></run>
             </bronto_reminder_send_notification>
         </jobs>

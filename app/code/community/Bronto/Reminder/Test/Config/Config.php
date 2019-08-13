@@ -29,8 +29,7 @@ class Bronto_Reminder_Test_Config_Config
     {
         return array(
             array('adminhtml', 'controller_action_predispatch', 'bronto_reminder/observer', 'checkBrontoRequirements'),
-            array('global', 'salesrule_rule_get_coupon_types', 'bronto_reminder/observer', 'getCouponTypes'),
-            array('global', 'checkout_allow_guest', 'bronto_reminder/observer', 'storeGuestEmailCheckout'),
+            array('global', 'salesrule_rule_get_coupon_types', 'bronto_reminder/observer', 'getCouponTypes'),            
             array('global', 'adminhtml_promo_quote_edit_tab_main_prepare_form', 'bronto_reminder/observer', 'updatePromoQuoteTabMainForm'),
             array('frontend', 'sales_quote_save_before', 'bronto_reminder/observer', 'storeGuestEmailCheckout'),
         );

@@ -70,12 +70,15 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             /* @var $subscriber Mage_Newsletter_Model_Subscriber */
             $subscriber   = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
             $isSubscribed = Mage::getSingleton('checkout/session')->getIsSubscribed();
-
+            
             switch ($isSubscribed) {
                 case self::BOX_UNCHECKED:
                     // Unsubscribe the Customer
                     if ($subscriber && $subscriber->isSubscribed()) {
                         return $subscriber->unsubscribe();
+                    } else {
+                        // Make Custmoer Transactional
+                        $this->_makeTransactional($subscriber, $email);
                     }
                     break;
                 case self::BOX_CHECKED:
@@ -95,6 +98,40 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             Mage::helper('bronto_newsletter')->writeError($e);
         }
     }
+    
+    private function _makeTransactional($subscriber, $email)
+    {
+        // Check For Existing Contact from Bronto
+        try {
+            $contactHelper = Mage::helper('bronto_common/contact');
+            $contact = $contactHelper->getContactByEmail($subscriber->getSubscriberEmail(), null, Mage::app()->getStore()->getId());
+        } catch (Exception $e) {
+            Mage::helper('bronto_newsletter')->writeError($e);
+            return false;
+        }
+        
+        $ownerId = Mage::getModel('customer/customer')
+            ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+            ->loadByEmail($email)
+            ->getId();
+        
+        if (!$ownerId) {
+            $ownerId = Mage::getSingleton('customer/session')->getId();
+        }
+        
+        $subscriber->setCustomerId($ownerId); 
+        $subscriber->setSubscriberEmail($email);
+        $subscriber->setStoreId(Mage::app()->getStore()->getId());
+        if ($contact->status == Bronto_Api_Contact::STATUS_UNSUBSCRIBED) {
+            $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED);
+        } else {
+            $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE);
+        }
+        
+        $subscriber->save();
+        
+        $this->_saveToQueue($subscriber, Mage::app()->getStore()->getId());
+    }
 
     /**
      * @param Varien_Event_Observer $observer
@@ -105,21 +142,14 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             return;
         }
 
+        // Insert contact email into queuing table. Cron will
+        // then issue an update to Bronto on its next run.        
         try {
-            // Insert contact email into queuing table. Cron will
-            // then issue an update to Bronto on its next run.
+            /* @var $subscriber Mage_Newsletter_Model_Subscriber */
             if ($subscriber = $observer->getEvent()->getSubscriber()) {
-                $email = $subscriber->getEmail();
+                $email = $subscriber->getEmail();  
                 if (!empty($email)) {
-                    /* @var $contactHelper Bronto_Newsletter_Helper_Contact */
-                    $contactHelper = Mage::helper('bronto_newsletter/contact');
-
-                    if (!$contactHelper->getUpdateStatus()) {
-                        $status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
-                    } else {
-                        $status = $contactHelper->getContactByEmail($email)->status;
-                    }
-                    $this->_saveToQueue($email, $contactHelper, Mage::app()->getStore()->getId());
+                    $this->_saveToQueue($subscriber, Mage::app()->getStore()->getId());
                 }
             }
         } catch (Exception $e) {
@@ -127,24 +157,154 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
         }
     }
 
-    private function _saveToQueue($email, $helper, $storeId) {
-        /* var $contactQueue Bronto_Newsletter_Model_Queue */
+    /**
+     * Add Subscriber to Bronto Newsletter Opt-in queue
+     * @param Mage_Newsletter_Model_Subscriber $subscriber
+     * @param int $storeId
+     * @param string $status
+     * @return void
+     */
+    private function _saveToQueue($subscriber, $storeId) 
+    {
+        // Get Calculated Status
+        $status = $this->_getQueueStatus($subscriber);
+        
+        /* @var $contactQueue Bronto_Newsletter_Model_Queue */
         $contactQueue = Mage::getModel('bronto_newsletter/queue');
 
-        if(!$helper->getUpdateStatus()) {
-            $status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
-        } else {
-            $status = Bronto_Api_Contact::STATUS_ONBOARDING;
-        }
-
-        $contactQueue->setSubscriberEmail( $email )
-            ->setStatus( $status )
-            ->setMessagePreference( 'html' )
-            ->setSource( 'api' )
-            ->setStore( $storeId )
+        $contact = $contactQueue->getContactRow($subscriber->getId(), $storeId)
+            ->setSubscriberEmail($subscriber->getEmail())
+            ->setStatus($status)
+            ->setMessagePreference('html')
+            ->setSource('api')
+            ->setImported(0)
             ->save();
     }
+    
+    /**
+     * Determine Status to use when sending subscriber to opt-in queue
+     * @param Mage_Newsletter_Model_Subscriber $subscriber
+     * @param int $storeId
+     * @return boolean
+     */
+    private function _getQueueStatus($subscriber)
+    {
+        // Set correct status based on subscriber status
+        switch ($subscriber->getStatus()) {
+            case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:
+                $status = Bronto_Api_Contact::STATUS_ONBOARDING;
+                break;
 
+            case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED:
+                $status = Bronto_Api_Contact::STATUS_UNSUBSCRIBED;
+                break;
+
+            case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:
+                $status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
+                break;
+                
+            default:
+                $status = false;
+                break;
+    }
+
+        return $status;
+    }
+    
+    /**
+     * @param int $storeId
+     * @return array
+     */
+    public function processSubscribersForStore($storeId = null)
+    {
+        if (is_object($storeId)) {
+            $store   = $storeId;
+            $storeId = $store->getId();
+        } else {
+            $store   = Mage::app()->getStore($storeId);
+            $storeId = $store->getId();
+        }
+        
+        $result = array('total' => 0, 'success' => 0, 'error' => 0);
+        Mage::helper('bronto_newsletter')->writeDebug("Starting Subscriber Opt-In process for store: {$store->getName()} ({$storeId})");
+
+        if (!$store->getConfig(Bronto_Newsletter_Helper_Data::XML_PATH_ENABLED)) {
+            Mage::helper('bronto_newsletter')->writeDebug('  Module disabled for this store. Skipping...');
+            return false;
+        }
+
+        $limit = $store->getConfig(Bronto_Newsletter_Helper_Data::XML_PATH_LIMIT);
+        if (!$limit) {
+            Mage::helper('bronto_newsletter')->writeDebug('  Limit empty. Skipping...');
+            return false;
+        }
+        
+        $helper        = Mage::helper('bronto_newsletter/contact');
+        $contactHelper = Mage::helper('bronto_common/contact');
+        
+        $lists = $helper->getListIds($storeId);
+        
+        // Get Subscriber Queue for store
+        /* var $subscribers Bronto_Newsletter_Model_Mysql4_Queue_Collection */
+        $subscribers = Mage::getModel('bronto_newsletter/queue')
+            ->getCollection()
+            ->addFilter('imported', 0)
+            ->addFilter('store', $storeId);
+        
+        $subscribers->getSelect()->limit($limit);
+        foreach ($subscribers as $subscriber) {
+            try {
+                $contact = $contactHelper->getContactByEmail($subscriber->getSubscriberEmail(), null, $storeId);
+                
+                foreach ($lists as $listId) {
+                    $contactHelper->writeInfo("  Adding Contact to list: {$listId}");
+                    $contact->addToList($listId);
+                }
+                
+                if ($helper->getUpdateStatus()) {
+                    $contact->status = $subscriber->getStatus();
+                    $contactHelper->writeInfo("  Setting Contact ({$contact->email}) status to: {$contact->status}");
+                }
+                $contact->save();
+                $subscriber->setImported(1)->save();
+                $result['success']++;
+            } catch (Exception $e) {
+                Mage::helper('bronto_newsletter')->writeError($e);
+                
+                $subscriber->setImported(0)->save();
+                $result['error']++;
+            }
+            $result['total']++;
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * @return array
+     */
+    public function processSubscribers()
+    {
+        $result = array(
+            'total'   => 0,
+            'success' => 0,
+            'error'   => 0,
+        );
+
+        $stores = Mage::app()->getStores();
+        foreach ($stores as $_store) {
+            $storeResult = $this->processSubscribersForStore($_store);
+            $result['total']   += $storeResult['total'];
+            $result['success'] += $storeResult['success'];
+            $result['error']   += $storeResult['error'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @depricated
+     */
     static public function cronImport() {
         /* var $contactHelper Bronto_Newsletter_Helper_Contact */
         $contactHelper = Mage::helper('bronto_newsletter/contact');
@@ -159,7 +319,7 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             $contact->status = $subscriber->getStatus();
 
             try {
-                $contactHelper->saveContact($contact);
+                //$contactHelper->saveContact($contact);
                 $subscriber->setImported(1)->save();
             } catch(Exception $e) {
                 Mage::helper('bronto_newsletter')->writeError($e);
