@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<layout>
+  <adminhtml_registration_index>
+    <reference name="content">
+      <block type="brontosoftware_connector/adminhtml_registration" name="brontosoftware_connector_registration"/>
+    </reference>
+  </adminhtml_registration_index>
+  <adminhtml_registration_new>
+    <reference name="content">
+      <block type="brontosoftware_connector/adminhtml_registration_edit" name="brontosoftware_connector_registration_edit"/>
+    </reference>
+  </adminhtml_registration_new>
+</layout>

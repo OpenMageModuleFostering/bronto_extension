@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Brontosoftware_Optin>
+      <active>true</active>
+      <codePool>community</codePool>
+      <depends>
+        <Mage_Customer/>
+      </depends>
+    </Brontosoftware_Optin>
+  </modules>
+</config>

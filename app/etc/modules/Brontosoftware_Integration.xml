@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Brontosoftware_Integration>
+      <active>true</active>
+      <codePool>community</codePool>
+      <depends>
+        <Brontosoftware_Order/>
+      </depends>
+    </Brontosoftware_Integration>
+  </modules>
+</config>

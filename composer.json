@@ -1,13 +1,13 @@
 {
     "name": "OpenMageModuleFostering/Bronto_Extension",
     "type": "magento-module",
-    "license": "Apache2.0",
+    "license": "ASL",
     "homepage": "",
     "description": "Drive sales with targeted lifecycle marketing campaigns that convert one-time buyers into repeat customers.",
     "authors": [
     {
-        "name": "Chris Geiss",
-        "email": "chris.geiss@bronto.com"
+        "name": "Jason Baronciani",
+        "email": "Jason.Baronciani@bronto.com"
     }
 ],
     "suggest": {

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Brontosoftware_Migration>
+      <active>true</active>
+      <codePool>community</codePool>
+      <depends>
+        <Brontosoftware_Connector />
+      </depends>
+    </Brontosoftware_Migration>
+  </modules>
+</config>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Brontosoftware_Cart>
+      <active>true</active>
+      <codePool>community</codePool>
+      <depends>
+        <Mage_Sales/>
+        <Brontosoftware_Integration/>
+      </depends>
+    </Brontosoftware_Cart>
+  </modules>
+</config>

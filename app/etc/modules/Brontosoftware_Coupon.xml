@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Brontosoftware_Coupon>
+      <active>true</active>
+      <codePool>community</codePool>
+      <depends>
+        <Mage_SalesRule/>
+        <Brontosoftware_Connector/>
+      </depends>
+    </Brontosoftware_Coupon>
+  </modules>
+</config>

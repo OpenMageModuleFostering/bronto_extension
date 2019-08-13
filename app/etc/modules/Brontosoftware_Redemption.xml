@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Brontosoftware_Redemption>
+      <active>true</active>
+      <codePool>community</codePool>
+      <depends>
+        <Mage_Sales/>
+        <Mage_SalesRule/>
+        <Brontosoftware_Integration/>
+      </depends>
+    </Brontosoftware_Redemption>
+  </modules>
+</config>
