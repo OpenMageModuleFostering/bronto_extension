@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Config_About extends Bronto_Common_Block_Adminhtml_System_Config_About
 {

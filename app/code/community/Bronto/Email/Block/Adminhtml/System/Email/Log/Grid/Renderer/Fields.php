@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Log_Grid_Renderer_Fields extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
 {

@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 abstract class Bronto_Verify_Model_Validator_ValidatorAbstract
     extends Mage_Core_Model_Abstract
@@ -18,10 +17,11 @@ abstract class Bronto_Verify_Model_Validator_ValidatorAbstract
      * Link List
      *
      * This is the pointer to the next node in the link list
+     *
      * @var object
      * @access protected
      */
-    protected $_nextHandler = NULL;
+    protected $_nextHandler = null;
 
     /**
      * pseudo constructor
@@ -44,7 +44,7 @@ abstract class Bronto_Verify_Model_Validator_ValidatorAbstract
      * check the node
      *
      * @param SplFileInfo $file     File to validate
-     * @param array $badFiles existing bad files to report on
+     * @param array       $badFiles existing bad files to report on
      *
      * @return array
      * @access public

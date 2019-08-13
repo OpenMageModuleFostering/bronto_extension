@@ -1,14 +1,13 @@
 <?php
 
 /**
- * XML Configuation base
+ * XML Configuration base
  *
  * @category  Bronto
  * @package   Bronto_Verify
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Core_Config_Base
     extends Bronto_Verify_Model_Lib_Varien_Simplexml_Config
@@ -16,8 +15,7 @@ class Bronto_Verify_Model_Core_Config_Base
     /**
      * Constructor
      *
-     * @return void
-     * @access public
+     * @param null $sourceData
      */
     public function __construct($sourceData = null)
     {

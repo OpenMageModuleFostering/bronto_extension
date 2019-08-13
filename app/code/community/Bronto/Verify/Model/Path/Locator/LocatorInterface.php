@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 interface Bronto_Verify_Model_Path_Locator_LocatorInterface
 {

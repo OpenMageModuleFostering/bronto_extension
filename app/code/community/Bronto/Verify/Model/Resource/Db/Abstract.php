@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_Resource_Abstract
 {
@@ -130,6 +129,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      *
      * @param string $mainTable
      * @param string $idFieldName
+     *
      * @return Mage_Core_Model_Resource_Abstract
      */
     protected function _init($mainTable, $idFieldName)
@@ -142,8 +142,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * If one or both arguments are string, will be used as prefix
      * If $tables is null and $connections is string, $tables will be the same
      *
-     * @param string|array $connections
+     * @param string|array      $connections
      * @param string|array|null $tables
+     *
      * @return Mage_Core_Model_Resource_Abstract
      */
     protected function _setResource($connections, $tables = null)
@@ -167,15 +168,17 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         } else if (is_string($tables)) {
             $this->_resourceModel = $tables;
         }
+
         return $this;
     }
 
     /**
      * Set main entity table name and primary key field name
-     * If field name is ommited {table_name}_id will be used
+     * If field name is omitted {table_name}_id will be used
      *
-     * @param string $mainTable
+     * @param string      $mainTable
      * @param string|null $idFieldName
+     *
      * @return Mage_Core_Model_Resource_Db_Abstract
      */
     protected function _setMainTable($mainTable, $idFieldName = null)
@@ -208,6 +211,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         if (empty($this->_idFieldName)) {
             Mage::throwException(Mage::helper('core')->__('Empty identifier field name'));
         }
+
         return $this->_idFieldName;
     }
 
@@ -222,6 +226,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         if (empty($this->_mainTable)) {
             Mage::throwException(Mage::helper('core')->__('Empty main table name'));
         }
+
         return $this->getTable($this->_mainTable);
     }
 
@@ -229,6 +234,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Get table name for the entity, validated by db adapter
      *
      * @param string $entityName
+     *
      * @return string
      */
     public function getTable($entityName)
@@ -237,7 +243,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
             $cacheName = join('@', $entityName);
             list($entityName, $entitySuffix) = $entityName;
         } else {
-            $cacheName = $entityName;
+            $cacheName    = $entityName;
             $entitySuffix = null;
         }
 
@@ -266,6 +272,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
             }
             $this->_tables[$cacheName] = $entityName;
         }
+
         return $this->_tables[$cacheName];
     }
 
@@ -275,6 +282,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      *
      * @param string $entityName
      * @param string $valueType
+     *
      * @return string
      */
     public function getValueTable($entityName, $valueType)
@@ -286,6 +294,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Get connection by name or type
      *
      * @param string $connectionName
+     *
      * @return Zend_Db_Adapter_Abstract
      */
     protected function _getConnection($connectionName)
@@ -315,6 +324,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
             // if transaction is started we should use write connection for reading
             return $writeAdapter;
         }
+
         return $this->_getConnection('read');
     }
 
@@ -342,8 +352,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Load an object
      *
      * @param Mage_Core_Model_Abstract $object
-     * @param mixed $value
-     * @param string $field field to load by (defaults to model id)
+     * @param mixed                    $value
+     * @param string                   $field field to load by (defaults to model id)
+     *
      * @return Mage_Core_Model_Resource_Db_Abstract
      */
     public function load(Mage_Core_Model_Abstract $object, $value, $field = null)
@@ -355,7 +366,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         $read = $this->_getReadAdapter();
         if ($read && !is_null($value)) {
             $select = $this->_getLoadSelect($field, $value, $object);
-            $data = $read->fetchRow($select);
+            $data   = $read->fetchRow($select);
 
             if ($data) {
                 $object->setData($data);
@@ -371,17 +382,19 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Retrieve select object for load object data
      *
-     * @param string $field
-     * @param mixed $value
+     * @param string                   $field
+     * @param mixed                    $value
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return Zend_Db_Select
      */
     protected function _getLoadSelect($field, $value, $object)
     {
-        $field = $this->_getReadAdapter()->quoteIdentifier(sprintf('%s.%s', $this->getMainTable(), $field));
+        $field  = $this->_getReadAdapter()->quoteIdentifier(sprintf('%s.%s', $this->getMainTable(), $field));
         $select = $this->_getReadAdapter()->select()
             ->from($this->getMainTable())
             ->where($field . '=?', $value);
+
         return $select;
     }
 
@@ -389,6 +402,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Save object object data
      *
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return Mage_Core_Model_Resource_Db_Abstract
      */
     public function save(Mage_Core_Model_Abstract $object)
@@ -444,17 +458,19 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     }
 
     /**
-     * Forsed save object data
-     * forsed update If duplicate unique key data
+     * Forced save object data
+     * forced update If duplicate unique key data
      *
      * @deprecated
+     *
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return Mage_Core_Model_Resource_Db_Abstract
      */
     public function forsedSave(Mage_Core_Model_Abstract $object)
     {
         $this->_beforeSave($object);
-        $bind = $this->_prepareDataForSave($object);
+        $bind    = $this->_prepareDataForSave($object);
         $adapter = $this->_getWriteAdapter();
         // update
         if (!is_null($object->getId()) && $this->_isPkAutoIncrement) {
@@ -474,8 +490,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Delete the object
      *
-     * @param Varien_Object $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
+     * @param Mage_Core_Model_Abstract $object
+     *
+     * @return $this
      */
     public function delete(Mage_Core_Model_Abstract $object)
     {
@@ -485,6 +502,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
             $this->_getWriteAdapter()->quoteInto($this->getIdFieldName() . '=?', $object->getId())
         );
         $this->_afterDelete($object);
+
         return $this;
     }
 
@@ -492,6 +510,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Add unique field restriction
      *
      * @param array|string $field
+     *
      * @return Mage_Core_Model_Resource_Db_Abstract
      */
     public function addUniqueField($field)
@@ -502,6 +521,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         if (is_array($this->_uniqueFields)) {
             $this->_uniqueFields[] = $field;
         }
+
         return $this;
     }
 
@@ -513,6 +533,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     public function resetUniqueField()
     {
         $this->_uniqueFields = array();
+
         return $this;
     }
 
@@ -537,6 +558,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     protected function _initUniqueFields()
     {
         $this->_uniqueFields = array();
+
         return $this;
     }
 
@@ -550,6 +572,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         if (is_null($this->_uniqueFields)) {
             $this->_initUniqueFields();
         }
+
         return $this->_uniqueFields;
     }
 
@@ -557,6 +580,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Prepare data for save
      *
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return array
      */
     protected function _prepareDataForSave(Mage_Core_Model_Abstract $object)
@@ -569,6 +593,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * has really changed comparing with origData
      *
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return boolean
      */
     public function hasDataChanged($object)
@@ -590,8 +615,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Prepare value for save
      *
-     * @param mixed $value
+     * @param mixed  $value
      * @param string $type
+     *
      * @return mixed
      */
     protected function _prepareValueForSave($value, $type)
@@ -603,13 +629,14 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Check for unique values existence
      *
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return Mage_Core_Model_Resource_Db_Abstract
      * @throws Mage_Core_Exception
      */
     protected function _checkUnique(Mage_Core_Model_Abstract $object)
     {
         $existent = array();
-        $fields = $this->getUniqueFields();
+        $fields   = $this->getUniqueFields();
         if (!empty($fields)) {
             if (!is_array($fields)) {
                 $this->_uniqueFields = array(
@@ -619,7 +646,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
                     ));
             }
 
-            $data = new Varien_Object($this->_prepareDataForSave($object));
+            $data   = new Varien_Object($this->_prepareDataForSave($object));
             $select = $this->_getWriteAdapter()->select()
                 ->from($this->getMainTable());
 
@@ -653,6 +680,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
             }
             Mage::throwException($error);
         }
+
         return $this;
     }
 
@@ -669,8 +697,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Perform actions after object load
      *
-     * @param Varien_Object $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
+     * @param Mage_Core_Model_Abstract $object
+     *
+     * @return $this
      */
     protected function _afterLoad(Mage_Core_Model_Abstract $object)
     {
@@ -680,8 +709,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Perform actions before object save
      *
-     * @param Varien_Object $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
+     * @param Mage_Core_Model_Abstract $object
+     *
+     * @return $this
      */
     protected function _beforeSave(Mage_Core_Model_Abstract $object)
     {
@@ -691,8 +721,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Perform actions after object save
      *
-     * @param Varien_Object $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
+     * @param Mage_Core_Model_Abstract $object
+     *
+     * @return $this
      */
     protected function _afterSave(Mage_Core_Model_Abstract $object)
     {
@@ -702,8 +733,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Perform actions before object delete
      *
-     * @param Varien_Object $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
+     * @param Mage_Core_Model_Abstract $object
+     *
+     * @return $this
      */
     protected function _beforeDelete(Mage_Core_Model_Abstract $object)
     {
@@ -713,8 +745,9 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
     /**
      * Perform actions after object delete
      *
-     * @param Varien_Object $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
+     * @param Mage_Core_Model_Abstract $object
+     *
+     * @return $this
      */
     protected function _afterDelete(Mage_Core_Model_Abstract $object)
     {
@@ -738,6 +771,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
      * Retrieve table checksum
      *
      * @param string|array $table
+     *
      * @return int|array
      */
     public function getChecksum($table)
@@ -749,6 +783,7 @@ abstract class Bronto_Verify_Model_Resource_Db_Abstract extends Mage_Core_Model_
         if (count($checksum) == 1) {
             return $checksum[$table];
         }
+
         return $checksum;
     }
 }

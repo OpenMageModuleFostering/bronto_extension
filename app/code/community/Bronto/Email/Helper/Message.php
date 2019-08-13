@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Helper_Message extends Bronto_Common_Helper_Message
 {

@@ -2,7 +2,7 @@
 
 /**
  * @category Bronto
- * @package Common
+ * @package  Common
  */
 class Bronto_Common_Model_System_Config_Source_List
 {

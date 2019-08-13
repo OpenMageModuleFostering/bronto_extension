@@ -3,25 +3,54 @@
 /**
  * @package   Bronto\Customer
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.0.0
  */
 class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements Bronto_Common_Helper_DataInterface
 {
-    const XML_PATH_ENABLED          = 'bronto_customer/settings/enabled';
-    const XML_PATH_LIMIT            = 'bronto_customer/settings/limit';
-    const XML_PATH_SYNC_LIMIT       = 'bronto_customer/settings/sync_limit';
-    const XML_PATH_INSTALL_DATE     = 'bronto_customer/settings/install_date';
-    const XML_PATH_UPGRADE_DATE     = 'bronto_customer/settings/upgrade_date';
+    const XML_PATH_ENABLED      = 'bronto_customer/settings/enabled';
+    const XML_PATH_MAGE_CRON    = 'bronto_customer/settings/mage_cron';
+    const XML_PATH_LIMIT        = 'bronto_customer/settings/limit';
+    const XML_PATH_SYNC_LIMIT   = 'bronto_customer/settings/sync_limit';
+    const XML_PATH_INSTALL_DATE = 'bronto_customer/settings/install_date';
+    const XML_PATH_UPGRADE_DATE = 'bronto_customer/settings/upgrade_date';
 
-    const XML_PREFIX_CUSTOMER_ATTR  = 'bronto_customer/attributes/';
-    const XML_PREFIX_ADDRESS_ATTR   = 'bronto_customer/address_attributes/';
+    const XML_PREFIX_CUSTOMER_ATTR = 'bronto_customer/attributes/';
+    const XML_PREFIX_ADDRESS_ATTR  = 'bronto_customer/address_attributes/';
+
+    const XML_PATH_CRON_STRING = 'crontab/jobs/bronto_customer_import/schedule/cron_expr';
+    const XML_PATH_CRON_MODEL  = 'crontab/jobs/bronto_customer_import/run/model';
 
     /**
+     * Module Human Readable Name
+     */
+    protected $_name = 'Bronto Customer Import';
+
+    /**
+     * Get Human Readable Name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->__($this->_name);
+    }
+
+    /**
+     * Check if module is enabled
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED);
+        // Check if valid token is present
+        if (!$this->validApiToken(null, $scope, $scopeId)) {
+            return false;
+        }
+
+        // Get Enabled Scope
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
 
     /*
@@ -31,7 +60,7 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
      */
     public function getModuleEnabledText()
     {
-        $message = parent::getModuleEnabledText();
+        $message   = parent::getModuleEnabledText();
         $scopeData = $this->getScopeParams();
         if ($scopeData['scope'] != 'default') {
             $message = $this->__(
@@ -40,28 +69,40 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
                 'and <em>Address Attributes</em> on this page and select the desired fields.'
             );
         }
+
         return $message;
     }
 
     /**
-     * @param string $path
+     * Disable Module for Specified Scope
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     * @param bool   $deleteConfig
+     *
      * @return bool
      */
-    public function disableModule($scope = 'default', $scopeId = 0)
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
     {
-        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId);
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
     }
 
     /**
-     * @param $storeId int (Optional)
+     * Get Send Limit
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return int
      */
-    public function getLimit($storeId = null)
+    public function getLimit($scope = 'default', $scopeId = 0)
     {
-        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT, $storeId);
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT, $scope, $scopeId);
     }
 
     /**
+     * Get Sync Limit
+     *
      * @return int
      */
     public function getSyncLimit()
@@ -70,12 +111,38 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
     }
 
     /**
+     * Check if module can use the magento cron
+     *
+     * @return bool
+     */
+    public function canUseMageCron()
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_MAGE_CRON, 'default', 0);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronStringPath()
+    {
+        return self::XML_PATH_CRON_STRING;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronModelPath()
+    {
+        return self::XML_PATH_CRON_MODEL;
+    }
+
+    /**
      * @return array
      */
     public function getSystemAttributes()
     {
         return array(
-            'attributes' => array(
+            'attributes'         => array(
                 'prefix',
                 'new_prefix',
                 'firstname',
@@ -123,27 +190,36 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
     }
 
     /**
-     * @param  string $attribute
-     * @param  int|string $store
+     * Get Customer Attribute Field for scope
+     *
+     * @param        $attribute
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return mixed
      */
-    public function getCustomerAttributeField($attribute, $store = null)
+    public function getCustomerAttributeField($attribute, $scope = 'default', $scopeId = 0)
     {
-        return $this->getAdminScopedConfig(self::XML_PREFIX_CUSTOMER_ATTR . $attribute, $store);
+        return $this->getAdminScopedConfig(self::XML_PREFIX_CUSTOMER_ATTR . $attribute, $scope, $scopeId);
     }
 
     /**
-     * @param  string $attribute
-     * @param  int|string $store
+     * Get Address Attribute Field for scope
+     *
+     * @param        $attribute
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return mixed
      */
-    public function getAddressAttributeField($attribute, $store = null)
+    public function getAddressAttributeField($attribute, $scope = 'default', $scopeId = 0)
     {
-        return $this->getAdminScopedConfig(self::XML_PREFIX_ADDRESS_ATTR . $attribute, $store);
+        return $this->getAdminScopedConfig(self::XML_PREFIX_ADDRESS_ATTR . $attribute, $scope, $scopeId);
     }
 
     /**
      * Retrieve helper module name
+     *
      * @return string
      */
     protected function _getModuleName()
@@ -153,8 +229,10 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
 
     /**
      * Get Human Readable label for attribute value option
+     *
      * @param Mage_Eav_Model_Entity_Attribute $attribute
-     * @param int|string $attributeValueId
+     * @param int|string                      $attributeValueId
+     *
      * @return string|boolean
      */
     public function getAttributeAdminLabel($attribute, $attributeValueId)
@@ -170,11 +248,13 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
             }
 
         }
+
         return false;
     }
 
     /**
      * Get Count of customers not in queue
+     *
      * @return int
      */
     public function getMissingCustomersCount()
@@ -185,6 +265,7 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
 
     /**
      * Get Customers which aren't in contact queue
+     *
      * @return array
      */
     public function getMissingCustomers()
@@ -198,7 +279,8 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
      *
      * @return boolean
      */
-    public function hasCustomConfig() {
+    public function hasCustomConfig()
+    {
         return true;
     }
 
@@ -206,14 +288,16 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
      * Gets the bronto customer field attributes
      *
      * @param object $store (Optional)
+     *
      * @return array
      */
-    public function getCustomConfig($store = null) {
+    public function getCustomConfig($store = null)
+    {
         $customerAttributes = Mage::getModel('customer/entity_attribute_collection');
-        $addressAttributes = Mage::getModel('customer/entity_address_attribute_collection');
+        $addressAttributes  = Mage::getModel('customer/entity_address_attribute_collection');
 
         $attributes = array();
-        $data = array();
+        $data       = array();
         foreach ($customerAttributes as $attribute) {
             $config = $this->getCustomerAttributeField($attribute->getAttributeCode(), $store);
             if ($config && $attribute->getFrontendLabel()) {

@@ -1,25 +1,8 @@
 <?php
 
 /**
- * Short description for file
- *
- * Long description (if any) ...
- *
- * PHP version 5
- *
- * The license text...
- *
- * @category  Bronto
- * @package   Newsletter
- * @author    Jeff Lambert <jeff.lambert@atlanticbt.com>
- * @copyright 2012 Atlantic BT
- * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   CVS: $Id:$
- * @link      <>
- * @see       References to other sections (if any)...
- */
-/**
- * @author Jeff Lambert <jeff.lambert@atlanticbt.com>
+ * @package   Bronto\Newsletter
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Newsletter_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstract
 {
@@ -45,7 +28,8 @@ class Bronto_Newsletter_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstra
 
     /**
      * Get Write adapter instance
-     * @return type
+     *
+     * @return Varien_Db_Adapter_Interface
      */
     public function getWriteAdapter()
     {

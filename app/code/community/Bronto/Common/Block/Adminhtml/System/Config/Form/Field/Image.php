@@ -4,17 +4,18 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Image extends Bront
 {
 
     /**
-     * Adds some Javascript to the dropdown to place recommended defaults
+     * Adds some Javascript to the drop-down to place recommended defaults
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
         $defaultSizes = array(
-            'image' => array('width' => '265', 'height' => ''),
+            'image'       => array('width' => '265', 'height' => ''),
             'small_image' => array('width' => '88', 'height' => '77'),
-            'thumbnail' => array('width' => '75', 'height' => '75'),
+            'thumbnail'   => array('width' => '75', 'height' => '75'),
         );
 
         $element->setData('onchange', "defaultImageSize();");
@@ -31,6 +32,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Image extends Bront
 				}
 			</script>
 		");
+
         return parent::_getElementHtml($element);
     }
 }

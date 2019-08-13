@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Customer
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.0.2
  */
 class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
 {
@@ -15,8 +14,10 @@ class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Retrieve Customer Queue Row
+     *
      * @param int $customerId
      * @param int $storeId
+     *
      * @return Bronto_Customer_Model_Queue
      */
     public function getCustomerRow($customerId, $storeId)
@@ -39,13 +40,14 @@ class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get Count of missing customers
+     *
      * @return int
      */
     public function getMissingCustomersCount()
     {
         // Get Resources
         $resource = $this->getResource();
-        $adapter = $resource->getWriteAdapter();
+        $adapter  = $resource->getWriteAdapter();
 
         // Build Select Statement
         $select = $adapter->select();
@@ -59,16 +61,16 @@ class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
         $result = $adapter->query($select)->fetch();
 
         if (array_key_exists('count', $result)) {
-            return (int) $result['count'];
+            return (int)$result['count'];
         } else {
             return 0;
         }
     }
 
     /**
-     * Get Sub-Select Statement that limits results
      * @param Bronto_Customer_Model_Mysql4_Queue $resource
-     * @param type $adapter
+     * @param                                    $adapter
+     *
      * @return Varien_Db_Select
      */
     private function _getSubselect($resource, $adapter)
@@ -86,13 +88,14 @@ class Bronto_Customer_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get collection of customers which aren't already in the queue, but should be
+     *
      * @return array
      */
     public function getMissingCustomers()
     {
         // Get Resources
         $resource = $this->getResource();
-        $adapter = $resource->getWriteAdapter();
+        $adapter  = $resource->getWriteAdapter();
 
         // Get Sync Limit Value
         $count = Mage::helper('bronto_customer')->getSyncLimit();

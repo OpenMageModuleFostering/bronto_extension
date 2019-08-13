@@ -15,6 +15,7 @@ class Bronto_News_RouteController extends Mage_Core_Controller_Front_Action
             $item = Mage::getModel('bronto_news/item')->load($id, 'item_id');
             if ($item->hasTitle()) {
                 $link = $item->markAlertAsRead()->getLink();
+
                 return $this->_redirectUrl($link);
             }
         }

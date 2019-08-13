@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Newsletter
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.3.5
  */
 class Bronto_Newsletter_Model_Mysql4_Queue_Collection
     extends Mage_Core_Model_Mysql4_Collection_Abstract
@@ -29,6 +28,7 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
     public function addBrontoImportedFilter()
     {
         $this->addFieldToFilter('imported', array('eq' => '1'));
+
         return $this;
     }
 
@@ -38,6 +38,7 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
     public function addBrontoSuppressedFilter()
     {
         $this->addFieldToFilter('bronto_suppressed', array('notnull' => true));
+
         return $this;
     }
 
@@ -47,6 +48,7 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
     public function addBrontoNotSuppressedFilter()
     {
         $this->addFieldToFilter('bronto_suppressed', array('null' => true));
+
         return $this;
     }
 
@@ -56,11 +58,13 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
     public function addBrontoNotImportedFilter()
     {
         $this->addFieldToFilter('imported', array('neq' => '1'));
+
         return $this;
     }
 
     /**
      * @param mixed $storeIds (null, int|string, array, array may contain null)
+     *
      * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
      */
     public function addStoreFilter($storeIds)
@@ -83,6 +87,34 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
         } else {
             $this->getSelect()->where('store IN(?)', $storeIds);
         }
+
+        return $this;
+    }
+
+    /**
+     * Sort order by order created_at date
+     *
+     * @param string $dir
+     *
+     * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
+     */
+    public function orderByCreatedAt($dir = self::SORT_ORDER_DESC)
+    {
+        $this->getSelect()->order("created_at $dir");
+
+        return $this;
+    }
+
+    /**
+     * Sort order by order updated_at date
+     *
+     * @param string $dir
+     *
+     * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
+     */
+    public function orderByUpdatedAt($dir = self::SORT_ORDER_DESC)
+    {
+        $this->getSelect()->order("updated_at $dir");
 
         return $this;
     }

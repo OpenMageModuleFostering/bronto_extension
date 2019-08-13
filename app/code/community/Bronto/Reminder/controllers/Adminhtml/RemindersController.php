@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Controller_Action
 {
@@ -20,6 +19,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
                 Mage::helper('bronto_reminder')->__('Reminder Rules'),
                 Mage::helper('bronto_reminder')->__('Reminder Rules')
             );
+
         return $this;
     }
 
@@ -33,7 +33,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     protected function _initRule($requestParam = 'id')
     {
         $ruleId = $this->getRequest()->getParam($requestParam, 0);
-        $rule = Mage::getModel('bronto_reminder/rule');
+        $rule   = Mage::getModel('bronto_reminder/rule');
         if ($ruleId) {
             $rule->load($ruleId);
             if (!$rule->getId()) {
@@ -41,6 +41,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             }
         }
         Mage::register('current_reminder_rule', $rule);
+
         return $rule;
     }
 
@@ -73,6 +74,8 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
 
     /**
      * Edit reminder rule
+     *
+     * @return $this|Mage_Core_Controller_Varien_Action
      */
     public function editAction()
     {
@@ -83,6 +86,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             $model = $this->_initRule();
         } catch (Mage_Core_Exception $e) {
             Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+
             return $this->_redirect('*/*/');
         }
 
@@ -118,6 +122,8 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             ->_addContent($block)
             ->_addLeft($this->getLayout()->createBlock('bronto_reminder/adminhtml_reminder_edit_tabs'))
             ->renderLayout();
+
+        return $this;
     }
 
     /**
@@ -127,9 +133,9 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
      */
     public function newConditionHtmlAction()
     {
-        $id = $this->getRequest()->getParam('id');
+        $id      = $this->getRequest()->getParam('id');
         $typeArr = explode('|', str_replace('-', '/', $this->getRequest()->getParam('type')));
-        $type = $typeArr[0];
+        $type    = $typeArr[0];
 
         $model = Mage::getModel($type)
             ->setId($id)
@@ -153,6 +159,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
      * Massages the POST data for Rule submission
      *
      * @param array $data
+     *
      * @return array
      */
     protected function _prepareRuleFormData($data)
@@ -188,7 +195,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
         }
 
         if (isset($json['message'])) {
-            $json['error'] = true;
+            $json['error']   = true;
             $json['message'] = Mage::getBlockSingleton('core/messages')
                 ->addError($json['message'])
                 ->getGroupedHtml();
@@ -200,9 +207,9 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     }
 
     /**
-     * Save reminder rule
+     * Save Reminder Rule
      *
-     * @return void
+     * @return $this|Mage_Core_Controller_Varien_Action
      */
     public function saveAction()
     {
@@ -222,7 +229,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
                     return $this->_redirect(
                         '*/*/edit',
                         array(
-                            'id' => $model->getId(),
+                            'id'       => $model->getId(),
                             '_current' => true,
                         )
                     );
@@ -231,6 +238,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             } catch (Mage_Core_Exception $e) {
                 Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
                 Mage::getSingleton('adminhtml/session')->setPageData($data);
+
                 return $this->_redirect('*/*/edit', array('id' => $model->getId()));
             } catch (Exception $e) {
                 Mage::getSingleton('adminhtml/session')->addError($this->__('Failed to save reminder rule.'));
@@ -238,6 +246,8 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
             }
         }
         $this->_redirect('*/*/');
+
+        return $this;
     }
 
     /**
@@ -254,6 +264,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
         } catch (Mage_Core_Exception $e) {
             Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
             $this->_redirect('*/*/edit', array('id' => $model->getId()));
+
             return;
         } catch (Exception $e) {
             Mage::getSingleton('adminhtml/session')->addError($this->__('Failed to delete reminder rule.'));
@@ -271,12 +282,12 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
     {
         try {
             Mage::helper('bronto_reminder')->writeDebug("Admin pressed 'Run Now'...");
-            $model = $this->_initRule();
+            $model  = $this->_initRule();
             $result = $model->sendReminderEmails();
             if ($result) {
-                $total = $result['total'];
+                $total   = $result['total'];
                 $success = $result['success'];
-                $error = $result['error'];
+                $error   = $result['error'];
                 Mage::getSingleton('adminhtml/session')->addSuccess(sprintf("Processed %d Reminders (%d Error / %d Success)", $total, $error, $success));
             } else {
                 Mage::getSingleton('adminhtml/session')->addError('Reminder rule sending failed.');
@@ -371,6 +382,7 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
                 $array[$dateField] = $filterInternal->filter($array[$dateField]);
             }
         }
+
         return $array;
     }
 
@@ -388,8 +400,11 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
      * bar / <default title>
      *
      * @see self::_renderTitles()
-     * @param string|false|-1|null               $text
-     * @return Mage_Core_Controller_Varien_Action
+     *
+     * @param null $text
+     * @param bool $resetIfExists
+     *
+     * @return $this|Mage_Core_Controller_Varien_Action
      */
     protected function _title($text = null, $resetIfExists = true)
     {
@@ -408,12 +423,13 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
         } elseif (empty($this->_titles) || $resetIfExists) {
             if (false === $text) {
                 $this->_removeDefaultTitle = false;
-                $this->_titles = array();
+                $this->_titles             = array();
             } elseif (null === $text) {
                 $this->_removeDefaultTitle = true;
-                $this->_titles = array();
+                $this->_titles             = array();
             }
         }
+
         return $this;
     }
 
@@ -433,28 +449,34 @@ class Bronto_Reminder_Adminhtml_RemindersController extends Mage_Adminhtml_Contr
      * Will forward to deniedAction(), if not allowed.
      *
      * @param string $section
+     *
      * @return bool
      */
     protected function _isSectionAllowed($section)
     {
         try {
-            $session = Mage::getSingleton('admin/session');
+            $session        = Mage::getSingleton('admin/session');
             $resourceLookup = "admin/system/config/{$section}";
             if ($session->getData('acl') instanceof Mage_Admin_Model_Acl) {
                 $resourceId = $session->getData('acl')->get($resourceLookup)->getResourceId();
                 if (!$session->isAllowed($resourceId)) {
                     throw new Exception('');
                 }
+
                 return true;
             }
         } catch (Zend_Acl_Exception $e) {
             $this->norouteAction();
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
+
             return false;
         } catch (Exception $e) {
             $this->deniedAction();
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
+
             return false;
         }
+
+        return false;
     }
 }

@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Customer
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.1.5
  */
 class Bronto_Email_Model_System_Config_Source_Sendtype
 {

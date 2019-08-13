@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Model_Mysql4_Log_Collection extends Mage_Core_Model_Mysql4_Collection_Abstract
 {
@@ -19,11 +18,13 @@ class Bronto_Email_Model_Mysql4_Log_Collection extends Mage_Core_Model_Mysql4_Co
      *
      * @param string $attribute
      * @param string $dir
+     *
      * @return Bronto_Email_Model_Mysql4_Log_Collection
      */
     public function addAttributeToSort($attribute, $dir = 'asc')
     {
         $this->addOrder($attribute, $dir);
+
         return $this;
     }
 
@@ -35,6 +36,7 @@ class Bronto_Email_Model_Mysql4_Log_Collection extends Mage_Core_Model_Mysql4_Co
         foreach ($this->getItems() as $item) {
             $item->delete($item);
         }
+
         return $this;
     }
 }

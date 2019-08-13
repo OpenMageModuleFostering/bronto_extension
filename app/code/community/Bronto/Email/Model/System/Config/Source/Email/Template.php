@@ -10,51 +10,49 @@ class Bronto_Email_Model_System_Config_Source_Email_Template extends Mage_Adminh
      */
     public function toOptionArray()
     {
+        // If Collection isn't already in registry, create it
         if (!$collection = Mage::registry('config_system_email_template')) {
-            if (Mage::helper('bronto_email')->isEnabled() && Mage::app()->getRequest()->getParam('store')) {
-                $collection = Mage::getModel('bronto_email/template')->getCollection();
+            // Define Tables
+            $templateTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/template');
+            $brontoTable   = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
 
-                // Apply conditional logic to handle 1.9 overriding collection _construct
-                if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 9))) {
-                    $templateTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/template');
-                    $brontoTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
-                    $collection->getSelect()->joinLeft(
-                        $brontoTable,
-                        "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
-                    );
-                }
+            // Load Collection
+            $collection = Mage::getModel('bronto_email/template')->getCollection();
 
-                // if Store ID Specified, filter collection
-                if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-                    $store = Mage::app()->getStore($storeCode);
-                    $storeId = $store->getId();
-
-                    $collection->addFieldToFilter('store_id', $storeId);
-                }
-
-                $collection->addOrder('template_code', 'asc')->load();
-
-                Mage::register('config_system_email_template', $collection);
-            } else {
-                $collection = Mage::getModel('bronto_email/template')->getCollection()
-                    ->addOrder('template_code', 'asc')->load();
-
-                // Apply conditional logic to handle 1.9 overriding collection _construct
-                if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 9))) {
-                    $templateTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/template');
-                    $brontoTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
-                    $collection->getSelect()->joinLeft(
-                        $brontoTable,
-                        "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
-                    );
-                }
-
-                Mage::register('config_system_email_template', $collection);
+            // Apply conditional logic to handle 1.9 overriding collection _construct
+            if (Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+                $collection->getSelect()->joinLeft(
+                    $brontoTable,
+                    "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
+                );
             }
+
+            // If module is enabled
+            if (Mage::helper('bronto_email')->isEnabled()) {
+                // If Store Scope
+                if (Mage::app()->getRequest()->getParam('store')) {
+                    // if Store ID Specified, filter collection
+                    if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
+                        $store   = Mage::app()->getStore($storeCode);
+                        $storeId = $store->getId();
+
+                        $collection->addFieldToFilter('store_id', $storeId);
+                    }
+                }
+
+                // Add Where statement to prevent loading templates without core_template_id
+                $collection->getSelect()->where("`{$brontoTable}`.`core_template_id` IS NOT NULL");
+            }
+
+            $collection->addOrder('template_code', 'asc')->load();
+
+            Mage::register('config_system_email_template', $collection);
         }
 
+        // Get Array of Template Options
         $options = $collection->toOptionArray();
 
+        // Set up Default Template Name
         $templateName = Mage::helper('adminhtml')->__('Default Template from Locale');
 
         // Add support for Template configuration page
@@ -65,6 +63,14 @@ class Bronto_Email_Model_System_Config_Source_Email_Template extends Mage_Adminh
         } else {
             $path = $this->getPath();
         }
+
+        // Add a 'Do Not Send' option
+        array_unshift(
+            $options, array(
+                'value' => 'nosend',
+                'label' => 'Do Not Send',
+            )
+        );
 
         $nodeName = str_replace('/', '_', $path);
 

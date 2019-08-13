@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Condition_Combine_Abstract
 {
@@ -42,6 +41,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     public function loadValueOptions()
     {
         $this->setValueOption(array());
+
         return $this;
     }
 
@@ -54,11 +54,12 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     {
         $this->setOperatorOption(array(
             '==' => Mage::helper('rule')->__('for'),
-//            '>'  => Mage::helper('rule')->__('for greater than'),
-//            '>=' => Mage::helper('rule')->__('for or greater than'),
-//            '<'  => Mage::helper('rule')->__('for less than'),
-//            '<=' => Mage::helper('rule')->__('for or less than'),
+            //            '>'  => Mage::helper('rule')->__('for greater than'),
+            //            '>=' => Mage::helper('rule')->__('for or greater than'),
+            //            '<'  => Mage::helper('rule')->__('for less than'),
+            //            '<=' => Mage::helper('rule')->__('for or less than'),
         ));
+
         return $this;
     }
 
@@ -80,10 +81,11 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     public function loadAttributeOptions()
     {
         $this->setAttributeOption(array(
-            'days' => Mage::helper('bronto_reminder')->__('days'),
-            'hours' => Mage::helper('bronto_reminder')->__('hours'),
+            'days'    => Mage::helper('bronto_reminder')->__('days'),
+            'hours'   => Mage::helper('bronto_reminder')->__('hours'),
             'minutes' => Mage::helper('bronto_reminder')->__('minutes')
         ));
+
         return $this;
     }
 
@@ -96,7 +98,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     {
         return $this->getTypeElementHtml()
         . Mage::helper('bronto_reminder')->__('Shopping cart is not empty and abandoned for %s %s and %s of these conditions match:',
-//                $this->getOperatorElementHtml(),
+            //                $this->getOperatorElementHtml(),
             $this->getValueElementHtml(),
             $this->getAttributeElementHtml(),
             $this->getAggregatorElement()->getHtml())
@@ -106,15 +108,16 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     /**
      * Get condition SQL select
      *
-     * @param $rule
+     * @param                  $rule
      * @param int|Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     protected function _prepareConditionsSql($rule, $website)
     {
         $attributeValue = strtolower($this->getAttribute());
         $conditionValue = (int)$this->getValue();
-        $requiredValue = 1;
+        $requiredValue  = 1;
 
         if ($conditionValue <= 0) {
             Mage::throwException(Mage::helper('bronto_reminder')->__('Root shopping cart condition should have %s value greater than 0.', $attributeValue));
@@ -157,16 +160,17 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
     /**
      * Get base SQL select
      *
-     * @param $rule
+     * @param                  $rule
      * @param int|Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
     {
-        $select = $this->_prepareConditionsSql($rule, $website);
-        $required = $this->_getRequiredValidation();
+        $select     = $this->_prepareConditionsSql($rule, $website);
+        $required   = $this->_getRequiredValidation();
         $aggregator = ($this->getAggregator() == 'all') ? ' AND ' : ' OR ';
-        $operator = $required ? '=' : '<>';
+        $operator   = $required ? '=' : '<>';
         $conditions = array();
 
         foreach ($this->getConditions() as $condition) {

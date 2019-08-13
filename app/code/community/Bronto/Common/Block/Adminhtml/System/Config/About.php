@@ -3,21 +3,16 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2013 Bronto Software, Inc.
- * @license http://opensource.org/licenses/OSL-3.0 Open Software License v. 3.0 (OSL-3.0)
+ * @license   http://opensource.org/licenses/OSL-3.0 Open Software License v. 3.0 (OSL-3.0)
  */
 class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_Block_System_Config_Form_Fieldset
 {
     /**
      * Name of module
+     *
      * @var string
      */
     protected $_module = 'bronto_common';
-
-    /**
-     * Module display name
-     * @var string
-     */
-    protected $_name = 'Bronto Extension for Magento';
 
     public function _construct()
     {
@@ -27,6 +22,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
 
     /**
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     public function render(Varien_Data_Form_Element_Abstract $element)
@@ -36,6 +32,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
 
     /**
      * Get the module namespace
+     *
      * @return string
      */
     public function getModuleNamespace()
@@ -45,20 +42,33 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
 
     /**
      * Get the module name
+     *
      * @return string
      */
     public function getModuleName()
     {
-        return $this->_name;
+        return Mage::helper($this->_module)->getName();
+    }
+
+    /**
+     * Get Section Name
+     *
+     * @return string
+     */
+    public function getSection()
+    {
+        return Mage::app()->getRequest()->getParam('section');
     }
 
     /**
      * Get the module version
+     *
      * @return string
      */
     public function getModuleVersion()
     {
         $version = Mage::helper($this->_module)->getModuleVersion();
+
         return empty($version) ? null : "v{$version}";
     }
 
@@ -90,6 +100,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
     public function logFileExists()
     {
         $logFile = Mage::getBaseDir('log') . DIRECTORY_SEPARATOR . "{$this->_module}.log";
+
         return (bool)@file_exists($logFile);
     }
 
@@ -100,6 +111,6 @@ class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_B
      */
     public function isValidApiToken()
     {
-        return Mage::helper('bronto_common')->validApiToken();
+        return Mage::helper('bronto_verify/apitoken')->getStatus();
     }
 }

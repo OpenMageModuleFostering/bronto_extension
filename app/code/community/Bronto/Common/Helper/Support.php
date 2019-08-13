@@ -2,9 +2,9 @@
 
 class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
 {
-    const XML_PATH_SUPPORT            = 'bronto/support';
-    const XML_PATH_LAST_RUN           = 'bronto/support/last_run';
-    const XML_PATH_REGISTERED         = 'bronto/support/registered';
+    const XML_PATH_SUPPORT    = 'bronto/support';
+    const XML_PATH_LAST_RUN   = 'bronto/support/last_run';
+    const XML_PATH_REGISTERED = 'bronto/support/registered';
 
     // Process registration
     protected $_registrationUrl = 'https://brontops.com/register/magento';
@@ -30,16 +30,39 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
     /**
      * @return bool
      */
-    public function isRegistered() {
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_REGISTERED);
+    public function isRegistered()
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_REGISTERED);
+    }
+
+    /**
+     * @param $onBronto boolean (optional)
+     * @return boolean
+     */
+      public function verifyRegistration($onBronto = false) {
+        if (!$this->isRegistered()) {
+            $appendix = '<a href="#bronto_support-head">below</a>.';
+            if (!$onBronto) {
+                $registerUrl = Mage::getSingleton('adminhtml/url')
+                    ->getUrl('*/system_config/edit', array('section' => 'bronto'));
+                $appendix = '<a href="' . $registerUrl . '">here</a>.';
+            }
+            $this->_addSingleSessionMessage(
+                'warning',
+                'Please register your Bronto extension ' . $appendix
+            );
+            return false;
+        }
+        return true;
     }
 
     /**
      * @return int
      */
-    public function getLastRunTimestamp() {
+    public function getLastRunTimestamp()
+    {
         if (is_null($this->_lastRun)) {
-            $lastRun = $this->getAdminScopedConfig(self::XML_PATH_LAST_RUN);
+            $lastRun        = $this->getAdminScopedConfig(self::XML_PATH_LAST_RUN);
             $this->_lastRun = $lastRun ? $lastRun : 0;
         }
 
@@ -50,15 +73,18 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Set the registration value for this extension
      *
      * @param boolean $register
+     *
      * @return Mage_Core_Helper_Data
      */
-    public function setRegistered($register = true) {
+    public function setRegistered($register = true)
+    {
         $config = Mage::getModel('core/config');
         $config->saveConfig(self::XML_PATH_REGISTERED, $register ? '1' : '0', 'default', 0);
 
         // Force the register to pickup immediately
         Mage::getConfig()->reinit();
         Mage::app()->reinitStores();
+
         return $this;
     }
 
@@ -66,9 +92,11 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Set the last run time for this extension
      *
      * @param string $date
-     * return Mage_Core_Helper_Data
+     *
+     * @return $this
      */
-    public function setLastRunDate($date) {
+    public function setLastRunDate($date)
+    {
         $this->_lastRun = Mage::getModel('core/date')->timestamp($date);
 
         $config = Mage::getModel('core/config');
@@ -82,24 +110,26 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return array
      */
-    public function getSupportInformation() {
+    public function getSupportInformation()
+    {
         $data = array();
         foreach ($this->_supportFormFields as $key) {
             switch ($key) {
-            case 'extension_version':
-                $value = 'v' . $this->getModuleVersion();
-                break;
-            case 'magento_version':
-                $value = 'v' . Mage::getVersion();
-                break;
-            case 'magento_edition':
-                $value = $this->getEdition();
-                break;
-            default:
-                $value = $this->getAdminScopedConfig(self::XML_PATH_SUPPORT . "/$key");
+                case 'extension_version':
+                    $value = 'v' . $this->getModuleVersion();
+                    break;
+                case 'magento_version':
+                    $value = 'v' . Mage::getVersion();
+                    break;
+                case 'magento_edition':
+                    $value = $this->getEdition();
+                    break;
+                default:
+                    $value = $this->getAdminScopedConfig(self::XML_PATH_SUPPORT . "/$key");
             }
             $data[$key] = $value ? $value : '';
         }
+
         return $data;
     }
 
@@ -107,10 +137,13 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Determines if this last run is a day old
      *
      * @param string $currentDate
+     *
      * @return boolean
      */
-    public function isLastRunDifferent($currentDate) {
+    public function isLastRunDifferent($currentDate)
+    {
         $lastRun = $this->getLastRunTimestamp();
+
         return $lastRun != Mage::getModel('core/date')->timestamp($currentDate);
     }
 
@@ -118,9 +151,11 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Gets the number of the reminder rules
      *
      * @param string $currentDate
+     *
      * @return int
      */
-    public function getActiveReminderRules($currentDate) {
+    public function getActiveReminderRules($currentDate)
+    {
         return Mage::getModel('bronto_reminder/rule')
             ->getCollection()
             ->addDateFilter($currentDate)
@@ -133,33 +168,34 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return array
      */
-    public function getDebugInformation() {
-        $currentDate = Mage::getModel('core/date')->date('Y-m-d');
+    public function getDebugInformation()
+    {
+        $currentDate   = Mage::getModel('core/date')->date('Y-m-d');
         $brontoModules = $this->getEnabledBrontoModules();
-        $formData = $this->getSupportInformation();
-        $request = Mage::app()->getRequest();
+        $formData      = $this->getSupportInformation();
+        $request       = Mage::app()->getRequest();
 
         return array_merge(
-            // Form submission
+        // Form submission
             $formData,
             // Current Websites / Stores; Enabled Bronto Modules
             array(
                 // Client / Server information
-                'server_name' => $request->getServer('SERVER_NAME'),
-                'server_address' => $request->getServer('SERVER_ADDR'),
-                'server_protocol' => $request->getServer('SERVER_PROTOCOL'),
-                'php_version' => 'v' . phpversion(),
-                'mysql_version' => 'v' . Mage::getResourceModel('core/config')->getReadConnection()->getServerVersion(),
+                'server_name'         => $request->getServer('SERVER_NAME'),
+                'server_address'      => $request->getServer('SERVER_ADDR'),
+                'server_protocol'     => $request->getServer('SERVER_PROTOCOL'),
+                'php_version'         => 'v' . phpversion(),
+                'mysql_version'       => 'v' . Mage::getResourceModel('core/config')->getReadConnection()->getServerVersion(),
                 'number_active_rules' => $this->getActiveReminderRules($currentDate),
             ),
             array(
                 // Installed Modules
-                'installed_modules' => $this->getInstalledModules(),
+                'installed_modules'    => $this->getInstalledModules(),
                 'magento_installation' => $this->getStoreInfo(),
             ),
             array(
                 'bronto_modules' => $brontoModules,
-                'bronto_config' => $this->getBrontoConfigs($brontoModules)
+                'bronto_config'  => $this->getBrontoConfigs($brontoModules)
             )
         );
     }
@@ -168,17 +204,19 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Submits the Support form information
      *
      * @param array $formData (Optional)
+     *
      * @return boolean
      */
-    public function submitSupportForm($formData = array()) {
+    public function submitSupportForm($formData = array())
+    {
         $currentDate = Mage::getModel('core/date')->date('Y-m-d');
         $this->setLastRunDate($currentDate)->setRegistered();
 
         $formData['extension_version'] = 'v' . $this->getModuleVersion();
-        $formData['magento_version'] = 'v' . Mage::getVersion();
-        $formData['magento_edition'] = $this->getEdition();
+        $formData['magento_version']   = 'v' . Mage::getVersion();
+        $formData['magento_edition']   = $this->getEdition();
 
-        $yesNo = Mage::getModel('adminhtml/system_config_source_yesno');
+        $yesNo         = Mage::getModel('adminhtml/system_config_source_yesno');
         $selectedValue = $formData['using_solution_partner'];
         foreach ($yesNo->toOptionArray() as $option) {
             if ($option['value'] == $selectedValue) {
@@ -198,7 +236,8 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return array
      */
-    public function getEnabledBrontoModules() {
+    public function getEnabledBrontoModules()
+    {
         $brontoModules = array();
 
         $modules = Mage::getConfig()->getNode('modules')->children();
@@ -222,16 +261,18 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Gets the Bronto configuration settings
      *
      * @param array $brontoModules
+     *
      * @return array
      */
-    public function getBrontoConfigs($brontoModules) {
-        $configs = array();
+    public function getBrontoConfigs($brontoModules)
+    {
+        $configs          = array();
         $processedConfigs = array();
 
         foreach ($brontoModules as $name => $module) {
             $helperName = strtolower($name);
 
-            $helper = Mage::helper($helperName);
+            $helper    = Mage::helper($helperName);
             $reflector = new ReflectionClass(get_class($helper));
 
             $moduleConfig = array();
@@ -241,7 +282,7 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
                 }
 
                 $settingNameParts = explode('/', $setting);
-                $settingName = end($settingNameParts);
+                $settingName      = end($settingNameParts);
 
                 $value = Mage::getStoreConfig($setting);
                 if (empty($settingName)) {
@@ -269,19 +310,20 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return array
      */
-    public function getStoreInfo() {
-        $storeInfo = array();
-        $websites = Mage::app()->getWebsites();
+    public function getStoreInfo()
+    {
+        $storeInfo     = array();
+        $websites      = Mage::app()->getWebsites();
         $totalWebsites = count($websites);
-        $totalStores = 0;
+        $totalStores   = 0;
         foreach ($websites as $website) {
             $websiteStores = count($website->getStores());
             $totalStores += $websiteStores;
-            $s = $websiteStores == 1 ? '' : 's';
+            $s           = $websiteStores == 1 ? '' : 's';
             $storeInfo[] = "A website with $websiteStores store$s.";
         }
         $websites = $totalWebsites == 1 ? 'website' : 'websites';
-        $stores = $totalStores == 1 ? 'store' : 'stores';
+        $stores   = $totalStores == 1 ? 'store' : 'stores';
 
         $storeInfo[] = "Total of $totalWebsites $websites and $totalStores $stores";
 
@@ -293,18 +335,19 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return Bronto_Common_Model_Archive
      */
-    public function getLogArchive() {
-        $logDir = Mage::getBaseDir('var') . DS . 'log';
-        $systemLog = $logDir . DS . 'system.log';
+    public function getLogArchive()
+    {
+        $logDir       = Mage::getBaseDir('var') . DS . 'log';
+        $systemLog    = $logDir . DS . 'system.log';
         $exceptionLog = $logDir . DS . 'exception.log';
 
         $brontoLogDir = $logDir . DS . 'bronto';
-        $tmpDir = $this->getArchiveDirectory();
-        $file = $tmpDir . DS . 'log.' . time() . '.zip';
+        $tmpDir       = $this->getArchiveDirectory();
+        $file         = $tmpDir . DS . 'log.' . time() . '.zip';
 
         $archive = Mage::getModel('bronto_common/archive');
         if ($archive->open($file, ZipArchive::OVERWRITE)) {
-            $now = time();
+            $now       = time();
             $threshold = $now - (60 * 60 * 24 * 30);
 
             $archive->addEmptyDir('log');
@@ -337,18 +380,21 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
     /**
      * Tails a given log for output
      *
-     * @param string $logFile
+     * @param $logfile
+     *
      * @return string
      */
-    protected function _tailLog($logfile) {
-        $length = filesize($logfile);
+    protected function _tailLog($logfile)
+    {
+        $length  = filesize($logfile);
         $maxRead = (1 * 1000 * 100);
-        $fh = fopen($logfile, 'r');
+        $fh      = fopen($logfile, 'r');
         if ($length > $maxRead) {
             fseek($fh, $length - $maxRead);
         }
         $contents = fread($fh, $maxRead);
         fclose($fh);
+
         return $contents;
     }
 
@@ -358,9 +404,11 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return string
      */
-    public function getPhpInfoOutput() {
+    public function getPhpInfoOutput()
+    {
         ob_start();
         phpinfo();
+
         return ob_get_clean();
     }
 
@@ -369,19 +417,22 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return string
      */
-    public function getArchiveDirectory() {
+    public function getArchiveDirectory()
+    {
         $brontoLogDir = Mage::getBaseDir('var') . DS . 'log' . DS . 'bronto';
-        $tmpDir = $brontoLogDir . DS . 'archives';
+        $tmpDir       = $brontoLogDir . DS . 'archives';
         if (!file_exists($tmpDir)) {
             mkdir($tmpDir, 0777, true);
         }
+
         return $brontoLogDir . DS . 'archives';
     }
 
     /**
      * Deletes all of the archive logs
      */
-    public function clearArchiveDirectory() {
+    public function clearArchiveDirectory()
+    {
         foreach (glob($this->getArchiveDirectory() . DS . '*') as $file) {
             unlink($file);
         }
@@ -391,10 +442,13 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      * Sets the internal webform submission client
      *
      * @param Mage_HTTP_Client_Curl $client
+     *
      * @return Bronto_Common_Helper_Support
      */
-    public function setHttpClient(Mage_HTTP_Client_Curl $client) {
+    public function setHttpClient(Mage_HTTP_Client_Curl $client)
+    {
         $this->_client = $client;
+
         return $this;
     }
 
@@ -403,27 +457,31 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
      *
      * @return Mage_HTTP_Client_Curl
      */
-    protected function _getHttpClient() {
+    protected function _getHttpClient()
+    {
         if (empty($this->_client)) {
             $this->_client = new Mage_HTTP_Client_Curl();
         }
+
         return $this->_client;
     }
 
     /**
-     * Submits a webform with the registeration info
+     * Submits a webform with the registration info
      *
      * @param array $formData
+     *
      * @return bool
      */
-    protected function _submitWebform(array $formData) {
+    protected function _submitWebform(array $formData)
+    {
 
         $client = $this->_getHttpClient();
         $params = array();
         foreach ($this->_supportFormFields as $name) {
-            $parts = explode('_', $name);
+            $parts     = explode('_', $name);
             $restCamel = array_map('ucfirst', array_slice($parts, 1));
-            $camel = implode('' , array_merge(array($parts[0]), $restCamel));
+            $camel     = implode('', array_merge(array($parts[0]), $restCamel));
 
             $params[$camel] = $formData[$name];
         }
@@ -433,11 +491,12 @@ class Bronto_Common_Helper_Support extends Bronto_Common_Helper_Data
         try {
             $client->setOptions(array(
                 CURLOPT_SSL_VERIFYPEER => 0,
-                CURLOPT_POSTFIELDS => $json
+                CURLOPT_POSTFIELDS     => $json
             ));
             $client->post($this->_registrationUrl, $json);
         } catch (Exception $e) {
             $this->writeError('Registration submission failed: ', $e->getMessage());
+
             return false;
         }
 

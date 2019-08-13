@@ -3,13 +3,13 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Helper_Field extends Bronto_Common_Helper_Data
 {
     /**
      * @param string $name
-     * @param array $options
+     * @param array  $options
+     *
      * @return Bronto_Api_Field_Row
      */
     public function getFieldByName($name, $options)
@@ -18,10 +18,10 @@ class Bronto_Common_Helper_Field extends Bronto_Common_Helper_Data
         $fieldObject = $this->getApi()->getFieldObject();
 
         if (!($field = $fieldObject->getFromCache($name))) {
-            $field = $fieldObject->createRow();
-            $field->name = $name;
+            $field        = $fieldObject->createRow();
+            $field->name  = $name;
             $field->label = $options['label'];
-            $field->type = $options['type'];
+            $field->type  = $options['type'];
             if (!empty($options['options'])) {
                 $field->options = $options['options'];
             }

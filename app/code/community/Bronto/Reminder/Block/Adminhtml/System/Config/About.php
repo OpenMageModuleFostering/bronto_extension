@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Block_Adminhtml_System_Config_About extends Bronto_Common_Block_Adminhtml_System_Config_About
 {

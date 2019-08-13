@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Roundtrip extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
@@ -16,6 +15,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Roundtrip extends M
      * Get element ID of the dependent field's parent row
      *
      * @param object $element
+     *
      * @return String
      */
     protected function _getRowElementId($element)
@@ -27,6 +27,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Roundtrip extends M
      * Override method to output our custom HTML with JavaScript
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return String
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
@@ -34,8 +35,8 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Roundtrip extends M
         $_html = array();
 
         // Create form object to grab scope details
-        $form = new Mage_Adminhtml_Block_System_Config_Form;
-        $scope = $form->getScope();
+        $form    = new Mage_Adminhtml_Block_System_Config_Form;
+        $scope   = $form->getScope();
         $scopeId = $form->getScopeId();
 
         $script = "
@@ -78,7 +79,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Roundtrip extends M
         $statusText = '<span style="color:grey;font-weight:bold">' .
             $this->helper('bronto_verify/roundtrip')->getAdminScopedRoundtripStatusText() .
             '</span>';
-        $button = $this->getLayout()
+        $button     = $this->getLayout()
             ->createBlock('bronto_verify/adminhtml_widget_button_runroundtrip')
             ->toHtml();
         $buttonHtml = "<p class=\"form-buttons\" id=\"roundtrip-verify-button\">{$button}</p>";
@@ -95,6 +96,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Roundtrip extends M
         // Show everything Else
         if (!empty($_html)) {
             $elementHtml = implode('<br />', $_html);
+
             return $elementHtml;
         }
 

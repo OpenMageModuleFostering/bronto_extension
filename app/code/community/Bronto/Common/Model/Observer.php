@@ -2,7 +2,7 @@
 
 /**
  * @category Bronto
- * @package Common
+ * @package  Common
  */
 class Bronto_Common_Model_Observer
 {
@@ -10,22 +10,52 @@ class Bronto_Common_Model_Observer
     private $_validatedFields = array(
         'site_name' => 'Bronto Site Name',
         'firstname' => 'First Name',
-        'lastname' => 'Last Name',
-        'number' => 'Phone Number',
-        'email' => 'Email',
-        'title' => 'Job Title',
+        'lastname'  => 'Last Name',
+        'number'    => 'Phone Number',
+        'email'     => 'Email',
+        'title'     => 'Job Title',
     );
 
     /**
      * Description for const
      */
-    const NOTICE_IDENTIFER = 'bronto_common';
+    const NOTICE_IDENTIFIER = 'bronto_common';
 
     const SUPPORT_IDENTIFIER = 'bronto_common/support';
 
     /**
-     * events: controller_action_predispatch
+     * Watches for the enable switch to change to disable
+     *
+     * event: bronto_disable
+     *
      * @param Varien_Event_Observer $observer
+     */
+    public function watchDisableAction(Varien_Event_Observer $observer)
+    {
+        // Get Scope
+        $scopeParams = Mage::helper('bronto_common')->getScopeParams();
+        $scope       = $scopeParams['scope'];
+        $scopeId     = $scopeParams[$scopeParams['scope'] . '_id'];
+
+        // Get Sentry and Disable Modules
+        $sentry = Mage::getModel('bronto_common/keysentry');
+        $sentry->disableModules($scope, $scopeId, true);
+
+        // Unlink all Emails
+        if (!Mage::helper('bronto_common')->isVersionMatch(Mage::getVersionInfo(), 1, 9)) {
+            $sentry->unlinkEmails(
+                Mage::getModel('bronto_email/message')->getCollection(),
+                $scope,
+                $scopeId
+            );
+        }
+    }
+
+    /**
+     * events: controller_action_predispatch
+     *
+     * @param Varien_Event_Observer $observer
+     *
      * @return mixed
      */
     public function checkBrontoRequirements(Varien_Event_Observer $observer)
@@ -38,78 +68,63 @@ class Bronto_Common_Model_Observer
             $action->getRequest()->isAjax() ||
             $action->getRequest()->isPost()
         ) {
-            return;
+            return false;
         }
 
-        $helper = Mage::helper(self::NOTICE_IDENTIFER);
+        $helper = Mage::helper(self::NOTICE_IDENTIFIER);
 
         // Verify Requirements
-        if (!$helper->varifyRequirements(self::NOTICE_IDENTIFER, array('soap', 'openssl'))) {
-            return;
-        }
-
-        // Verify API tokens are valid
-        if ($helper->isEnabled() && !$helper->validApiTokens(self::NOTICE_IDENTIFER)) {
+        if (!$helper->varifyRequirements(self::NOTICE_IDENTIFIER, array('soap', 'openssl'))) {
             return false;
         }
 
         // Bug user about registration, only once
-        if (!Mage::helper(self::SUPPORT_IDENTIFIER)->isRegistered()) {
-            $appendix = '<a href="#bronto_support-head">below</a>.';
-            if ($action->getRequest()->getParam('section') != 'bronto') {
-                $registerUrl = Mage::getSingleton('adminhtml/url')
-                    ->getUrl('*/system_config/edit', array('section' => 'bronto'));
-                $appendix = '<a href="' . $registerUrl . '">here</a>.';
-            }
+        $onBronto = $action->getRequest()->getParam('section') == 'bronto';
+        !Mage::helper(self::SUPPORT_IDENTIFIER)->verifyRegistration($onBronto);
 
-            $message = Mage::getSingleton('core/message')
-                ->warning($helper->__('Please register your Bronto extension ' . $appendix));
-            $message->setIdentifier(self::NOTICE_IDENTIFER);
-            $session = Mage::getSingleton('adminhtml/session');
-            foreach ($session->getMessages()->getItemsByType('warning') as $setMessage) {
-                if ($setMessage->getIdentifier() == $message->getIdentifier()) {
-                    $exists = true;
-                    break;
-                }
-            }
-
-            if (empty($exists)) {
-                $session->addMessage($message);
-            }
+        // Verify API tokens are valid
+        if ($helper->isEnabled() && !$helper->validApiStatus()) {
+            return false;
         }
+
+        return $this;
     }
 
     /**
      * Cron to clear downloaded zips
      */
-    public function clearArchives($cron) {
+    public function clearArchives($cron)
+    {
         Mage::helper(self::SUPPORT_IDENTIFIER)->clearArchiveDirectory();
     }
 
     /**
      * Validates that certain fields are not empty
      *
-     * @param array $config
+     * @param array   $groups
      * @param boolean $formatWeb (Optional)
+     *
      * @throws Mage_Exception
      */
-    protected function _validateSupportForm($groups, $formatWeb = true) {
-        $helper = Mage::helper(self::NOTICE_IDENTIFER);
+    protected function _validateSupportForm($groups, $formatWeb = true)
+    {
+        $helper = Mage::helper(self::NOTICE_IDENTIFIER);
 
         $errors = array();
         foreach ($this->_validatedFields as $field => $label) {
-            if ($groups['support']['fields'][$field]['inherit']) {
+            $values = $groups['support']['fields'][$field];
+            if (array_key_exists('inherit', $values) && $values['inherit']) {
                 continue;
             }
 
-            if (empty($groups['support']['fields'][$field]['value'])) {
+            if (empty($values['value'])) {
                 $errors[] = $helper->__("Please enter your $label.");
             }
         }
 
         if (!empty($groups['support']['fields']['using_solution_partner']['value'])) {
-            if ($groups['support']['fields']['partner']['inherit']) {
-                continue;
+            if (array_key_exists('inherit', $groups['support']['fields']['partner']) && $groups['support']['fields']['partner']['inherit']) {
+                return;
             }
 
             if (empty($groups['support']['fields']['partner']['value'])) {
@@ -127,10 +142,12 @@ class Bronto_Common_Model_Observer
      * events: model_config_data_save_before
      *
      * @param Varien_Event_Observer $observer
+     *
      * @return boolean
      */
-    public function registerExtension(Varien_Event_Observer $observer) {
-        $action = $observer->getEvent()->getControllerAction();
+    public function registerExtension(Varien_Event_Observer $observer)
+    {
+        $action  = $observer->getEvent()->getControllerAction();
         $session = Mage::getSingleton('admin/session');
         $support = Mage::helper(self::SUPPORT_IDENTIFIER);
 
@@ -141,10 +158,21 @@ class Bronto_Common_Model_Observer
             $action->getRequest()->getParam('section') == 'bronto'
         ) {
 
-            $groups = $action->getRequest()->getParam('groups');
+            $groups  = $action->getRequest()->getParam('groups');
+            $enabled = $groups['settings']['fields']['enabled']['value'];
+
+            // If Module is not enabled, don't proceed
+            if ($enabled == '0') {
+                return false;
+            }
+
             $apiToken = $groups['settings']['fields']['api_token']['value'];
 
             if (empty($apiToken)) {
+                return false;
+            }
+
+            if (empty($groups['support'])) {
                 return false;
             }
 
@@ -153,7 +181,7 @@ class Bronto_Common_Model_Observer
 
                 $postFields = array();
                 foreach ($groups['support']['fields'] as $field => $values) {
-                    if ($groups['support']['fields'][$field]['inherit']) {
+                    if (array_key_exists('inherit', $groups['support']['fields'][$field]) && $groups['support']['fields'][$field]['inherit']) {
                         continue;
                     }
                     $postFields[$field] = $values['value'];
@@ -163,12 +191,12 @@ class Bronto_Common_Model_Observer
             } catch (Exception $e) {
                 Mage::getSingleton('adminhtml/session')
                     ->addMessage(
-                    Mage::getSingleton('core/message')
-                        ->error($e->getMessage())
-                        ->setIdentifier(self::NOTICE_IDENTIFER)
+                        Mage::getSingleton('core/message')
+                            ->error($e->getMessage())
+                            ->setIdentifier(self::NOTICE_IDENTIFIER)
                     );
 
-                Mage::helper(self::NOTICE_IDENTIFER)->writeError($e->getMessage());
+                Mage::helper(self::NOTICE_IDENTIFIER)->writeError($e->getMessage());
             }
         }
 

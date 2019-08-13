@@ -10,7 +10,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Validator_Checker
     extends Bronto_Verify_Model_Validator_ValidatorAbstract
@@ -28,7 +27,7 @@ class Bronto_Verify_Model_Validator_Checker
     public function validateSettings(RecursiveIteratorIterator $path)
     {
         $badFiles = array();
-        foreach ($path as $filePath => $fileInfo) {
+        foreach ($path as $fileInfo) {
             $badFiles = $this->validateSetting($fileInfo, $badFiles);
         }
 

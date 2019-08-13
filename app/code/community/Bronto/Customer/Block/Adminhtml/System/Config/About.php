@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Customer
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.0.0
  */
 class Bronto_Customer_Block_Adminhtml_System_Config_About extends Bronto_Common_Block_Adminhtml_System_Config_About
 {

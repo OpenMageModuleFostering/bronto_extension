@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Validator_File
     extends Bronto_Verify_Model_Validator_ValidatorAbstract
@@ -31,7 +30,7 @@ class Bronto_Verify_Model_Validator_File
      * Checks to see if file permissions match correctly
      *
      * @param SplFileInfo $file     File to check
-     * @param array $badFiles current array of bad files to report
+     * @param array       $badFiles current array of bad files to report
      *
      * @return array
      * @access public
@@ -39,7 +38,7 @@ class Bronto_Verify_Model_Validator_File
     public function validateSetting(SplFileInfo $file, array $badFiles)
     {
         if ($file->isFile()) {
-            $path = substr_replace($file->getPath(), '', 0, strlen(Mage::getBaseDir()) + 1);
+            $path     = substr_replace($file->getPath(), '', 0, strlen(Mage::getBaseDir()) + 1);
             $filepath = substr_replace($file->__toString(), '', 0, strlen(Mage::getBaseDir()) + 1);
             if (
                 Mage::helper('bronto_verify/permissionchecker')->accept($path) &&
@@ -51,6 +50,7 @@ class Bronto_Verify_Model_Validator_File
                 }
             }
         }
+
         return parent::validateSetting($file, $badFiles);
     }
 }

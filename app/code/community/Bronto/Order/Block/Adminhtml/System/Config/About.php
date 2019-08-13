@@ -1,15 +1,15 @@
 <?php
 
 /**
- * @package   Order
- * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.1.5
+ * @package   Bronto\Order
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Order_Block_Adminhtml_System_Config_About extends Bronto_Common_Block_Adminhtml_System_Config_About
 {
 
     /**
      * Description for protected
+     *
      * @var string
      * @access protected
      */
@@ -17,6 +17,7 @@ class Bronto_Order_Block_Adminhtml_System_Config_About extends Bronto_Common_Blo
 
     /**
      * Description for protected
+     *
      * @var string
      * @access protected
      */

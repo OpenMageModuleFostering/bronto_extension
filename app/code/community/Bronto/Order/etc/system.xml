@@ -2,7 +2,7 @@
 <config>
     <sections>
         <bronto_order module="bronto_order">
-            <label>Order Import</label>
+            <label><![CDATA[<div id="bronto_order_icon_block">Order Import</div>]]></label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
             <sort_order>300</sort_order>
@@ -38,10 +38,26 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </enabled>
+                        <mage_cron>
+                            <label>Use Magento Cron</label>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment>
+                              <![CDATA[Setting to <em>No</em> will prevent the Magento Cron from triggering the import process for this module.<br />For more details check the <em>Cron Settings</em> section in the <strong>Bronto &raquo; Advanced</strong> tab.]]></comment>
+                        </mage_cron>
                         <frequency>
                             <label>Frequency</label>
                             <depends>
                                 <enabled>1</enabled>
+                                <mage_cron>1</mage_cron>
                             </depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_frequency</source_model>
@@ -55,6 +71,7 @@
                             <label>Interval</label>
                             <depends>
                                 <frequency>I</frequency>
+                                <mage_cron>1</mage_cron>
                             </depends>
                             <frontend_type>select</frontend_type>
                             <source_model>bronto_common/system_config_source_cron_minutes</source_model>
@@ -68,6 +85,7 @@
                             <label>Minute of the Hour</label>
                             <depends>
                                 <frequency>H</frequency>
+                                <mage_cron>1</mage_cron>
                             </depends>
                             <frontend_type>text</frontend_type>
                             <sort_order>40</sort_order>
@@ -80,6 +98,7 @@
                             <label>Start Time</label>
                             <depends>
                                 <enabled>1</enabled>
+                                <mage_cron>1</mage_cron>
                             </depends>
                             <frontend_type>time</frontend_type>
                             <sort_order>50</sort_order>
@@ -113,29 +132,84 @@
                             <show_in_store>1</show_in_store>
                             <comment>Total Orders to sync to queue at a time.</comment>
                         </sync_limit>
-                        <description_attribute>
-                            <label>Product Description Attribute</label>
-                            <depends>
-                                <enabled>1</enabled>
-                            </depends>
-                            <frontend_type>select</frontend_type>
-                            <source_model>bronto_order/system_config_source_description</source_model>
-                            <sort_order>70</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                            <comment>Product attribute used for description field.</comment>
-                        </description_attribute>
                     </fields>
                 </settings>
-                <cron_list>
+                <import>
+                    <label>Product Attributes</label>
                     <frontend_type>text</frontend_type>
-                    <frontend_model>bronto_order/adminhtml_system_config_cron</frontend_model>
                     <sort_order>2</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
+                    <expanded>1</expanded>
+                    <fields>
+                        <price>
+                            <label>Product Price</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bronto_order/system_config_source_price</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[The imported unit price of products will be
+                              based on the corresponding currency settings
+                              (&quot;Curreny Setup&quot; &gt; &quot;Curreny
+                              Options&quot;).]]></comment>
+                        </price>
+                        <incl_discount>
+                            <label>Include Discounts</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[If <em>Yes</em>, the imported unit price
+                              will include discounts, adhering to configured tax
+                              rules (&quot;Sales&quot; &gt; &quot;Tax&quot; &gt;
+                              &quot;Calucation Settings&quot;).]]></comment>
+                        </incl_discount>
+                        <incl_tax>
+                            <label>Include Taxes</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[If <em>Yes</em>, the imported price will include taxes, adhering to the configured tax rules (&quot;Sales&quot; &gt; &quot;Tax&quot; &gt;
+                              &quot;Calucation Settings&quot;).]]></comment>
+                        </incl_tax>
+                        <description>
+                            <label>Product Description</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bronto_order/system_config_source_description</source_model>
+                            <sort_order>0</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Product attribute used for description field.</comment>
+                        </description>
+                    </fields>
+                </import>
+                <cron_list>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_order/adminhtml_system_config_cron</frontend_model>
+                    <sort_order>3</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
                 </cron_list>
+                <suppressed>
+                    <label>Suppressed Orders</label>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_order/adminhtml_system_config_suppressed</frontend_model>
+                    <sort_order>4</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <expanded>0</expanded>
+                </suppressed>
             </groups>
         </bronto_order>
     </sections>

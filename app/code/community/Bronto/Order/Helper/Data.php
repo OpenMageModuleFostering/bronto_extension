@@ -3,32 +3,69 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.5
  */
 class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bronto_Common_Helper_DataInterface
 {
-    const XML_PATH_ENABLED = 'bronto_order/settings/enabled';
-    const XML_PATH_LIMIT = 'bronto_order/settings/limit';
-    const XML_PATH_SYNC_LIMIT = 'bronto_order/settings/sync_limit';
-    const XML_PATH_DESCRIPTION = 'bronto_order/settings/description_attribute';
-    const XML_PATH_INSTALL_DATE = 'bronto_order/settings/install_date';
-    const XML_PATH_UPGRADE_DATE = 'bronto_order/settings/upgrade_date';
+    const XML_PATH_ENABLED       = 'bronto_order/settings/enabled';
+    const XML_PATH_MAGE_CRON     = 'bronto_order/settings/mage_cron';
+    const XML_PATH_LIMIT         = 'bronto_order/settings/limit';
+    const XML_PATH_SYNC_LIMIT    = 'bronto_order/settings/sync_limit';
+    const XML_PATH_INSTALL_DATE  = 'bronto_order/settings/install_date';
+    const XML_PATH_UPGRADE_DATE  = 'bronto_order/settings/upgrade_date';
+
+    const XML_PATH_PRICE         = 'bronto_order/import/price';
+    const XML_PATH_DESCRIPTION   = 'bronto_order/import/description';
+    const XML_PATH_INCL_DISCOUNT = 'bronto_order/import/incl_discount';
+    const XML_PATH_INCL_TAX      = 'bronto_order/import/incl_tax';
+
+    const XML_PATH_CRON_STRING   = 'crontab/jobs/bronto_order_import/schedule/cron_expr';
+    const XML_PATH_CRON_MODEL    = 'crontab/jobs/bronto_order_import/run/model';
 
     /**
-     * @return bool
+     * Module Human Readable Name
      */
-    public function isEnabled()
+    protected $_name = 'Bronto Order Import';
+
+    /**
+     * Get Human Readable Name
+     *
+     * @return string
+     */
+    public function getName()
     {
-        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED);
+        return $this->__($this->_name);
     }
 
     /**
-     * @param string $path
+     * Check if module is enabled
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return bool
      */
-    public function disableModule($scope = 'default', $scopeId = 0)
+    public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId);
+        // Check if valid token is present
+        if (!$this->validApiToken(null, $scope, $scopeId)) {
+            return false;
+        }
+
+        // Get Enabled Scope
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
+    }
+    /**
+     * Disable Specified Module
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     * @param bool   $deleteConfig
+     *
+     * @return bool
+     */
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
+    {
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
     }
 
     /**
@@ -40,15 +77,42 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     }
 
     /**
+     * Get Send Limit
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return int
      */
-    public function getLimit()
+    public function getLimit($scope = 'default', $scopeId = 0)
     {
-        if (!$this->isEnabled()) {
-            return false;
-        }
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT, $scope, $scopeId);
+    }
 
-        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT);
+    /**
+     * Check if module can use the magento cron
+     *
+     * @return bool
+     */
+    public function canUseMageCron()
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_MAGE_CRON, 'default', 0);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronStringPath()
+    {
+        return self::XML_PATH_CRON_STRING;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronModelPath()
+    {
+        return self::XML_PATH_CRON_MODEL;
     }
 
     /**
@@ -57,6 +121,66 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     public function getDescriptionAttribute()
     {
         return $this->getAdminScopedConfig(self::XML_PATH_DESCRIPTION);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPriceAttribute($scope = 'default', $scopeId = 0)
+    {
+        return $this->getAdminScopedConfig(self::XML_PATH_PRICE, $scope, $scopeId);
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isTaxIncluded($scope = 'default', $scopeId = 0)
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_INCL_TAX, $scope, $scopeId);
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isDiscountIncluded($scope = 'default', $scopeId = 0)
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_INCL_DISCOUNT, $scope, $scopeId);
+    }
+
+    /**
+     * Gets the tid hash for the managed tid
+     *
+     * @return string
+     */
+    public function getTidKey()
+    {
+        return md5(
+            Mage::app()->getStore()->getWebsiteId() .
+            Mage::getConfig()->getNode(Mage_Core_Model_App::XML_PATH_INSTALL_DATE)
+        );
+    }
+
+    /**
+     * Gets the item price
+     *
+     * @param Mage_Sales_Model_Order_Item $item
+     * @param string $priceAttr
+     * @param boolean $inclTaxes
+     * @param boolean $inclDiscounts
+     * @return float
+     */
+    public function getItemPrice($item, $priceAttr, $inclTaxes, $inclDiscounts)
+    {
+        $base = $priceAttr == 'base' ? 'base_' : '';
+        $rowTotal = $item->getData("{$base}row_total");
+        $quantity = $item->getQtyOrdered();
+        if ($inclTaxes) {
+            $rowTotal += $item->getData("{$base}tax_amount");
+        }
+        if ($inclDiscounts) {
+            $rowTotal -= $item->getData("{$base}discount_amount");
+        }
+        return !empty($quantity) ? max((float)($rowTotal / $quantity), 0.00) : 0.00;
     }
 
     /**
@@ -71,37 +195,48 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
 
     /**
      * Get Item Product Url
+     *
      * @param Mage_Sales_Model_Order_Item $item
-     * @param Mage_Catalog_Model_Product $itemProduct
-     * @return string
+     * @param Mage_Catalog_Model_Product  $itemProduct
+     * @param bool                        $storeId
+     *
+     * @return mixed
      */
     public function getItemUrl(Mage_Sales_Model_Order_Item $item, Mage_Catalog_Model_Product $itemProduct, $storeId = false)
     {
         $productId = $this->_getIdToUse($item, $itemProduct);
+
         return Mage::helper('bronto_common/product')->getProductAttribute($productId, 'url', $storeId);
     }
 
     /**
      * Get Item image
+     *
      * @param Mage_Sales_Model_Order_Item $item
-     * @param Mage_Catalog_Model_Product $itemProduct
-     * @return string
+     * @param Mage_Catalog_Model_Product  $itemProduct
+     * @param bool                        $storeId
+     *
+     * @return mixed]
      */
     public function getItemImg(Mage_Sales_Model_Order_Item $item, Mage_Catalog_Model_Product $itemProduct, $storeId = false)
     {
-        if (Mage::helper('bronto_common/product')->getProductAttribute($itemProduct->getId(), 'image', $storeId)) {
-            return Mage::helper('bronto_common/product')->getProductAttribute($itemProduct->getId(), 'image', $storeId);
+        $attribute = Mage::helper('bronto_common/product')->getProductAttribute($itemProduct->getId(), 'image', $storeId);
+        if ($attribute) {
+            return $attribute;
         }
 
         $productId = $this->_getIdToUse($item, $itemProduct, false);
+
         return Mage::helper('bronto_common/product')->getProductAttribute($productId, 'image', $storeId);
     }
 
     /**
      * Get the product ID to use based on Item visibility
+     *
      * @param Mage_Sales_Model_Order_Item $item
-     * @param Mage_Catalog_Model_Product $itemProduct
-     * @param boolean $checkVisible
+     * @param Mage_Catalog_Model_Product  $itemProduct
+     * @param boolean                     $checkVisible
+     *
      * @return int
      */
     protected function _getIdToUse(Mage_Sales_Model_Order_Item $item, Mage_Catalog_Model_Product $itemProduct, $checkVisible = true)
@@ -123,7 +258,9 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
     /**
      * This function gets the order item's info_buyRequest super_product_config values
      * if they exist
+     *
      * @param Mage_Sales_Model_Order_Item $item
+     *
      * @return boolean|array
      * @access protected
      */
@@ -134,12 +271,11 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
         } elseif (method_exists($item, 'getProductOptionByCode')) {
             $buyRequest = $item->getProductOptionByCode('info_buyRequest');
         } elseif (method_exists($item, 'getProductOptions')) {
-            $options = $item->getProductOptions();
+            $options    = $item->getProductOptions();
             $buyRequest = $options['info_buyRequest'];
         } elseif (method_exists($item, 'getOptionByCode')) {
             $buyRequest = $item->getOptionByCode('info_buyRequest');
         } else {
-
             return false;
         }
 
@@ -148,10 +284,13 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
         } elseif ($buyRequest && array_key_exists('product', $buyRequest)) {
             return array('product_id' => $buyRequest['product']);
         }
+
+        return false;
     }
 
     /**
      * Get Count of orders not in queue
+     *
      * @return int
      */
     public function getMissingOrdersCount()
@@ -162,6 +301,7 @@ class Bronto_Order_Helper_Data extends Bronto_Common_Helper_Data implements Bron
 
     /**
      * Get Orders which aren't in contact queue
+     *
      * @return array
      */
     public function getMissingOrders()

@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Customer
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.0.2
  */
 class Bronto_Customer_Model_Mysql4_Setup extends Mage_Customer_Model_Entity_Setup
 {

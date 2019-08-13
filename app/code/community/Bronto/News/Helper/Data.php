@@ -2,7 +2,6 @@
 
 class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
 {
-
     const XML_PATH_FEEDS = 'bronto_news/feeds';
 
     /**
@@ -14,6 +13,21 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
      * @var Zend_Http_Client
      */
     protected $_client;
+
+    /**
+     * Module Human Readable Name
+     */
+    protected $_name = 'Bronto News & Announcements';
+
+    /**
+     * Get Human Readable Name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->__($this->_name);
+    }
 
     /**
      * Gets the RSS item threshold
@@ -33,6 +47,7 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
     public function getReleaseUrl()
     {
         $path = self::XML_PATH_FEEDS . '/' . Bronto_News_Model_Item::TYPE_RELEASE;
+
         return $this->getAdminScopedConfig($path);
     }
 
@@ -44,13 +59,15 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
     public function getGeneralUrl()
     {
         $path = self::XML_PATH_FEEDS . '/' . Bronto_News_Model_Item::TYPE_GENERAL;
+
         return $this->getAdminScopedConfig($path);
     }
 
     /**
-     * Sets the XML provider to be used in conjuction with SimpleXMLElement
+     * Sets the XML provider to be used in conjunction with SimpleXMLElement
      *
      * @param Varien_Http_Adapter_Curl $provider
+     *
      * @return Bronto_Common_Helper_Data
      */
     public function setXmlProvider(Varien_Http_Adapter_Curl $provider)
@@ -61,11 +78,14 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
 
         $this->_xmlProvider = $provider;
         $this->_client->setAdapter($provider);
+
         return $this;
     }
 
     /**
      * Given a url, use the provider to pull from the url
+     *
+     * @param $url
      *
      * @return string
      */
@@ -77,6 +97,7 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
 
         $this->_client->setUri($url ? $url : 'http');
         $response = $this->_client->request(Zend_Http_Client::GET);
+
         return $response->getBody();
     }
 
@@ -93,9 +114,10 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
     /**
      * Processes the RSS feed based on type and url
      *
-     * @param string $type
-     * @param string $url
+     * @param string  $type
+     * @param string  $url
      * @param boolean $silence
+     *
      * @throws RuntimeException
      */
     protected function _processItems($type, $url, $silence)
@@ -105,11 +127,11 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
 
         try {
             $date = Mage::getModel('core/date');
-            $xml = new SimpleXMLElement($this->_getXml($url));
+            $xml  = new SimpleXMLElement($this->_getXml($url));
 
             foreach ($xml->channel->item as $item) {
-                $guid = (string)$item->guid;
-                $description = (string)$item->description;
+                $guid          = (string)$item->guid;
+                $description   = (string)$item->description;
                 $formattedDate = strtotime((string)$item->pubDate);
 
                 // Attempts to load the RSS feed
@@ -176,6 +198,7 @@ class Bronto_News_Helper_Data extends Bronto_Common_Helper_Data
      * mark the notification as read
      *
      * @param Bronto_News_Model_Item $item
+     *
      * @return string
      */
     protected function wrapNotificationUrl(Bronto_News_Model_Item $item)

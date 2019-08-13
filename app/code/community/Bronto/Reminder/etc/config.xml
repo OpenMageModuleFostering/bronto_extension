@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Reminder>
-            <version>1.4.12</version>
+            <version>1.4.16</version>
         </Bronto_Reminder>
     </modules>
     <global>
@@ -39,6 +39,9 @@
                     <log>
                         <table>bronto_reminder_rule_log</table>
                     </log>
+                    <delivery>
+                        <table>bronto_reminder_delivery_log</table>
+                    </delivery>
                     <guest>
                         <table>bronto_guest_emails</table>
                     </guest>
@@ -75,6 +78,9 @@
         <bronto_reminder>
             <settings>
                 <enabled>0</enabled>
+                <log_enabled>1</log_enabled>
+                <log_fields_enabled>1</log_fields_enabled>
+                <mage_cron>1</mage_cron>
                 <frequency>I</frequency>
                 <interval>15</interval>
                 <minutes>0</minutes>

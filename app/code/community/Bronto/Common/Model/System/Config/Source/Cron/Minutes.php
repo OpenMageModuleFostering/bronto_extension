@@ -2,7 +2,7 @@
 
 /**
  * @category Bronto
- * @package Common
+ * @package  Common
  */
 class Bronto_Common_Model_System_Config_Source_Cron_Minutes
 {
@@ -18,7 +18,7 @@ class Bronto_Common_Model_System_Config_Source_Cron_Minutes
     public function toOptionArray()
     {
         return array(
-            5 => Mage::helper('cron')->__('5 minutes'),
+            5  => Mage::helper('cron')->__('5 minutes'),
             10 => Mage::helper('cron')->__('10 minutes'),
             15 => Mage::helper('cron')->__('15 minutes'),
             20 => Mage::helper('cron')->__('20 minutes'),

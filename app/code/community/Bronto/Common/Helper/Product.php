@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
 {
@@ -23,10 +22,12 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
      * template string with corresponding values
      *
      * @link https://github.com/leek/zf-components/blob/master/library/Leek/Config.php
-     * @param string $subject            Template string
-     * @param array $map                Key / value pairs to substitute with
-     * @param string $delimiter Template parameter delimiter (must be valid without escaping in a regular expression)
-     * @param bool $blankIfNone        Set to blank if none found
+     *
+     * @param string $subject     Template string
+     * @param array  $map         Key / value pairs to substitute with
+     * @param string $delimiter   Template parameter delimiter (must be valid without escaping in a regular expression)
+     * @param bool   $blankIfNone Set to blank if none found
+     *
      * @return string
      * @static
      */
@@ -47,10 +48,12 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * @param string $subject
+     * Get Variables from Template
+     *
+     * @param        $subject
      * @param string $delimiter
-     * @param mixed $index
-     * @return array
+     *
+     * @return mixed
      */
     public function getTemplateVariables($subject, $delimiter = '%')
     {
@@ -67,8 +70,12 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * @param int $productId
-     * @return boolean|Mage_Catalog_Model_Product
+     * Get Product by ID and Store ID
+     *
+     * @param      $productId
+     * @param bool $storeId
+     *
+     * @return bool|Mage_Core_Model_Abstract
      */
     public function getProduct($productId, $storeId = false)
     {
@@ -91,13 +98,18 @@ class Bronto_Common_Helper_Product extends Mage_Core_Helper_Abstract
         }
 
         $this->_productCache[$storeId][$productId] = $product;
+
         return $product;
     }
 
     /**
-     * @param Mage_Catalog_Model_Product $product
-     * @param string $name
-     * @return mixed
+     * Get Attributes for Product
+     *
+     * @param      $productId
+     * @param      $name
+     * @param bool $storeId
+     *
+     * @return bool|mixed|string
      */
     public function getProductAttribute($productId, $name, $storeId = false)
     {

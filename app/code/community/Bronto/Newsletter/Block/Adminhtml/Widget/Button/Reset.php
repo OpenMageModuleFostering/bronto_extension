@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Newsletter
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.1.5
  */
 class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Reset extends Mage_Adminhtml_Block_Widget_Button
 {
@@ -14,7 +13,7 @@ class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Reset extends Mage_Adminht
     {
         $this->setLabel('Reset All Subscribers');
         $this->setOnClick("deleteConfirm('This will mark all subscribers as not-imported and will cause the importer to re-process each subscriber again.\\n\\nAre you sure you want to do this?', '" . Mage::helper('bronto_newsletter')->getScopeUrl('*/newsletter/reset') . "'); return false;");
-        $this->setClass('delete');
+        $this->setClass('delete  bronto-cron-reset');
 
         if (!Mage::helper('bronto_newsletter')->isModuleActive() || (!Mage::helper('bronto_newsletter')->isDebugEnabled() && !Mage::helper('bronto_newsletter')->isTestModeEnabled())) {
             $this->setDisabled(true)->setClass('disabled');

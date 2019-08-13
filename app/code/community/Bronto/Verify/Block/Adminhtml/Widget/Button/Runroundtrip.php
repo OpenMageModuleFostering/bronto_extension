@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Block_Adminhtml_Widget_Button_Runroundtrip extends Mage_Adminhtml_Block_Widget_Button
 {

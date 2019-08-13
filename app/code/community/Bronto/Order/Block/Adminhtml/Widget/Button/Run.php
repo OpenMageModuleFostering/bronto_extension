@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   2.0.0
  */
 class Bronto_Order_Block_Adminhtml_Widget_Button_Run
     extends Mage_Adminhtml_Block_Widget_Button
@@ -17,6 +16,7 @@ class Bronto_Order_Block_Adminhtml_Widget_Button_Run
         $this->setOnClick(
             "setLocation('" . Mage::helper('bronto_order')->getScopeUrl('*/order/run') . "'); return false;"
         );
+        $this->setClass('bronto-cron-run');
 
         // Check to see if this module meets requirements
         if (!Mage::helper('bronto_order')->isModuleActive()) {

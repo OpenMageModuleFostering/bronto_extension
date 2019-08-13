@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
 {
@@ -14,20 +13,18 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
     public function indexAction()
     {
         // Acquire Parameters
-        $storeCode = $this->getRequest()->getParam('___store', 'default');
-        $quoteId = $this->getRequest()->getParam('id', false);
+        $storeCode  = $this->getRequest()->getParam('___store', 'default');
+        $quoteId    = $this->getRequest()->getParam('id', false);
         $wishlistId = $this->getRequest()->getParam('wishlist_id', false);
-        $ruleId = $this->getRequest()->getParam('rule_id', 0);
-        $messageId = $this->getRequest()->getParam('message_id', 0);
+        $ruleId     = $this->getRequest()->getParam('rule_id', 0);
+        $messageId  = $this->getRequest()->getParam('message_id', 0);
 
         // Load store from store code and get ID
-        $store = $this->_getStoreByCode($storeCode);
-//        $store   = Mage::getModel('core/store')->load($storeCode);
+        $store   = Mage::getModel('core/store')->load($storeCode);
         $storeId = $store->getId();
 
         // Set Defaults
-        $quote = false;
-        $wishlist = false;
+        $wishlist    = false;
         $redirectUrl = false;
 
         // Set Current Store to the acquired store id
@@ -36,7 +33,7 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
         // If quote ID is good, send to cart; If wishlist ID is good, send to wishlist
         if ($quote = $this->_handleQuote($quoteId, $storeId)) {
             $redirectUrl = Mage::app()->getStore()->getUrl('checkout/cart');
-        } else if ($wishlist = $this->_handleWishlist($wishlistId)) {
+        } else if ($wishlist = $this->_handleWishlist($wishlistId, $storeId)) {
             $redirectUrl = Mage::app()->getStore()->getUrl('wishlist');
         }
 
@@ -61,8 +58,8 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
         }
 
         // Check for persistent cookie
-        $pCookie = Mage::getModel('core/cookie')->get('persistent_shopping_cart', false);
-        $persist = (int)Mage::getStoreConfig('persistent/options/enabled');
+        $pCookie  = Mage::getModel('core/cookie')->get('persistent_shopping_cart', false);
+        $persist  = (int)Mage::getStoreConfig('persistent/options/enabled');
         $loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
 
         // Handle persistent cart issues 
@@ -76,7 +73,9 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
 
     /**
      * Use Store Code to pull Store Object
+     *
      * @param string $storeCode
+     *
      * @return boolean
      */
     protected function _getStoreByCode($storeCode)
@@ -89,13 +88,16 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
                 return $store;
             }
         }
+
         return false;
     }
 
     /**
      * Handle Quote
+     *
      * @param int|string $quoteId
      * @param int|string $storeId
+     *
      * @return boolean|Mage_Sales_Model_Quote
      */
     protected function _handleQuote($quoteId, $storeId)
@@ -122,8 +124,10 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
 
     /**
      * Handle Wishlist
+     *
      * @param int|string $wishlistId
      * @param int|string $storeId
+     *
      * @return boolean|Mage_Wishlist_Model_Wishlist
      */
     protected function _handleWishlist($wishlistId, $storeId)
@@ -140,14 +144,17 @@ class Bronto_Reminder_LoadController extends Mage_Core_Controller_Front_Action
         if ($wishlist->getId()) {
             return $wishlist;
         }
+
         return false;
     }
 
     /**
      * Get Customer ID from Quote/Wishlist
-     * @param int $ruleId
-     * @param Mage_Sales_Model_Quote $quote
+     *
+     * @param int                          $ruleId
+     * @param Mage_Sales_Model_Quote       $quote
      * @param Mage_Wishlist_Model_Wishlist $wishlist
+     *
      * @return int
      */
     protected function _getCustomerId($ruleId, $quote, $wishlist)

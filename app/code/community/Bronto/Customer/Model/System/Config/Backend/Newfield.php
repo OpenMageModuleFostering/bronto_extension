@@ -18,15 +18,14 @@ class Bronto_Customer_Model_System_Config_Backend_Newfield extends Mage_Core_Mod
                 /* @var $fieldObject Bronto_Api_Field */
                 $fieldObject = Mage::helper('bronto_common')->getApi()->getFieldObject();
 
-                $field = $fieldObject->createRow();
-                $field->name = $fieldObject->normalize($this->getValue());
+                $field        = $fieldObject->createRow();
+                $field->name  = $fieldObject->normalize($this->getValue());
                 $field->label = $this->getValue();
-                $field->type = Bronto_Api_Field::TYPE_TEXT;
+                $field->type  = Bronto_Api_Field::TYPE_TEXT;
 
                 $field->save();
                 $fieldObject->addToCache($field->name, $field);
-
-                $this->_saveConfigData(str_replace('new_', '', $this->getPath()), $field->id);
+                $this->_saveConfigData(str_replace('_new', '', $this->getPath()), $field->id);
                 $this->setValue(null);
             } catch (Exception $e) {
                 Mage::throwException(Mage::helper('adminhtml')->__('Unable to save new field: ') . $e->getMessage());
@@ -37,9 +36,12 @@ class Bronto_Customer_Model_System_Config_Backend_Newfield extends Mage_Core_Mod
     }
 
     /**
-     * @param type $path
-     * @param type $value
-     * @return Bronto_Customer_Model_System_Config_Backend_Newfield
+     * Save Configuration Data
+     *
+     * @param $path
+     * @param $value
+     *
+     * @return $this
      */
     protected function _saveConfigData($path, $value)
     {
@@ -55,7 +57,7 @@ class Bronto_Customer_Model_System_Config_Backend_Newfield extends Mage_Core_Mod
             ->setValue($value)
             ->setPath($path)
             ->setScope($scope)
-            ->setScopeId($scopeParams[$scopeParams['scope'].'_id'])
+            ->setScopeId($scopeParams[$scopeParams['scope'] . '_id'])
             ->save();
 
         return $this;

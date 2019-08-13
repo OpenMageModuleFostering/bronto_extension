@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Email>
-            <version>1.1.7</version>
+            <version>1.1.8</version>
         </Bronto_Email>
     </modules>
     <global>

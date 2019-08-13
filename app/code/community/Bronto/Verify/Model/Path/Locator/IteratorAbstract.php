@@ -8,12 +8,12 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 abstract class Bronto_Verify_Model_Path_Locator_IteratorAbstract
 {
     /**
      * Locator implementation
+     *
      * @var Bronto_Verify_Model_Path_Locator_LocatorInterface
      * @access protected
      */
@@ -23,11 +23,8 @@ abstract class Bronto_Verify_Model_Path_Locator_IteratorAbstract
      * Constructor
      *
      * @param Bronto_Verify_Model_Path_Locator_LocatorInterface $iterator
-     *
-     * @return void
-     * @access public
      */
-    public function __construct($iterator)
+    public function __construct(Bronto_Verify_Model_Path_Locator_LocatorInterface $iterator)
     {
         $this->_iterator = $iterator;
     }

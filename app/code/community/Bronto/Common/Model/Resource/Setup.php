@@ -3,24 +3,23 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.1.5
  */
 class Bronto_Common_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
 {
     public function handleOld()
     {
         // Look if Bronto folder exists in local codepool and recursively remove if it is
-        $source = Mage::getBaseDir('base') . DS . 'app' . DS . 'code' . DS . 'local' . DS . 'Bronto' . DS;
+        $source      = Mage::getBaseDir('base') . DS . 'app' . DS . 'code' . DS . 'local' . DS . 'Bronto' . DS;
         $destination = Mage::getBaseDir('base') . DS . 'var' . DS . 'bronto_backup' . DS;
         if (file_exists($source)) {
             $this->rcopy($source, $destination);
             $this->rrmdir($source);
 
             // Add Notification so customer is sure to know
-            $adminnotice = Mage::getSingleton('adminnotification/inbox')->add(
+            Mage::getSingleton('adminnotification/inbox')->add(
                 4,
                 'Bronto Update - Old Version Moved',
-                'Bronto has been updated.  We have moved the files from your previous intstallation to ' . $destination
+                'Bronto has been updated.  We have moved the files from your previous installation to ' . $destination
             );
         }
     }

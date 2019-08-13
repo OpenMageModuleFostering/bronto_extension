@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.1.6
  */
 class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Template_Filter
 {
@@ -79,8 +78,10 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         $this->_processedAvailable = array();
 
         foreach ($this->_available as $available) {
-
             $variable = isset($available['value']) ? $available['value'] : null;
+            if (preg_match('/^{{layout handle="[a-zA-Z_]*_order_items"/', $variable)) {
+                continue;
+            }
             if (preg_match('/^{{skin|store|layout|block/', $variable)) {
                 continue;
             }
@@ -100,7 +101,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 }
             }
 
-            $variable = implode('_', $parts);
+            $variable                    = implode('_', $parts);
             $this->_processedAvailable[] = $this->_camelize($variable);
 
         }
@@ -132,6 +133,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Bronto_Api_Delivery_Row $delivery
+     *
      * @return Bronto_Api_Delivery_Row
      */
     public function filter($delivery)
@@ -141,7 +143,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         }
 
         $this->_filteredObjects = array();
-        $this->_delivery = $delivery;
+        $this->_delivery        = $delivery;
 
         $this->_processAvailable();
         $this->_processQueryParams();
@@ -177,6 +179,11 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                             // Ignore
                         }
                     }
+                }
+
+                // Coupon
+                if ($value instanceof Mage_SalesRule_Model_Coupon) {
+                    $this->_filterCoupon($value);
                 }
 
                 // Store
@@ -246,7 +253,25 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     }
 
     /**
+     * Add Coupon Code to Email
+     *
+     * @param Mage_SalesRule_Model_Coupon $coupon
+     *
+     * @return $this
+     */
+    protected function _filterCoupon(Mage_SalesRule_Model_Coupon $coupon)
+    {
+        if (!in_array('coupon', $this->_filteredObjects)) {
+            $this->setField('couponCode', $coupon->getCode());
+            $this->_filteredObjects[] = 'coupon';
+        }
+
+        return $this;
+    }
+
+    /**
      * @param Mage_Core_Model_Store $store
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterStore(Mage_Core_Model_Store $store)
@@ -279,6 +304,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Admin_Model_User $user
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterAdmin(Mage_Admin_Model_User $user)
@@ -299,6 +325,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Newsletter_Model_Subscriber $subscriber
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
@@ -315,12 +342,22 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Customer_Model_Customer $customer
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterCustomer(Mage_Customer_Model_Customer $customer)
     {
         if (!in_array('customer', $this->_filteredObjects)) {
-            $this->setField('customerName', $customer->getName());
+            // Handle Defaults from settings
+            $customerName      = (trim($customer->getName()) == '') ? Mage::helper('bronto_common')->getDefaultGreeting('full', 'store', $this->getStoreId()) : $customer->getName();
+            $customerPrefix    = (trim($customer->getPrefix()) == '') ? Mage::helper('bronto_common')->getDefaultGreeting('prefix', 'store', $this->getStoreId()) : $customer->getPrefix();
+            $customerFirstName = (trim($customer->getFirstname()) == '') ? Mage::helper('bronto_common')->getDefaultGreeting('firstname', 'store', $this->getStoreId()) : $customer->getFirstname();
+            $customerLastName  = (trim($customer->getLastname()) == '') ? Mage::helper('bronto_common')->getDefaultGreeting('lastname', 'store', $this->getStoreId()) : $customer->getLastname();
+
+            $this->setField('customerName', $customerName);
+            $this->setField('firstName', $customerFirstName);
+            $this->setField('prefix', $customerPrefix);
+            $this->setField('lastName', $customerLastName);
             $this->setField('customerEmail', $customer->getEmail());
             $this->setField('customerPassword', $customer->getPassword());
             if ($store = $customer->getStore()) {
@@ -343,6 +380,8 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Sales_Model_Order $order
+     * @param string                 $type
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterOrder(Mage_Sales_Model_Order $order, $type = 'order')
@@ -350,11 +389,19 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         if (!in_array('order', $this->_filteredObjects)) {
             $this->setStoreId($order->getStoreId());
 
+            $index = 1;
+            foreach ($order->getAllItems() as $item/* @var $item Mage_Sales_Model_Order_Item */) {
+                if (!$item->getParentItem()) {
+                    $this->_filterOrderItem($item, $index);
+                    $index++;
+                }
+            }
+
             // Order may not be a shippable order
-            $shipAddress = 'N/A';
+            $shipAddress     = 'N/A';
             $shipDescription = 'N/A';
             if ($order->getIsNotVirtual()) {
-                $shipAddress = $order->getShippingAddress()->format('html');
+                $shipAddress     = $order->getShippingAddress()->format('html');
                 $shipDescription = $order->getShippingDescription();
             }
 
@@ -370,6 +417,12 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             $this->setField('orderStatusLabel', $order->getStatusLabel());
             $this->setField('orderItems', $this->_filterOrderItems($order));
 
+            // When emailing from the admin, we need to ensure that we're using templates from the frontend
+            Mage::getDesign()->setArea('frontend');
+
+            $totals = $this->_getTotalsBlock(Mage::getSingleton('core/layout'), $order, 'sales/order_totals', 'order_totals');
+            $this->setField('orderTotals', $totals->toHtml());
+
             $this->_filteredObjects[] = 'order';
         }
 
@@ -383,16 +436,27 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             $this->setField('billingName', $address->getName());
             $this->_filteredObjects[] = 'address';
         }
+
         return $this;
     }
 
     /**
      * @param Mage_Sales_Model_Order_Invoice $invoice
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterInvoice(Mage_Sales_Model_Order_Invoice $invoice)
     {
         if (!in_array('invoice', $this->_filteredObjects)) {
+            $index = 1;
+            foreach ($invoice->getAllItems() as $item/* @var $item Mage_Sales_Model_Order_Invoice_Item */) {
+                $_item = $item->getOrderItem();
+                if (!$_item->getParentItem()) {
+                    $this->_filterOrderItem($_item, $index);
+                    $index++;
+                }
+            }
+
             $this->setField('invoiceIncrementId', $invoice->getIncrementId());
             $this->setField('invoiceItems', $this->_filterInvoiceItems($invoice));
 
@@ -404,11 +468,22 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Sales_Model_Order_Shipment $shipment
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterShipment(Mage_Sales_Model_Order_Shipment $shipment)
     {
+        $this->setStoreId($shipment->getOrder()->getStoreId());
         if (!in_array('shipment', $this->_filteredObjects)) {
+            $index = 1;
+            foreach ($shipment->getAllItems() as $item/* @var $item Mage_Sales_Model_Order_Shipment_Item */) {
+                $_item = $item->getOrderItem();
+                if (!$_item->getParentItem()) {
+                    $this->_filterOrderItem($_item, $index);
+                    $index++;
+                }
+            }
+
             $this->setField('shipmentIncrementId', $shipment->getIncrementId());
             $this->setField('shipmentCreatedAt', Mage::helper('core')->formatDate($shipment->getCreatedAtStoreDate(), 'long', true)); // TODO: needed?
             $this->setField('shipmentItems', $this->_filterShipmentItems($shipment));
@@ -422,22 +497,34 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterCreditmemo(Mage_Sales_Model_Order_Creditmemo $creditmemo)
     {
         if (!in_array('creditmemo', $this->_filteredObjects)) {
+            $index = 1;
+            foreach ($creditmemo->getAllItems() as $item/* @var $item Mage_Sales_Model_Order_Creditmemo_Item */) {
+                $_item = $item->getOrderItem();
+                if (!$_item->getParentItem()) {
+                    $this->_filterOrderItem($_item, $index);
+                    $index++;
+                }
+            }
+
             $this->setField('creditmemoIncrementId', $creditmemo->getIncrementId());
             $this->setField('creditmemoCreatedAt', Mage::helper('core')->formatDate($creditmemo->getCreatedAtStoreDate(), 'long', true)); // TODO: needed?
             $this->setField('creditmemoItems', $this->_filterCreditmemoItems($creditmemo));
 
             $this->_filteredObjects[] = 'creditmemo';
         }
+
         return $this;
     }
 
     /**
-     * @param Mage_Sales_Model_Quote $order
+     * @param Mage_Sales_Model_Quote $quote
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterQuote(Mage_Sales_Model_Quote $quote)
@@ -446,8 +533,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             $this->setStoreId($quote->getStoreId());
             $currencyCode = $quote->getQuoteCurrencyCode();
 
-            $this->setField('subtotal', $this->formatPrice($quote->getSubtotal(), $currencyCode));
-            $this->setField('grandTotal', $this->formatPrice($quote->getGrandTotal(), $currencyCode));
+            if (Mage::helper('bronto_common')->displayPriceIncTax($quote->getStoreId())) {
+                $totals = $quote->getTotals();
+                $this->setField('subtotal', $this->formatPrice($totals['subtotal']->getValue(), $currencyCode));
+                $this->setField('grandTotal', $this->formatPrice($totals['grand_total']->getValue(), $currencyCode));
+            } else {
+                $this->setField('subtotal', $this->formatPrice($quote->getSubtotal(), $currencyCode));
+                $this->setField('grandTotal', $this->formatPrice($quote->getGrandTotal(), $currencyCode));
+            }
 
             $index = 1;
             foreach ($quote->getAllItems() as $item/* @var $item Mage_Sales_Model_Quote_Item */) {
@@ -457,7 +550,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 }
             }
 
-            $queryParams = $this->getQueryParams();
+            $queryParams       = $this->getQueryParams();
             $queryParams['id'] = urlencode(base64_encode(Mage::helper('core')->encrypt($quote->getId())));
             if ($store = $this->getStore()) {
                 $this->setField('quoteURL', $store->getUrl('reminder/load/index', $queryParams));
@@ -481,11 +574,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
             $this->_filteredObjects[] = 'quote';
         }
+
         return $this;
     }
 
     /**
      * @param Mage_Sales_Model_Quote_Item $item
+     * @param int                         $index
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterQuoteItem($item, $index = null)
@@ -494,10 +590,17 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
             return $this;
         }
 
+        if (Mage::helper('bronto_common')->displayPriceIncTax($item->getStore())) {
+            $checkout = Mage::helper('checkout');
+            $this->setField("productPrice_{$index}", $this->formatPrice($checkout->getPriceInclTax($item)));
+            $this->setField("productTotal_{$index}", $this->formatPrice($checkout->getSubtotalInclTax($item)));
+        } else {
+            $this->setField("productPrice_{$index}", $this->formatPrice($item->getConvertedPrice()));
+            $this->setField("productTotal_{$index}", $this->formatPrice($item->calcRowTotal()->getRowTotal()));
+        }
+
         $this->setField("productName_{$index}", $item->getName());
         $this->setField("productSku_{$index}", $item->getSku());
-        $this->setField("productPrice_{$index}", $this->formatPrice($item->getConvertedPrice()));
-        $this->setField("productTotal_{$index}", $this->formatPrice($item->calcRowTotal()->getRowTotal()));
         $this->setField("productQty_{$index}", $item->getQty());
         $this->setField("productUrl_{$index}", $this->_getQuoteItemUrl($item));
 
@@ -513,6 +616,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Wishlist_Model_Wishlist $wishlist
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterWishlist(Mage_Wishlist_Model_Wishlist $wishlist)
@@ -526,7 +630,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 }
             }
 
-            $queryParams = $this->getQueryParams();
+            $queryParams                = $this->getQueryParams();
             $queryParams['wishlist_id'] = urlencode(base64_encode(Mage::helper('core')->encrypt($wishlist->getId())));
             if ($store = $this->getStore()) {
                 $this->setField('wishlistURL', $store->getUrl('reminder/load/index', $queryParams));
@@ -550,11 +654,14 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
             $this->_filteredObjects[] = 'wishlist';
         }
+
         return $this;
     }
 
     /**
      * @param Mage_Wishlist_Model_Item $item
+     * @param int                      $index
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterWishlistItem(Mage_Wishlist_Model_Item $item, $index = null)
@@ -583,6 +690,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Sales_Model_Order $order
+     *
      * @return String                 containing HTML for order items
      */
     protected function _filterOrderItems(Mage_Sales_Model_Order $order)
@@ -609,12 +717,70 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     }
 
     /**
+     * @param Mage_Sales_Model_Order_Item $item
+     * @param int                         $index
+     *
+     * @return Bronto_Common_Model_Email_Template_Filter
+     */
+    protected function _filterOrderItem($item, $index = null)
+    {
+        if ($item->getParentItem()) {
+            return $this;
+        }
+
+        // Product Price Excluding Tax
+        if (Mage::helper('tax')->displaySalesPriceExclTax($this->getStore()) || Mage::helper('tax')->displaySalesBothPrices($this->getStore())) {
+            if (Mage::helper('weee')->typeOfDisplay($item, array(0, 1, 4), 'email', $this->getStore())) {
+                $this->setField("productPriceExclTax_{$index}", $this->formatPrice($item->getRowTotal() + $item->getWeeeTaxAppliedRowAmount() + $item->getWeeeTaxRowDisposition()));
+            } else {
+                $this->setField("productPriceExclTax_{$index}", $this->formatPrice($item->getRowTotal()));
+            }
+        }
+
+        // Product Price Including Tax
+        if (Mage::helper('tax')->displaySalesPriceInclTax($this->getStore()) || Mage::helper('tax')->displaySalesBothPrices($this->getStore())) {
+            $_incl = Mage::helper('checkout')->getSubtotalInclTax($item);
+            if (Mage::helper('weee')->typeOfDisplay($item, array(0, 1, 4), 'email', $this->getStore())) {
+                $this->setField("productPriceInclTax_{$index}", $this->formatPrice($_incl + $item->getWeeeTaxAppliedRowAmount()));
+            } else {
+                $this->setField("productPriceInclTax_{$index}", $this->formatPrice($_incl - $item->getWeeeTaxRowDisposition()));
+            }
+        }
+
+        // Set Product Detail Fields
+        $this->setField("productName_{$index}", $item->getName());
+        $this->setField("productSku_{$index}", $item->getSku());
+        $this->setField("productPrice_{$index}", $this->formatPrice($item->getConvertedPrice()));
+        $this->setField("productTotal_{$index}", $this->formatPrice($item->getRowTotal()));
+        $this->setField("productQty_{$index}", $item->getQtyOrdered() * 1);
+        $this->setField("productUrl_{$index}", $this->_getOrderItemUrl($item));
+        $this->setField("productDescription_{$index}", $item->getDescription());
+
+        // Handle Gift Message Details
+        if ($item->getGiftMessageId() && $_giftMessage = Mage::helper('giftmessage/message')->getGiftMessage($item->getGiftMessageId())) {
+            $this->setField("giftMessage_{$index}", $_giftMessage->getMessage());
+            $this->setField("giftMessageFrom_{$index}", $_giftMessage->getSender());
+            $this->setField("giftMessageTo_{$index}", $_giftMessage->getRecipient());
+        }
+
+        /* @var $product Mage_Catalog_Model_Product */
+        $product = $item->getProduct();
+        if (!$product) {
+            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+        }
+        $this->_filterProduct($product, $index);
+
+        return $this;
+    }
+
+    /**
      * @param Mage_Sales_Model_Order_Invoice $invoice
+     *
      * @return String                         containing HTML for invoice items
      */
     protected function _filterInvoiceItems(Mage_Sales_Model_Order_Invoice $invoice)
     {
-        $order = $invoice->getOrder();
+        $order  = $invoice->getOrder();
         $layout = Mage::getSingleton('core/layout');
 
         /* @var $items Mage_Sales_Block_Items_Abstract */
@@ -638,12 +804,70 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     }
 
     /**
+     * @param Mage_Sales_Model_Order_Item $item
+     * @param int                         $index
+     *
+     * @return Bronto_Common_Model_Email_Template_Filter
+     */
+    protected function _filterInvoiceItem($item, $index = null)
+    {
+        if ($item->getParentItem()) {
+            return $this;
+        }
+
+        // Product Price Excluding Tax
+        if (Mage::helper('tax')->displaySalesPriceExclTax($this->getStore()) || Mage::helper('tax')->displaySalesBothPrices($this->getStore())) {
+            if (Mage::helper('weee')->typeOfDisplay($item, array(0, 1, 4), 'email', $this->getStore())) {
+                $this->setField("productPriceExclTax_{$index}", $this->formatPrice($item->getRowTotal() + $item->getWeeeTaxAppliedRowAmount() + $item->getWeeeTaxRowDisposition()));
+            } else {
+                $this->setField("productPriceExclTax_{$index}", $this->formatPrice($item->getRowTotal()));
+            }
+        }
+
+        // Product Price Including Tax
+        if (Mage::helper('tax')->displaySalesPriceInclTax($this->getStore()) || Mage::helper('tax')->displaySalesBothPrices($this->getStore())) {
+            $_incl = Mage::helper('checkout')->getSubtotalInclTax($item);
+            if (Mage::helper('weee')->typeOfDisplay($item, array(0, 1, 4), 'email', $this->getStore())) {
+                $this->setField("productPriceInclTax_{$index}", $this->formatPrice($_incl + $item->getWeeeTaxAppliedRowAmount()));
+            } else {
+                $this->setField("productPriceInclTax_{$index}", $this->formatPrice($_incl - $item->getWeeeTaxRowDisposition()));
+            }
+        }
+
+        // Set Product Detail Fields
+        $this->setField("productName_{$index}", $item->getName());
+        $this->setField("productSku_{$index}", $item->getSku());
+        $this->setField("productPrice_{$index}", $this->formatPrice($item->getConvertedPrice()));
+        $this->setField("productTotal_{$index}", $this->formatPrice($item->getRowTotal()));
+        $this->setField("productQty_{$index}", $item->getQtyOrdered() * 1);
+        $this->setField("productUrl_{$index}", $this->_getOrderItemUrl($item));
+        $this->setField("productDescription_{$index}", $item->getDescription());
+
+        // Handle Gift Message Details
+        if ($item->getGiftMessageId() && $_giftMessage = Mage::helper('giftmessage/message')->getGiftMessage($item->getGiftMessageId())) {
+            $this->setField("giftMessage_{$index}", $_giftMessage->getMessage());
+            $this->setField("giftMessageFrom_{$index}", $_giftMessage->getSender());
+            $this->setField("giftMessageTo_{$index}", $_giftMessage->getRecipient());
+        }
+
+        /* @var $product Mage_Catalog_Model_Product */
+        $product = $item->getProduct();
+        if (!$product) {
+            $product = Mage::getModel('catalog/product')->load($item->getProductId());
+        }
+        $this->_filterProduct($product, $index);
+
+        return $this;
+    }
+
+    /**
      * @param Mage_Sales_Model_Order_Shipment $shipment
+     *
      * @return String                          containing HTML for shipment items and tracking numbers
      */
     protected function _filterShipmentItems(Mage_Sales_Model_Order_Shipment $shipment)
     {
-        $order = $shipment->getOrder();
+        $order  = $shipment->getOrder();
         $layout = Mage::getSingleton('core/layout');
 
         /* @var $items Mage_Sales_Block_Items_Abstract */
@@ -667,12 +891,12 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
      * Get the shipment tracking info.
      *
      * @param Mage_Sales_Model_Order_Shipment $shipment
-     * @param Mage_Sales_Model_Order $order
+     * @param Mage_Sales_Model_Order          $order
      */
     protected function _getShipmentTrackingNumber(Mage_Sales_Model_Order_Shipment $shipment, Mage_Sales_Model_Order $order)
     {
         $layout = Mage::getSingleton('core/layout');
-        $block = $layout->createBlock('core/template')->setTemplate('email/order/shipment/track.phtml');
+        $block  = $layout->createBlock('core/template')->setTemplate('email/order/shipment/track.phtml');
         $block->setOrder($order);
         $block->setShipment($shipment);
         $block->setArea('frontend');
@@ -682,11 +906,12 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
+     *
      * @return String                            containing HTML for credit memo items
      */
     protected function _filterCreditmemoItems(Mage_Sales_Model_Order_Creditmemo $creditmemo)
     {
-        $order = $creditmemo->getOrder();
+        $order  = $creditmemo->getOrder();
         $layout = Mage::getSingleton('core/layout');
 
         /* @var $items Mage_Sales_Block_Items_Abstract */
@@ -714,8 +939,9 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
      *
      * @param Mage_Core_Model_Layout $layout
      * @param Mage_Sales_Model_Order $order
-     * @param String $totals_block_type
-     * @param String $totals_block_name
+     * @param String                 $totals_block_type
+     * @param String                 $totals_block_name
+     *
      * @return Mage_Core_Block_Template
      */
     protected function _getTotalsBlock($layout, $order, $totals_block_type, $totals_block_name)
@@ -737,7 +963,8 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Catalog_Model_Product $product
-     * @param int $index
+     * @param int                        $index
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     protected function _filterProduct(Mage_Catalog_Model_Product $product, $index = null)
@@ -764,6 +991,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Sales_Model_Quote_Item $item
+     *
      * @return string
      */
     protected function _getQuoteItemUrl(Mage_Sales_Model_Quote_Item $item)
@@ -777,6 +1005,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param Mage_Wishlist_Model_Item $item
+     *
      * @return string
      */
     protected function _getWishlistItemUrl(Mage_Wishlist_Model_Item $item)
@@ -789,8 +1018,36 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
     }
 
     /**
-     * @param string $key
+     * @param Mage_Sales_Model_Order_Item $item
+     *
+     * @return string
+     */
+    protected function _getOrderItemUrl(Mage_Sales_Model_Order_Item $item)
+    {
+        if ($item->getRedirectUrl()) {
+            return $item->getRedirectUrl();
+        }
+
+        if ($item->getProduct()) {
+            return $item->getProduct()->getProductUrl();
+        }
+
+        $product = Mage::getModel('catalog/product')
+            ->setStoreId($this->getStoreId())
+            ->load($item->getProductId());
+
+        if ($product->getId()) {
+            return $product->getProductUrl();
+        }
+
+        return '';
+    }
+
+    /**
+     * @param string       $key
      * @param string|array $value
+     * @param string       $type
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     public function setField($key, $value, $type = 'html')
@@ -833,11 +1090,13 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
      * Setter
      *
      * @param integer $storeId
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     public function setStoreId($storeId)
     {
         $this->_storeId = $storeId;
+
         return $this;
     }
 
@@ -852,17 +1111,20 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         if (null === $this->_storeId) {
             $this->_storeId = Mage::app()->getStore()->getId();
         }
+
         return $this->_storeId;
     }
 
     /**
      * @param Mage_Core_Model_Store $store
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     public function setStore(Mage_Core_Model_Store $store)
     {
         $this->_store = $store;
         $this->setStoreId($store->getId());
+
         return $this;
     }
 
@@ -879,16 +1141,19 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         } else if (is_null($this->_store)) {
             $this->_store = Mage::app()->getStore();
         }
+
         return $this->_store;
     }
 
     /**
      * @param string $messageId
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     public function setMessageId($messageId)
     {
         $this->_messageId = $messageId;
+
         return $this;
     }
 
@@ -902,6 +1167,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
 
     /**
      * @param array $variables
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     public function setVariables(array $variables)
@@ -909,11 +1175,13 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         foreach ($variables as $name => $value) {
             $this->_variables[$name] = $value;
         }
+
         return $this;
     }
 
     /**
      * @param array $variables
+     *
      * @return Bronto_Common_Model_Email_Template_Filter
      */
     public function setAvailable($variables = array())
@@ -924,23 +1192,27 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
         foreach ($variables as $name => $value) {
             $this->_available[$name] = $value;
         }
+
         return $this;
     }
 
     /**
-     * Converts field names for setters and geters
+     * Converts field names for setters and getters
      *
      * @param string $name
+     *
      * @return string
      */
     protected function _underscore($name)
     {
         $result = strtolower(preg_replace('/(.)([A-Z])/', "$1_$2", $name));
+
         return $result;
     }
 
     /**
      * @param string $name
+     *
      * @return string
      */
     protected function _camelize($name)
@@ -952,6 +1224,7 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
      * For PHP < 5.3
      *
      * @param string $string
+     *
      * @return string
      */
     protected function _lcfirst($string)
@@ -963,24 +1236,26 @@ class Bronto_Common_Model_Email_Template_Filter extends Mage_Core_Model_Email_Te
                 $string{0} = strtolower($string{0});
             }
         }
+
         return $string;
     }
 
     /**
      * Convenience method for formatting currency values
      *
-     * @param float $price
-     * @param string $currency (Optional)
+     * @param float  $price
+     * @param string $currencyCode (Optional)
+     *
      * @return string
      */
     protected function formatPrice($price, $currencyCode = null)
     {
         $options = array(
             'precision' => 2,
-            'display' => Zend_Currency::NO_SYMBOL,
+            'display'   => Zend_Currency::NO_SYMBOL,
         );
 
-        if (Mage::helper('bronto_common')->useCurrenySymbol($this->getStore()->getId())) {
+        if (Mage::helper('bronto_common')->useCurrencySymbol($this->getStore()->getId())) {
             unset($options['display']);
         }
 

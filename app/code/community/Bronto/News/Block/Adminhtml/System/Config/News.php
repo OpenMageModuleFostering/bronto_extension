@@ -9,7 +9,7 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
     protected $_helper;
 
     /**
-     * @var type
+     * @var
      */
     protected $_renderer;
 
@@ -19,7 +19,7 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
     protected $_itemDefinition;
 
     /**
-     * @return Bronto_News_Model_Resource_Item_Collection
+     * @return Bronto_News_Model_Mysql4_Item_Collection
      */
     protected abstract function _pullRssItems();
 
@@ -31,27 +31,31 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
         if (is_null($this->_helper)) {
             $this->setHelper(Mage::helper('bronto_news'));
         }
+
         return $this->_helper;
     }
 
     /**
      * @param Mage_Core_Helper_Abstract $helper
+     *
      * @return Bronto_News_Block_Adminhtml_System_Config_News
      */
     public function setHelper(Mage_Core_Helper_Abstract $helper)
     {
         $this->_helper = $helper;
+
         return $this;
     }
 
     /**
-     * @return type
+     * @return object
      */
     protected function _getRenderer()
     {
         if (is_null($this->_renderer)) {
             $this->_renderer = Mage::getBlockSingleton('bronto_news/adminhtml_itemRender');
         }
+
         return $this->_renderer;
     }
 
@@ -62,10 +66,10 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
     {
         if (is_null($this->_item)) {
             $this->_itemDefinition = new Varien_Object(array(
-                'frontend_type' => 'link',
+                'frontend_type'   => 'link',
                 'show_in_default' => 1,
                 'show_in_website' => 1,
-                'show_in_store' => 1,
+                'show_in_store'   => 1,
             ));
         }
 
@@ -74,17 +78,18 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
 
     /**
      * @param Varien_Data_Form_Element_Fieldset $fieldset
-     * @param Bronto_News_Model_Item $item
+     * @param Bronto_News_Model_Item            $item
+     *
      * @return Varien_Data_Form_Element_Abstract
      */
     protected function addItemToFieldset($fieldset, $item)
     {
         $field = $fieldset->addField($item->getId(), 'link', array(
-            'value' => $item->getTitle(),
-            'title' => $item->getTitle(),
-            'href' => $item->getLink(),
-            'news_item' => $item,
-            'target' => '_blank',
+            'value'        => $item->getTitle(),
+            'title'        => $item->getTitle(),
+            'href'         => $item->getLink(),
+            'news_item'    => $item,
+            'target'       => '_blank',
             'field_config' => $this->_getItemDefinition(),
         ));
 
@@ -93,6 +98,7 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
 
     /**
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     public function render(Varien_Data_Form_Element_Abstract $element)
@@ -118,24 +124,36 @@ abstract class Bronto_News_Block_Adminhtml_System_Config_News extends Mage_Admin
     }
 
     /**
+     * Get Header HTML
+     *
      * @see parent
+     *
+     * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     protected function _getHeaderHtml($element)
     {
-        $html = parent::_getHeaderHtml($element);
+        $html       = parent::_getHeaderHtml($element);
         $tableIndex = strpos($html, '<table');
+
         return substr($html, 0, $tableIndex);
     }
 
     /**
+     * Get Footer HTML
+     *
      * @see parent
+     *
+     * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     protected function _getFooterHtml($element)
     {
-        $html = parent::_getFooterHtml($element);
+        $html          = parent::_getFooterHtml($element);
         $fieldsetIndex = strpos($html, '</fieldset');
+
         return substr($html, $fieldsetIndex);
     }
 }

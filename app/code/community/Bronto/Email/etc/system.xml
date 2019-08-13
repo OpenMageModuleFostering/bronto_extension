@@ -2,7 +2,7 @@
 <config>
     <sections>
         <bronto_email translate="label" module="bronto_email">
-            <label>Transactional Emails</label>
+            <label><![CDATA[<div id="bronto_email_icon_block">Transactional Emails</div>]]></label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
             <sort_order>600</sort_order>

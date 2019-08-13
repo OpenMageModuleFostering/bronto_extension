@@ -12,6 +12,10 @@
                                         <title>Bronto General Section</title>
                                         <sort_order>9993</sort_order>
                                     </bronto>
+                                    <bronto_popup module="bronto_common">
+                                        <title>Bronto Popup Section</title>
+                                        <sort_order>9994</sort_order>
+                                    </bronto_popup>
                                 </children>
                             </config>
                         </children>

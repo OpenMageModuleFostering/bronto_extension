@@ -2,19 +2,24 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.6
  */
 class Bronto_Email_Model_Template_Mailer
     extends Mage_Core_Model_Email_Template_Mailer
 {
     /**
      * Send all emails from email list
+     *
      * @see self::$_emailInfos
      *
      * @return Bronto_Email_Model_Template_Mailer
      */
     public function send()
     {
+        // If using the 'Do Not Send' option, just return $this and be done.
+        if ($this->getTemplateId() == 'nosend') {
+            return $this;
+        }
+
         // Try loading template
         $emailTemplate = Mage::getModel('bronto_email/template');
         $emailTemplate->load($this->getTemplateId());
@@ -30,19 +35,18 @@ class Bronto_Email_Model_Template_Mailer
         // Load Bronto Message
         /* @var $messageObject Bronto_Api_Message */
         $messageObject = Mage::helper('bronto_email/message')->getApi(
-            NULL,
-            $store->getId(),
-            $store->getWebsiteId()
+            null,
+            'store',
+            $store->getId()
         )->getMessageObject();
 
         // Load Message
         try {
             /* @var $message Bronto_Api_Message_Row */
-            $message = $messageObject->createRow();
+            $message     = $messageObject->createRow();
             $message->id = $emailTemplate->getBrontoMessageId();
             $message->read();
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             Mage::helper('bronto_email')->writeDebug('Falling Back to Magento Sending: ' . $e);
 
             return parent::send();
@@ -55,8 +59,7 @@ class Bronto_Email_Model_Template_Mailer
             // Handle "Bcc" recepients of the current email
             if ($emailTemplate->getTemplateSendType() == 'magento') {
                 $emailTemplate->addBcc($emailInfo->getBccEmails());
-            }
-            else {
+            } else {
                 foreach ($emailInfo->getBccEmails() as $bcc) {
                     $emailInfo->addTo($bcc);
                 }
@@ -64,7 +67,7 @@ class Bronto_Email_Model_Template_Mailer
 
             // Set required design parameters and delegate email sending to Mage_Core_Model_Email_Template
             $emailTemplate->setDesignConfig(array('area' => 'frontend', 'store' => $this->getStoreId()))
-            ->sendTransactional(
+                ->sendTransactional(
                     $message,
                     $this->getSender(),
                     $emailInfo->getToEmails(),

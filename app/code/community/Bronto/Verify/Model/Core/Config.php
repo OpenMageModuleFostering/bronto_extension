@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Core_Config
     extends Bronto_Verify_Model_Core_Config_Base
@@ -34,18 +33,18 @@ class Bronto_Verify_Model_Core_Config
      * array(
      *      $sectionName => $recursionLevel
      * )
-     * Recursion level provide availability cache subnodes separatly
+     * Recursion level provide availability cache subnodes separately
      *
      * @var array
      * @access protected
      */
     protected $_cacheSections = array(
-        'admin' => 0,
+        'admin'     => 0,
         'adminhtml' => 0,
-        'crontab' => 0,
-        'install' => 0,
-        'stores' => 1,
-        'websites' => 0
+        'crontab'   => 0,
+        'install'   => 0,
+        'stores'    => 1,
+        'websites'  => 0
     );
 
     /**
@@ -75,8 +74,7 @@ class Bronto_Verify_Model_Core_Config
     /**
      * Storage for generated block class names
      *
-     * @var unknown_type
-     * @access protected
+     * @var array
      */
     protected $_blockClassNameCache = array();
 
@@ -130,7 +128,7 @@ class Bronto_Verify_Model_Core_Config
     protected $_dirExists = array();
 
     /**
-     * Flach which allow using cache for config initialization
+     * Flag which allow using cache for config initialization
      *
      * @var bool
      * @access protected
@@ -146,7 +144,7 @@ class Bronto_Verify_Model_Core_Config
     protected $_cachePartsForSave = array();
 
     /**
-     * Empty configuration object for loading and megring configuration parts
+     * Empty configuration object for loading and merging configuration parts
      *
      * @var Mage_Core_Model_Config_Base
      * @access protected
@@ -162,7 +160,7 @@ class Bronto_Verify_Model_Core_Config
     protected $_isLocalConfigLoaded = false;
 
     /**
-     * Depricated properties
+     * Deprecated properties
      *
      * @deprecated
      * @access protected
@@ -170,9 +168,7 @@ class Bronto_Verify_Model_Core_Config
     protected $_baseDirCache = array();
 
     /**
-     * Description for protected
-     * @var unknown
-     * @access protected
+     * @var null
      */
     protected $_customEtcDir = null;
 
@@ -186,6 +182,7 @@ class Bronto_Verify_Model_Core_Config
 
     /**
      * Active modules array per namespace
+     *
      * @var array
      * @access private
      */
@@ -204,15 +201,12 @@ class Bronto_Verify_Model_Core_Config
      * Class construct
      *
      * @param mixed $sourceData
-     *
-     * @return void
-     * @access public
      */
     public function __construct($sourceData = null)
     {
         $this->setCacheId('config_global');
-        $this->_options = new Mage_Core_Model_Config_Options($sourceData);
-        $this->_prototype = new Bronto_Verify_Model_Core_Config_Base();
+        $this->_options       = new Mage_Core_Model_Config_Options($sourceData);
+        $this->_prototype     = new Bronto_Verify_Model_Core_Config_Base();
         $this->_cacheChecksum = null;
         parent::__construct($sourceData);
     }
@@ -220,14 +214,14 @@ class Bronto_Verify_Model_Core_Config
     /**
      * Get config resource model
      *
-     * @return Mage_Core_Store_Mysql4_Config
-     * @access public
+     * @return Mage_Core_Model_Mysql4_Config|Object
      */
     public function getResourceModel()
     {
         if (is_null($this->_resourceModel)) {
             $this->_resourceModel = Mage::getResourceModel('bronto_verify/core_config');
         }
+
         return $this->_resourceModel;
     }
 
@@ -255,14 +249,16 @@ class Bronto_Verify_Model_Core_Config
         if (is_array($options)) {
             $this->getOptions()->addData($options);
         }
+
         return $this;
     }
 
     /**
      * Initialization of core configuration
      *
-     * @return Mage_Core_Model_Config
-     * @access public
+     * @param array $options
+     *
+     * @return $this
      */
     public function init($options = array())
     {
@@ -278,6 +274,7 @@ class Bronto_Verify_Model_Core_Config
         $this->loadModules();
         $this->loadDb();
         $this->saveCache();
+
         return $this;
     }
 
@@ -290,7 +287,7 @@ class Bronto_Verify_Model_Core_Config
     public function loadBase()
     {
         $etcDir = $this->getOptions()->getEtcDir();
-        $files = glob($etcDir . DS . '*.xml');
+        $files  = glob($etcDir . DS . '*.xml');
         $this->loadFile(current($files));
         while ($file = next($files)) {
             $merge = clone $this->_prototype;
@@ -300,6 +297,7 @@ class Bronto_Verify_Model_Core_Config
         if (in_array($etcDir . DS . 'local.xml', $files)) {
             $this->_isLocalConfigLoaded = true;
         }
+
         return $this;
     }
 
@@ -318,10 +316,12 @@ class Bronto_Verify_Model_Core_Config
                 Varien_Profiler::stop('mage::app::init::config::load_cache');
                 if ($loaded) {
                     $this->_useCache = true;
+
                     return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -337,14 +337,14 @@ class Bronto_Verify_Model_Core_Config
         $this->_loadDeclaredModules();
 
         $resourceConfig = sprintf('config.%s.xml', $this->_getResourceConnectionModel('core'));
-        $mergeToObject = Mage::getModel('bronto_verify/core_config_base');
+        $mergeToObject  = Mage::getModel('bronto_verify/core_config_base');
         $mergeToObject->setXml($this->getNode());
         $this->loadModulesConfiguration(array('config.xml', $resourceConfig), $mergeToObject);
 
         /**
          * Prevent local.xml directives overwriting
          */
-        $mergeConfig = clone $this->_prototype;
+        $mergeConfig                = clone $this->_prototype;
         $this->_isLocalConfigLoaded = $mergeConfig->loadFile($this->getOptions()->getEtcDir() . DS . 'local.xml');
         if ($this->_isLocalConfigLoaded) {
             $this->extend($mergeConfig);
@@ -352,6 +352,7 @@ class Bronto_Verify_Model_Core_Config
 
         $this->applyExtends();
         Varien_Profiler::stop('config/load-modules');
+
         return $this;
     }
 
@@ -380,6 +381,7 @@ class Bronto_Verify_Model_Core_Config
             $dbConf->loadToXml($this);
             Varien_Profiler::stop('config/load-db');
         }
+
         return $this;
     }
 
@@ -394,13 +396,14 @@ class Bronto_Verify_Model_Core_Config
     public function reinit($options = array())
     {
         $this->_allowCacheForInit = false;
-        $this->_useCache = false;
+        $this->_useCache          = false;
+
         return $this->init($options);
     }
 
     /**
      * Check local modules enable/disable flag
-     * If local modules are disbled remove local modules path from include dirs
+     * If local modules are disabled remove local modules path from include dirs
      *
      * @return bool return true if local modules enabled and false if disabled
      * @access protected
@@ -428,6 +431,7 @@ class Bronto_Verify_Model_Core_Config
             );
         }
         $this->_canUseLocalModules = !$disableLocalModules;
+
         return $this->_canUseLocalModules;
     }
 
@@ -504,21 +508,22 @@ class Bronto_Verify_Model_Core_Config
         }
         unset($this->_cachePartsForSave);
         $this->_removeCache($cacheLockId);
+
         return $this;
     }
 
     /**
      * Save cache of specified
      *
-     * @param string $idPrefix       cache id prefix
-     * @param string $sectionName
+     * @param                          $idPrefix
+     * @param                          $sectionName
      * @param Varien_Simplexml_Element $source
-     * @param int $recursionLevel
+     * @param int                      $recursionLevel
+     * @param array                    $tags
      *
-     * @return Mage_Core_Model_Config
-     * @access protected
+     * @return $this
      */
-    protected function _saveSectionCache($idPrefix, $sectionName, $source, $recursionLevel = 0, $tags = array())
+    protected function _saveSectionCache($idPrefix, $sectionName, Varien_Simplexml_Element $source, $recursionLevel = 0, $tags = array())
     {
         if ($source && $source->$sectionName) {
             $cacheId = $idPrefix . '_' . $sectionName;
@@ -531,6 +536,7 @@ class Bronto_Verify_Model_Core_Config
             }
             $this->_cachePartsForSave[$cacheId] = $source->$sectionName->asNiceXml('', false);
         }
+
         return $this;
     }
 
@@ -544,7 +550,7 @@ class Bronto_Verify_Model_Core_Config
      */
     protected function _loadSectionCache($sectionName)
     {
-        $cacheId = $this->getCacheId() . '_' . $sectionName;
+        $cacheId   = $this->getCacheId() . '_' . $sectionName;
         $xmlString = $this->_loadCache($cacheId);
 
         /**
@@ -553,9 +559,11 @@ class Bronto_Verify_Model_Core_Config
         if (!$xmlString) {
             $this->_useCache = false;
             $this->reinit($this->_options);
+
             return false;
         } else {
             $xml = simplexml_load_string($xmlString, $this->_elementClass);
+
             return $xml;
         }
     }
@@ -578,11 +586,10 @@ class Bronto_Verify_Model_Core_Config
      *
      * @param string $data
      * @param string $id
-     * @param array $tags
-     * @param false|int $lifetime
+     * @param array  $tags
+     * @param bool   $lifetime
      *
-     * @return Mage_Core_Model_Config
-     * @access protected
+     * @return bool|Mage_Core_Model_App
      */
     protected function _saveCache($data, $id, $tags = array(), $lifetime = false)
     {
@@ -611,6 +618,7 @@ class Bronto_Verify_Model_Core_Config
     public function removeCache()
     {
         Mage::app()->cleanCache(array(self::CACHE_TAG));
+
         return parent::removeCache();
     }
 
@@ -639,8 +647,8 @@ class Bronto_Verify_Model_Core_Config
         if (!isset($this->_cacheSections[$section])) {
             return false;
         }
-        $sectioPath = array_slice($path, 0, $this->_cacheSections[$section] + 1);
-        $sectionKey = implode('_', $sectioPath);
+        $sectionPath = array_slice($path, 0, $this->_cacheSections[$section] + 1);
+        $sectionKey  = implode('_', $sectionPath);
 
         if (!isset($this->_cacheLoadedSections[$sectionKey])) {
             Varien_Profiler::start('init_config_section:' . $sectionKey);
@@ -651,6 +659,7 @@ class Bronto_Verify_Model_Core_Config
         if ($this->_cacheLoadedSections[$sectionKey] === false) {
             return false;
         }
+
         return $this->_cacheLoadedSections[$sectionKey];
     }
 
@@ -665,11 +674,12 @@ class Bronto_Verify_Model_Core_Config
     public function getSectionNode($path)
     {
         $section = $path[0];
-        $config = $this->_getSectionConfig($path);
-        $path = array_slice($path, $this->_cacheSections[$section] + 1);
+        $config  = $this->_getSectionConfig($path);
+        $path    = array_slice($path, $this->_cacheSections[$section] + 1);
         if ($config) {
             return $config->descend($path);
         }
+
         return false;
     }
 
@@ -705,7 +715,7 @@ class Bronto_Verify_Model_Core_Config
          * Check path cache loading
          */
         if ($this->_useCache && ($path !== null)) {
-            $path = explode('/', $path);
+            $path    = explode('/', $path);
             $section = $path[0];
             if (isset($this->_cacheSections[$section])) {
                 $res = $this->getSectionNode($path);
@@ -714,15 +724,16 @@ class Bronto_Verify_Model_Core_Config
                 }
             }
         }
+
         return parent::getNode($path);
     }
 
     /**
      * Create node by $path and set its value.
      *
-     * @param string $path      separated by slashes
+     * @param string $path separated by slashes
      * @param string $value
-     * @param bool $overwrite
+     * @param bool   $overwrite
      *
      * @return Varien_Simplexml_Config
      * @access public
@@ -731,25 +742,26 @@ class Bronto_Verify_Model_Core_Config
     {
         if ($this->_useCache && ($path !== null)) {
             $sectionPath = explode('/', $path);
-            $config = $this->_getSectionConfig($sectionPath);
+            $config      = $this->_getSectionConfig($sectionPath);
             if ($config) {
                 $sectionPath = array_slice($sectionPath, $this->_cacheSections[$sectionPath[0]] + 1);
                 $sectionPath = implode('/', $sectionPath);
                 $config->setNode($sectionPath, $value, $overwrite);
             }
         }
+
         return parent::setNode($path, $value, $overwrite);
     }
 
     /**
-     * Retrive Declared Module file list
+     * Retrieve Declared Module file list
      *
      * @return array
      * @access protected
      */
     protected function _getDeclaredModuleFiles()
     {
-        $etcDir = $this->getOptions()->getEtcDir();
+        $etcDir      = $this->getOptions()->getEtcDir();
         $moduleFiles = glob($etcDir . DS . 'modules' . DS . '*.xml');
 
         if (!$moduleFiles) {
@@ -757,8 +769,8 @@ class Bronto_Verify_Model_Core_Config
         }
 
         $collectModuleFiles = array(
-            'base' => array(),
-            'mage' => array(),
+            'base'   => array(),
+            'mage'   => array(),
             'custom' => array()
         );
 
@@ -785,7 +797,7 @@ class Bronto_Verify_Model_Core_Config
     /**
      * Add module(s) to allowed list
      *
-     * @param strung|array $module
+     * @param string|array $module
      *
      * @return Mage_Core_Model_Config
      * @access public
@@ -823,7 +835,7 @@ class Bronto_Verify_Model_Core_Config
     /**
      * Load declared modules configuration
      *
-     * @param null $mergeConfig depricated
+     * @param null $mergeConfig deprecated
      *
      * @return Mage_Core_Model_Config
      * @access protected
@@ -832,7 +844,7 @@ class Bronto_Verify_Model_Core_Config
     {
         $moduleFiles = $this->_getDeclaredModuleFiles();
         if (!$moduleFiles) {
-            return;
+            return false;
         }
 
         Varien_Profiler::start('config/load-modules-declaration');
@@ -860,9 +872,9 @@ class Bronto_Verify_Model_Core_Config
                 }
             }
             $moduleDepends[$moduleName] = array(
-                'module' => $moduleName,
+                'module'  => $moduleName,
                 'depends' => $depends,
-                'active' => ('true' === (string)$moduleNode->active ? true : false),
+                'active'  => ('true' === (string)$moduleNode->active ? true : false),
             );
         }
 
@@ -887,6 +899,7 @@ class Bronto_Verify_Model_Core_Config
         $this->extend($sortedConfig);
 
         Varien_Profiler::stop('config/load-modules-declaration');
+
         return $this;
     }
 
@@ -918,7 +931,7 @@ class Bronto_Verify_Model_Core_Config
         for ($i = $size; $i >= 0; $i--) {
             for ($j = $size; $i < $j; $j--) {
                 if (isset($modules[$i]['depends'][$modules[$j]['module']])) {
-                    $value = $modules[$i];
+                    $value       = $modules[$i];
                     $modules[$i] = $modules[$j];
                     $modules[$j] = $value;
                 }
@@ -947,7 +960,7 @@ class Bronto_Verify_Model_Core_Config
      * If matched, returns as the matched module "factory" name or a fully qualified module name
      *
      * @param string $name
-     * @param bool $asFullModuleName
+     * @param bool   $asFullModuleName
      *
      * @return string
      * @access public
@@ -958,21 +971,21 @@ class Bronto_Verify_Model_Core_Config
             $this->_moduleNamespaces = array();
             foreach ($this->_xml->xpath('modules/*') as $m) {
                 if ((string)$m->active == 'true') {
-                    $moduleName = $m->getName();
-                    $module = strtolower($moduleName);
+                    $moduleName                                                                 = $m->getName();
+                    $module                                                                     = strtolower($moduleName);
                     $this->_moduleNamespaces[substr($module, 0, strpos($module, '_'))][$module] = $moduleName;
                 }
             }
         }
 
-        $name = explode('_', strtolower($name));
-        $partsNum = count($name);
+        $name                 = explode('_', strtolower($name));
+        $partsNum             = count($name);
         $defaultNamespaceFlag = false;
         foreach ($this->_moduleNamespaces as $namespaceName => $namespace) {
             // assume the namespace is omitted (default namespace only, which comes first)
             if ($defaultNamespaceFlag === false) {
                 $defaultNamespaceFlag = true;
-                $defaultNS = $namespaceName . '_' . $name[0];
+                $defaultNS            = $namespaceName . '_' . $name[0];
                 if (isset($namespace[$defaultNS])) {
                     return $asFullModuleName ? $namespace[$defaultNS] : $name[0]; // return omitted as well
                 }
@@ -985,20 +998,21 @@ class Bronto_Verify_Model_Core_Config
                 }
             }
         }
+
         return '';
     }
 
     /**
      * Iterate all active modules "etc" folders and combine data from
-     * specidied xml file name to one object
+     * specified xml file name to one object
      *
-     * @param string $fileName
-     * @param null|Mage_Core_Model_Config_Base $mergeToObject
+     * @param                             $fileName
+     * @param Mage_Core_Model_Config_Base $mergeToObject
+     * @param null                        $mergeModel
      *
-     * @return Mage_Core_Model_Config_Base
-     * @access public
+     * @return Bronto_Verify_Model_Core_Config_Base|Mage_Core_Model_Config_Base
      */
-    public function loadModulesConfiguration($fileName, $mergeToObject = null, $mergeModel = null)
+    public function loadModulesConfiguration($fileName, Mage_Core_Model_Config_Base $mergeToObject = null, $mergeModel = null)
     {
         $disableLocalModules = !$this->_canUseLocalModules();
 
@@ -1041,6 +1055,7 @@ class Bronto_Verify_Model_Core_Config
                 Mage::unregister('conflict_datastore_enabled');
             }
         }
+
         return $mergeToObject;
     }
 
@@ -1070,22 +1085,22 @@ class Bronto_Verify_Model_Core_Config
                 $scheme = ($secure ? 'https' : 'http') . '://';
 
                 $hostArr = explode(':', $_SERVER['HTTP_HOST']);
-                $host = $hostArr[0];
-                $port = isset(
+                $host    = $hostArr[0];
+                $port    = isset(
                 $hostArr[1]) && (!$secure && $hostArr[1] != 80 || $secure && $hostArr[1] != 443
                 ) ? ':' . $hostArr[1] : '';
-                $path = Mage::app()->getRequest()->getBasePath();
+                $path    = Mage::app()->getRequest()->getBasePath();
 
                 $baseUrl = $scheme . $host . $port . rtrim($path, '/') . '/';
             } else {
                 $baseUrl = 'http://localhost/';
             }
 
-            $options = $this->getOptions();
+            $options                 = $this->getOptions();
             $this->_distroServerVars = array(
                 'root_dir' => $options->getBaseDir(),
-                'app_dir' => $options->getAppDir(),
-                'var_dir' => $options->getVarDir(),
+                'app_dir'  => $options->getAppDir(),
+                'var_dir'  => $options->getVarDir(),
                 'base_url' => $baseUrl,
             );
 
@@ -1093,22 +1108,19 @@ class Bronto_Verify_Model_Core_Config
                 $this->_substServerVars['{{' . $k . '}}'] = $v;
             }
         }
+
         return $this->_distroServerVars;
     }
 
     /**
-     * Short description for function
+     * @param $data
      *
-     * Long description (if any) ...
-     *
-     * @param unknown $data Parameter description (if any) ...
-     *
-     * @return array   Return description (if any) ...
-     * @access public
+     * @return mixed
      */
     public function substDistroServerVars($data)
     {
         $this->getDistroServerVars();
+
         return str_replace(
             array_keys($this->_substServerVars),
             array_values($this->_substServerVars),
@@ -1121,7 +1133,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * @param string $moduleName
      *
-     * @return Varien_Simplexml_Object
+     * @return Varien_Simplexml_Element
      * @access public
      */
     public function getModuleConfig($moduleName = '')
@@ -1139,7 +1151,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * Defaults to Mage_Core_Setup
      *
-     * @param string|Varien_Simplexml_Object $module
+     * @param string|Varien_Simplexml_Element $module
      *
      * @return object
      * @access public
@@ -1158,6 +1170,7 @@ class Bronto_Verify_Model_Core_Config
                 }
             }
         }
+
         return new $className($module);
     }
 
@@ -1169,9 +1182,9 @@ class Bronto_Verify_Model_Core_Config
      * @param string $type
      *
      * @deprecated in favor of Mage_Core_Model_Config_Options
-     * @todo get global dir config
+     * @todo       get global dir config
      * @return string
-     * @access public
+     * @access     public
      */
     public function getBaseDir($type = 'base')
     {
@@ -1193,18 +1206,14 @@ class Bronto_Verify_Model_Core_Config
         if (!$this->createDirIfNotExists($dir)) {
             return false;
         }
+
         return $dir;
     }
 
     /**
-     * Short description for function
+     * @param $dir
      *
-     * Long description (if any) ...
-     *
-     * @param unknown $dir Parameter description (if any) ...
-     *
-     * @return unknown Return description (if any) ...
-     * @access public
+     * @return bool
      */
     public function createDirIfNotExists($dir)
     {
@@ -1223,7 +1232,7 @@ class Bronto_Verify_Model_Core_Config
     public function getModuleDir($type, $moduleName)
     {
         $codePool = (string)$this->getModuleConfig($moduleName)->codePool;
-        $dir = $this->getOptions()->getCodeDir() . DS . $codePool . DS . uc_words($moduleName, DS);
+        $dir      = $this->getOptions()->getCodeDir() . DS . $codePool . DS . uc_words($moduleName, DS);
 
         switch ($type) {
             case 'etc':
@@ -1247,6 +1256,7 @@ class Bronto_Verify_Model_Core_Config
         }
 
         $dir = str_replace('/', DS, $dir);
+
         return $dir;
     }
 
@@ -1290,11 +1300,12 @@ class Bronto_Verify_Model_Core_Config
                         break;
                 }
 
-                $args = (array)$observer->args;
+                $args          = (array)$observer->args;
                 $observerClass = $observer->observer_class ? (string)$observer->observer_class : '';
                 Mage::addObserver($eventName, $callback, $args, $observer->getName(), $observerClass);
             }
         }
+
         return true;
     }
 
@@ -1312,7 +1323,7 @@ class Bronto_Verify_Model_Core_Config
     {
         $path = array();
 
-        $path['baseUrl'] = Mage::getBaseUrl();
+        $path['baseUrl']       = Mage::getBaseUrl();
         $path['baseSecureUrl'] = Mage::getBaseUrl('link', true);
 
         return $path;
@@ -1335,8 +1346,8 @@ class Bronto_Verify_Model_Core_Config
         }
 
         $classArr = explode('/', trim($classId));
-        $group = $classArr[0];
-        $class = !empty($classArr[1]) ? $classArr[1] : null;
+        $group    = $classArr[0];
+        $class    = !empty($classArr[1]) ? $classArr[1] : null;
 
         if (isset($this->_classNameCache[$groupRootNode][$group][$class])) {
             return $this->_classNameCache[$groupRootNode][$group][$class];
@@ -1356,7 +1367,7 @@ class Bronto_Verify_Model_Core_Config
              */
             if ($config->deprecatedNode) {
                 $deprecatedNode = $config->deprecatedNode;
-                $configOld = $this->_xml->global->{$groupType . 's'}->$deprecatedNode;
+                $configOld      = $this->_xml->global->{$groupType . 's'}->$deprecatedNode;
                 if (isset($configOld->rewrite->$class)) {
                     $className = (string)$configOld->rewrite->$class;
                 }
@@ -1378,6 +1389,7 @@ class Bronto_Verify_Model_Core_Config
         }
 
         $this->_classNameCache[$groupRootNode][$group][$class] = $className;
+
         return $className;
     }
 
@@ -1394,27 +1406,28 @@ class Bronto_Verify_Model_Core_Config
         if (strpos($blockType, '/') === false) {
             return $blockType;
         }
+
         return $this->getGroupedClassName('block', $blockType);
     }
 
     /**
      * Retrieve helper class name
      *
-     * @param string $name
+     * @param $helperName
      *
      * @return string
-     * @access public
      */
     public function getHelperClassName($helperName)
     {
         if (strpos($helperName, '/') === false) {
             $helperName .= '/data';
         }
+
         return $this->getGroupedClassName('helper', $helperName);
     }
 
     /**
-     * Retreive resource helper instance
+     * Retrieve resource helper instance
      *
      * Example:
      * $config->getResourceHelper('cms')
@@ -1428,7 +1441,7 @@ class Bronto_Verify_Model_Core_Config
     public function getResourceHelper($moduleName)
     {
         $connectionModel = $this->_getResourceConnectionModel($moduleName);
-        $helperClass = sprintf('%s/helper_%s', $moduleName, $connectionModel);
+        $helperClass     = sprintf('%s/helper_%s', $moduleName, $connectionModel);
         $helperClassName = $this->_getResourceModelFactoryClassName($helperClass);
         if ($helperClassName) {
             return $this->getModelInstance($helperClassName, $moduleName);
@@ -1440,7 +1453,7 @@ class Bronto_Verify_Model_Core_Config
     /**
      * Retrieve module class name
      *
-     * @param sting $modelClass
+     * @param string $modelClass
      *
      * @return string
      * @access public
@@ -1451,6 +1464,7 @@ class Bronto_Verify_Model_Core_Config
         if (strpos($modelClass, '/') === false) {
             return $modelClass;
         }
+
         return $this->getGroupedClassName('model', $modelClass);
     }
 
@@ -1462,7 +1476,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * Will instantiate Mage_Catalog_Model_Mysql4_Product
      *
-     * @param string $modelClass
+     * @param string       $modelClass
      * @param array|object $constructArguments
      *
      * @return Mage_Core_Model_Abstract
@@ -1475,6 +1489,7 @@ class Bronto_Verify_Model_Core_Config
             Varien_Profiler::start('CORE::create_object_of::' . $className);
             $obj = new $className($constructArguments);
             Varien_Profiler::stop('CORE::create_object_of::' . $className);
+
             return $obj;
         } else {
             return false;
@@ -1482,14 +1497,9 @@ class Bronto_Verify_Model_Core_Config
     }
 
     /**
-     * Short description for function
+     * @param $path
      *
-     * Long description (if any) ...
-     *
-     * @param unknown $path Parameter description (if any) ...
-     *
-     * @return mixed   Return description (if any) ...
-     * @access public
+     * @return bool
      */
     public function getNodeClassInstance($path)
     {
@@ -1498,6 +1508,7 @@ class Bronto_Verify_Model_Core_Config
             return false;
         } else {
             $className = $config->getClassName();
+
             return new $className();
         }
     }
@@ -1506,7 +1517,7 @@ class Bronto_Verify_Model_Core_Config
      * Get resource model object by alias
      *
      * @param string $modelClass
-     * @param array $constructArguments
+     * @param array  $constructArguments
      *
      * @return object
      * @access public
@@ -1517,6 +1528,7 @@ class Bronto_Verify_Model_Core_Config
         if (!$factoryName) {
             return false;
         }
+
         return $this->getModelInstance($factoryName, $constructArguments);
     }
 
@@ -1525,7 +1537,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * @param string $name
      *
-     * @return Varien_Simplexml_Object
+     * @return Varien_Simplexml_Element
      * @access public
      */
     public function getResourceConfig($name)
@@ -1554,6 +1566,7 @@ class Bronto_Verify_Model_Core_Config
                 }
             }
         }
+
         return false;
     }
 
@@ -1562,7 +1575,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * @param string $type
      *
-     * @return Varien_Simplexml_Object
+     * @return Varien_Simplexml_Element
      * @access public
      */
     public function getResourceTypeConfig($type)
@@ -1577,16 +1590,16 @@ class Bronto_Verify_Model_Core_Config
      *
      * return array($storeId=>$pathValue)
      *
-     * @param string $path
-     * @param array $allowValues
+     * @param        $path
+     * @param array  $allowValues
+     * @param string $useAsKey
      *
      * @return array
-     * @access public
      */
     public function getStoresConfigByPath($path, $allowValues = array(), $useAsKey = 'id')
     {
         $storeValues = array();
-        $stores = $this->getNode('stores');
+        $stores      = $this->getNode('stores');
         foreach ($stores->children() as $code => $store) {
             switch ($useAsKey) {
                 case 'id':
@@ -1612,6 +1625,7 @@ class Bronto_Verify_Model_Core_Config
                 $storeValues[$key] = $pathValue;
             }
         }
+
         return $storeValues;
     }
 
@@ -1627,7 +1641,7 @@ class Bronto_Verify_Model_Core_Config
     {
         if (!isset($this->_secureUrlCache[$url])) {
             $this->_secureUrlCache[$url] = false;
-            $secureUrls = $this->getNode('frontend/secure_url');
+            $secureUrls                  = $this->getNode('frontend/secure_url');
             foreach ($secureUrls->children() as $match) {
                 if (strpos($url, (string)$match) === 0) {
                     $this->_secureUrlCache[$url] = true;
@@ -1665,19 +1679,19 @@ class Bronto_Verify_Model_Core_Config
         if (!isset($this->_eventAreas[$area])) {
             $this->_eventAreas[$area] = $this->getNode($area)->events;
         }
+
         return $this->_eventAreas[$area]->{$eventName};
     }
 
     /**
      * Save config value to DB
      *
-     * @param string $path
-     * @param string $value
+     * @param        $path
+     * @param        $value
      * @param string $scope
-     * @param int $scopeId
+     * @param int    $scopeId
      *
-     * @return Mage_Core_Store_Config
-     * @access public
+     * @return $this
      */
     public function saveConfig($path, $value, $scope = 'default', $scopeId = 0)
     {
@@ -1692,7 +1706,7 @@ class Bronto_Verify_Model_Core_Config
      *
      * @param string $path
      * @param string $scope
-     * @param int $scopeId
+     * @param int    $scopeId
      *
      * @return Mage_Core_Model_Config
      * @access public
@@ -1720,6 +1734,7 @@ class Bronto_Verify_Model_Core_Config
         if (!$rootNode) {
             return null;
         }
+
         return $rootNode->$name ? $rootNode->$name->children() : null;
     }
 
@@ -1736,7 +1751,7 @@ class Bronto_Verify_Model_Core_Config
         $config = null;
         if (!is_null($moduleName)) {
             $setupResource = $moduleName . '_setup';
-            $config = $this->getResourceConnectionConfig($setupResource);
+            $config        = $this->getResourceConnectionConfig($setupResource);
         }
         if (!$config) {
             $config = $this->getResourceConnectionConfig(Mage_Core_Model_Resource::DEFAULT_SETUP_RESOURCE);
@@ -1789,6 +1804,7 @@ class Bronto_Verify_Model_Core_Config
         if ($factoryName) {
             return $this->getModelClassName($factoryName);
         }
+
         return false;
     }
 }

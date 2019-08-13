@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
     extends Varien_Simplexml_Element
@@ -20,7 +19,7 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
      * Otherwise will overwrite existing nodes
      *
      * @param Varien_Simplexml_Element $source
-     * @param boolean $overwrite
+     * @param boolean                  $overwrite
      *
      * @return Varien_Simplexml_Element
      * @access public
@@ -42,7 +41,7 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
      * Extends one node
      *
      * @param Varien_Simplexml_Element $source
-     * @param boolean $overwrite
+     * @param boolean                  $overwrite
      *
      * @return Varien_Simplexml_Element
      * @access public
@@ -67,8 +66,8 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
                 }
                 if ($overwrite) {
                     if (Mage::registry('conflict_datastore_enabled')) {
-                        $factory = new Bronto_Verify_Model_Path_Locator_Factory;
-                        $locator = $factory->getLocator();
+                        $factory   = new Bronto_Verify_Model_Path_Locator_Factory;
+                        $locator   = $factory->getLocator();
                         $dataStore = Mage::registry('conflict_datastore');
                         $dataStore->addRewrite(
                             (string)$this->$sourceName,
@@ -88,6 +87,7 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
             foreach ($source->attributes() as $key => $value) {
                 $targetChild->addAttribute($key, $this->xmlentities($value));
             }
+
             return $this;
         }
 
@@ -105,7 +105,7 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
         }
 
         // finally add our source node children to resulting new target node
-        foreach ($sourceChildren as $childKey => $childNode) {
+        foreach ($sourceChildren as $childNode) {
             $targetChild->extendChild($childNode, $overwrite);
         }
 
@@ -113,23 +113,19 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
     }
 
     /**
-     * Short description for function
+     * @param      $path
+     * @param      $value
+     * @param bool $overwrite
      *
-     * Long description (if any) ...
-     *
-     * @param unknown $path      Parameter description (if any) ...
-     * @param unknown $value     Parameter description (if any) ...
-     * @param boolean $overwrite Parameter description (if any) ...
-     *
-     * @return mixed   Return description (if any) ...
-     * @access public
+     * @return $this
      */
     public function setNode($path, $value, $overwrite = true)
     {
         $arr1 = explode('/', $path);
-        $arr = array();
+        $arr  = array();
         foreach ($arr1 as $v) {
-            if (!empty($v)) $arr[] = $v;
+            if (!empty($v))
+                $arr[] = $v;
         }
         $last = sizeof($arr) - 1;
         $node = $this;
@@ -153,6 +149,7 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
             }
 
         }
+
         return $this;
     }
 
@@ -176,6 +173,7 @@ class Bronto_Verify_Model_Lib_Varien_Simplexml_Element
                 $parent = null;
             }
         }
+
         return $parent;
     }
 }

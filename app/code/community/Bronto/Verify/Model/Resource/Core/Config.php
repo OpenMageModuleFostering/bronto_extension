@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Resource_Core_Config
     extends Bronto_Verify_Model_Resource_Db_Abstract
@@ -29,11 +28,10 @@ class Bronto_Verify_Model_Resource_Core_Config
     /**
      * Load configuration values into xml config object
      *
-     * @param Mage_Core_Model_Config $xmlConfig
-     * @param string $condition
+     * @param Bronto_Verify_Model_Core_Config $xmlConfig
+     * @param mixed                           $condition
      *
-     * @return Mage_Core_Model_Resource_Config
-     * @access public
+     * @return $this
      */
     public function loadToXml(
         Bronto_Verify_Model_Core_Config $xmlConfig,
@@ -46,9 +44,9 @@ class Bronto_Verify_Model_Resource_Core_Config
         }
 
         $websites = array();
-        $select = $read->select()
+        $select   = $read->select()
             ->from($this->getTable('core/website'), array('website_id', 'code', 'name'));
-        $rowset = $read->fetchAssoc($select);
+        $rowset   = $read->fetchAssoc($select);
         foreach ($rowset as $w) {
             $xmlConfig->setNode('websites/' . $w['code'] . '/system/website/id', $w['website_id']);
             $xmlConfig->setNode('websites/' . $w['code'] . '/system/website/name', $w['name']);
@@ -68,12 +66,12 @@ class Bronto_Verify_Model_Resource_Core_Config
             $xmlConfig->setNode('stores/' . $s['code'] . '/system/store/name', $s['name']);
             $xmlConfig->setNode('stores/' . $s['code'] . '/system/website/id', $s['website_id']);
             $xmlConfig->setNode('websites/' . $websites[$s['website_id']]['code'] . '/system/stores/' . $s['code'], $s['store_id']);
-            $stores[$s['store_id']] = array('code' => $s['code']);
+            $stores[$s['store_id']]                               = array('code' => $s['code']);
             $websites[$s['website_id']]['stores'][$s['store_id']] = $s['code'];
         }
 
         $substFrom = array();
-        $substTo = array();
+        $substTo   = array();
 
         // load all configuration records from database, which are not inherited
         $select = $read->select()
@@ -95,7 +93,7 @@ class Bronto_Verify_Model_Resource_Core_Config
 
         // inherit default config values to all websites
         $extendSource = $xmlConfig->getNode('default');
-        foreach ($websites as $id => $w) {
+        foreach ($websites as $w) {
             $websiteNode = $xmlConfig->getNode('websites/' . $w['code']);
             $websiteNode->extend($extendSource);
         }
@@ -148,7 +146,7 @@ class Bronto_Verify_Model_Resource_Core_Config
             $this->_getWriteAdapter()->delete(
                 $this->getMainTable(),
                 array(
-                    'scope = ?' => 'websites',
+                    'scope = ?'      => 'websites',
                     'scope_id IN(?)' => $deleteWebsites,
                 )
             );
@@ -158,11 +156,12 @@ class Bronto_Verify_Model_Resource_Core_Config
             $this->_getWriteAdapter()->delete(
                 $this->getMainTable(),
                 array(
-                    'scope=?' => 'stores',
+                    'scope=?'        => 'stores',
                     'scope_id IN(?)' => $deleteStores,
                 )
             );
         }
+
         return $this;
     }
 
@@ -172,7 +171,7 @@ class Bronto_Verify_Model_Resource_Core_Config
      * @param string $path
      * @param string $value
      * @param string $scope
-     * @param int $scopeId
+     * @param int    $scopeId
      *
      * @return Mage_Core_Model_Resource_Config
      * @access public
@@ -180,18 +179,18 @@ class Bronto_Verify_Model_Resource_Core_Config
     public function saveConfig($path, $value, $scope, $scopeId)
     {
         $writeAdapter = $this->_getWriteAdapter();
-        $select = $writeAdapter->select()
+        $select       = $writeAdapter->select()
             ->from($this->getMainTable())
             ->where('path = ?', $path)
             ->where('scope = ?', $scope)
             ->where('scope_id = ?', $scopeId);
-        $row = $writeAdapter->fetchRow($select);
+        $row          = $writeAdapter->fetchRow($select);
 
         $newData = array(
-            'scope' => $scope,
+            'scope'    => $scope,
             'scope_id' => $scopeId,
-            'path' => $path,
-            'value' => $value
+            'path'     => $path,
+            'value'    => $value
         );
 
         if ($row) {
@@ -200,6 +199,7 @@ class Bronto_Verify_Model_Resource_Core_Config
         } else {
             $writeAdapter->insert($this->getMainTable(), $newData);
         }
+
         return $this;
     }
 
@@ -208,7 +208,7 @@ class Bronto_Verify_Model_Resource_Core_Config
      *
      * @param string $path
      * @param string $scope
-     * @param int $scopeId
+     * @param int    $scopeId
      *
      * @return Mage_Core_Model_Resource_Config
      * @access public
@@ -224,6 +224,7 @@ class Bronto_Verify_Model_Resource_Core_Config
                 $adapter->quoteInto('scope_id = ?', $scopeId)
             )
         );
+
         return $this;
     }
 }

@@ -6,7 +6,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 -->
 <config>
@@ -58,14 +57,26 @@
     </adminhtml>
     <default>
         <bronto_verify>
-            <settings>
-                <roundtrip_status>1</roundtrip_status>
-            </settings>
+            <cron_settings>
+                <bronto_customer-settings-mage_cron>1</bronto_customer-settings-mage_cron>
+                <bronto_newsletter-settings-mage_cron>1</bronto_newsletter-settings-mage_cron>
+                <bronto_order-settings-mage_cron>1</bronto_order-settings-mage_cron>
+                <bronto_reminder-settings-mage_cron>1</bronto_reminder-settings-mage_cron>
+            </cron_settings>
             <permissionchecker>
                 <directories>755</directories>
                 <files>644</files>
                 <exclude>app/etc, mage, pear, media, var, errors, build, .git, .svn, shell, pkginfo, includes</exclude>
             </permissionchecker>
+            <soap_options>
+                <soap_client>Bronto_SoapClient</soap_client>
+                <stream_context>0</stream_context>
+                <retry_limit>2</retry_limit>
+                <trace>0</trace>
+                <exceptions>1</exceptions>
+                <connection_timeout>30</connection_timeout>
+                <cache_wsdl>WSDL_CACHE_BOTH</cache_wsdl>
+            </soap_options>
         </bronto_verify>
     </default>
 

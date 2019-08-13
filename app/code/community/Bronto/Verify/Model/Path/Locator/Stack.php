@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Path_Locator_Stack
     extends Bronto_Verify_Model_Path_Locator_IteratorAbstract
@@ -44,6 +43,7 @@ class Bronto_Verify_Model_Path_Locator_Stack
         if (!$element->getSafeParent()) {
             return $this->_iterator->pop();
         }
+
         return $this->getPath($element->getParent()) . $this->_iterator->pop();
     }
 }

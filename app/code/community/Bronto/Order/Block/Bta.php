@@ -1,38 +1,19 @@
 <?php
 
 /**
- * @package    Order
- * @copyright  2011-2012 Bronto Software, Inc.
- * @version    1.1.5
+ * @package   Bronto\Newsletter
+ * @copyright 2011-2013 Bronto Software, Inc.
  * @deprecated
  */
-class Bronto_Order_Block_Bta extends Mage_Core_Block_Text
+class Bronto_Order_Block_Bta extends Mage_Core_Block_Template
 {
     /**
-     * Render Bronto tracking script
+     * Generate BTA Key For Script
      *
      * @return string
      */
-    protected function _toHtml()
+    public function getKey()
     {
-        if (!Mage::helper('bronto_order')->isModuleEnabled()) {
-            return;
-        }
-
-        $key = md5(
-            Mage::app()->getStore()->getWebsiteId() .
-            Mage::getConfig()->getNode(Mage_Core_Model_App::XML_PATH_INSTALL_DATE)
-        );
-
-        return "
-<script type=\"text/javascript\">
-	document.write(unescape(\"%3Cscript src='\"
-		+ ((document.location.protocol == \"https:\") ? \"https:\" : \"http:\")
-		+ \"//p.bm23.com/bta.js' type='text/javascript'%3E%3C/script%3E\"));
-</script>
-<script type=\"text/javascript\">
-	var bta = new __bta('$key');
-</script>
-";
+        return Mage::helper('bronto_order')->getTidKey();
     }
 }

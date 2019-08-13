@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Reminder_Model_Condition_Abstract
 {
@@ -27,7 +26,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
     public function getNewChildSelectOptions()
     {
         return array('value' => $this->getType(),
-            'label' => Mage::helper('bronto_reminder')->__('Numeric Attribute'));
+                     'label' => Mage::helper('bronto_reminder')->__('Numeric Attribute'));
     }
 
     /**
@@ -38,12 +37,13 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
     public function loadAttributeOptions()
     {
         $this->setAttributeOption(array(
-            'weight' => Mage::helper('bronto_reminder')->__('weight'),
+            'weight'     => Mage::helper('bronto_reminder')->__('weight'),
             'row_weight' => Mage::helper('bronto_reminder')->__('row weight'),
-            'qty' => Mage::helper('bronto_reminder')->__('quantity'),
-            'price' => Mage::helper('bronto_reminder')->__('base price'),
-            'base_cost' => Mage::helper('bronto_reminder')->__('base cost')
+            'qty'        => Mage::helper('bronto_reminder')->__('quantity'),
+            'price'      => Mage::helper('bronto_reminder')->__('base price'),
+            'base_cost'  => Mage::helper('bronto_reminder')->__('base cost')
         ));
+
         return $this;
     }
 
@@ -63,15 +63,16 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
     /**
      * Build condition limitations sql string for specific website
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
     {
-        $quoteTable = $this->getResource()->getTable('sales/quote');
+        $quoteTable     = $this->getResource()->getTable('sales/quote');
         $quoteItemTable = $this->getResource()->getTable('sales/quote_item');
-        $operator = $this->getResource()->getSqlOperator($this->getOperator());
+        $operator       = $this->getResource()->getSqlOperator($this->getOperator());
 
         $select = $this->getResource()->createSelect();
         $select->from(array('item' => $quoteItemTable), array(new Zend_Db_Expr(1)));
@@ -107,6 +108,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Attributes extends Bronto_Remind
         $select->where("{$field} {$operator} ?", $this->getValue());
         $select->where('quote.entity_id = root.quote_id');
         $select->limit(1);
+
         return $select;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 $installer = $this;
-/* @var $installer Mage_Core_Model_Mysql4_Setup */
+/* @var $installer Mage_Core_Model_Resource_Setup|Mage_Core_Model_Mysql4_Setup */
 
 $installer->startSetup();
 

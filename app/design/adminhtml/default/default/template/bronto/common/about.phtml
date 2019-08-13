@@ -4,7 +4,7 @@
     <div style="overflow:hidden;">
         <div style="float:left;width:50%">
         <a href="http://app.bronto.com" target="_blank" title="Home Dashboard |&nbsp;Bronto Marketing Platform"><img src="<?php echo $this->getSkinUrl('bronto/images/logo.png') ?>"></a>
-    <?php if ($this->getModuleNamespace() === 'bronto_common'): ?>
+    <?php if ($this->getModuleNamespace() === 'bronto_common' && $this->getSection() == 'bronto'): ?>
 <br/>
                 <strong style="font-size: 16px;"><?php echo $this->getModuleName(); ?> (<?php echo $this->getModuleVersion() ?>)</strong>
                 <br/>For documentation and release notes, visit the Bronto<br><a href="http://a.bron.to/magento" target="_blank" title="Magento Resource Center | Bronto Developers" style="
@@ -17,7 +17,7 @@
     color: #666;
 ">Bronto Software, Inc.</a></span>
             </div>
-    <?php if ($this->getModuleNamespace() === 'bronto_common' && !$this->isValidApiToken()) : ?>
+    <?php if ($this->getModuleNamespace() === 'bronto_common' && $this->getSection() == 'bronto' && !$this->isValidApiToken()) : ?>
             <div style="float:right;max-width: 400px;font-size:11px;width: 50%;">
                 <div style="margin:auto auto;padding-top: 5px;">
                 <p style="color:#666;margin-bottom: 10px;">
@@ -37,9 +37,30 @@
                 </div>
             </div>
     <?php else: ?>
-            <div style="float:right;">
-                <a href="<?php echo $this->getModuleNamespace() != 'bronto_common' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head"><img src="<?php echo $this->getSkinUrl('bronto/images/bronto_help.png'); ?>"/></a>
+            <div style="float:right;text-align:right;overflow:hidden">
+                <div style="float:left">
+                  <p style="line-height:16px;">
+                  <strong style="color: #666; font-size:14px">Get Support</strong>
+                  <br/>
+                  <a href="<?php echo $this->getModuleNamespace() != 'bronto_common' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head">Learn Next Steps</a>
+                  </p>
+                </div>
+                <div style="float:right; padding-left:5px">
+                  <a href="<?php echo $this->getModuleNamespace() != 'bronto_common' ? $this->getUrl("*/system_config/edit", array('section' => 'bronto')) : ''; ?>#bronto_information-head"><img src="<?php echo $this->getSkinUrl('bronto/images/support.png'); ?>" alt="Need Help? Get Support"/></a>
+                </div>
             </div>
     <?php endif; ?>
+          <div style="float:right;clear:right;margin-top:10px;text-align:right;overflow:hidden">
+              <div style="float:left">
+                <p style="line-height:16px;">
+                <strong style="color: #666; font-size:14px">Take a Tour</strong>
+                <br/>
+                <a href="javascript:void(0)" onclick="guiders.show('start')">Start Configuration Guide</a>
+                </p>
+              </div>
+              <div style="float:right;padding-left:5px">
+                <a href="javascript:void(0)" onclick="guiders.show('start')"><img src="<?php echo $this->getSkinUrl('bronto/images/guide.png'); ?>" alt="Start Configuration Guide"/></a>
+              </div>
+          </div>
     </div>
 </div>

@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Customer
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.5
  */
 class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Block_Adminhtml_System_Config_Cron
 {
@@ -28,7 +27,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
     protected function getProgressBarTotal()
     {
         return $this->getCustomerResourceCollection()
-//            ->addBrontoNotSuppressedFilter()
+            //            ->addBrontoNotSuppressedFilter()
             ->getSize();
     }
 
@@ -56,6 +55,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
 
     /**
      * Get number of customers not imported from stores that don't have module enabled
+     *
      * @return int
      */
     protected function getProgressBarDisabled()
@@ -78,6 +78,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
                 ->addBrontoNotSuppressedFilter()
                 ->getSize();
         }
+
         return 0;
     }
 
@@ -87,12 +88,22 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
     protected function getCustomerResourceCollection()
     {
         $collection = Mage::getModel('bronto_customer/queue')->getCollection();
-        $storeIds = Mage::helper('bronto_customer')->getStoreIds();
+        $storeIds   = Mage::helper('bronto_customer')->getStoreIds();
 
         if ($storeIds) {
             $collection->addStoreFilter($storeIds);
         }
 
         return $collection;
+    }
+
+    /**
+     * Determine if should show the cron table
+     *
+     * @return mixed
+     */
+    public function showCronTable()
+    {
+        return Mage::helper('bronto_customer')->canUseMageCron();
     }
 }

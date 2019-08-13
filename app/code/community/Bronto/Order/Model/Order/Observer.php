@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.7
  */
 class Bronto_Order_Model_Order_Observer
 {
@@ -18,7 +17,7 @@ class Bronto_Order_Model_Order_Observer
         $order = $observer->getCreditmemo()->getOrder();
 
         /* @var $contactQueue Bronto_Order_Model_Queue */
-        $orderRow = Mage::getModel('bronto_order/queue')
+        Mage::getModel('bronto_order/queue')
             ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
             ->setBrontoImported(null)
             ->save();
@@ -35,7 +34,7 @@ class Bronto_Order_Model_Order_Observer
         $order = $observer->getPayment()->getOrder();
 
         /* @var $contactQueue Bronto_Order_Model_Queue */
-        $orderRow = Mage::getModel('bronto_order/queue')
+        Mage::getModel('bronto_order/queue')
             ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
             ->setBrontoImported(null)
             ->save();
@@ -56,11 +55,16 @@ class Bronto_Order_Model_Order_Observer
         $orderRow = Mage::getModel('bronto_order/queue')
             ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId());
 
-        foreach (Mage::getModel('core/cookie')->get() as $key => $value) {
-            if (stripos($key, "tid") !== false) {
-                $orderRow->setBrontoTid($value);
+        $managedKey = Mage::helper('bronto_order')->getTidKey();
 
+        foreach (Mage::getModel('core/cookie')->get() as $key => $value) {
+            // If managed key was found, use it; otherwise
+            // If an original key was found, use that instead
+            if ($key == 'tid_' . $managedKey) {
+                $orderRow->setBrontoTid($value);
                 break;
+            } else if (preg_match('/^tid_/', $key)) {
+                $orderRow->setBrontoTid($value);
             }
         }
 

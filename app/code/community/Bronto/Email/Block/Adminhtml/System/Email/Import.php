@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Import extends Mage_Adminhtml_Block_System_Email_Template
 {
@@ -28,18 +27,18 @@ class Bronto_Email_Block_Adminhtml_System_Email_Import extends Mage_Adminhtml_Bl
         $this->setChild('back_button',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label' => Mage::helper('adminhtml')->__('Back'),
-                    'onclick' => "window.location='" . $this->getBackUrl() . "'",
-                    'class' => 'scalable back',
+                    'label'   => Mage::helper('adminhtml')->__('Back'),
+                    'onclick' => "window.location='{$this->getBackUrl()}'",
+                    'class'   => 'scalable back',
                 ))
         );
 
         $this->setChild('import_button',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label' => Mage::helper('adminhtml')->__('Load Default Magento Templates'),
-                    'onclick' => "window.location='" . $this->getLoadDefaultsUrl() . "'",
-                    'class' => 'go'
+                    'label'   => Mage::helper('adminhtml')->__('Load Default Magento Templates'),
+                    'onclick' => "window.location='{$this->getLoadDefaultsUrl()}'",
+                    'class'   => 'go'
                 ))
         );
 
@@ -84,11 +83,13 @@ class Bronto_Email_Block_Adminhtml_System_Email_Import extends Mage_Adminhtml_Bl
 
     /**
      * Get link to transactional email configuration
-     * @return type
+     *
+     * @return string
      */
     public function getConfigLink()
     {
         $url = $this->getUrl('/system_config/edit/section/bronto_email');
+
         return '<strong>System &rsaquo; Configuration &rsaquo; Bronto &raquo; <a href="' . $url . '" title="Transactional Emails">Transactional Emails</a></strong>';
     }
 }

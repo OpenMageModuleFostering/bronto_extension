@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Block_Adminhtml_System_Config_Conflictchecker
     extends Mage_Adminhtml_Block_Abstract
@@ -16,6 +15,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Conflictchecker
 {
     /**
      * rewritten xml nodes
+     *
      * @var array
      * @access protected
      */
@@ -38,17 +38,18 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Conflictchecker
 
         //  Chain of Responsibility
         //  each checker looks through its designated area for rewrites
-        $blocks = Mage::getModel('bronto_verify/config_blocks');
-        $models = Mage::getModel('bronto_verify/config_models', array($blocks));
-        $helpers = Mage::getModel('bronto_verify/config_helpers', array($models));
+        $blocks    = Mage::getModel('bronto_verify/config_blocks');
+        $models    = Mage::getModel('bronto_verify/config_models', array($blocks));
+        $helpers   = Mage::getModel('bronto_verify/config_helpers', array($models));
         $resources = Mage::getModel('bronto_verify/config_resources', array($helpers));
-        $checker = Mage::getModel('bronto_verify/config_checker', array($resources));
+        $checker   = Mage::getModel('bronto_verify/config_checker', array($resources));
 
-        $conflicts = $checker->getConflicts($config->getNode('frontend'));
+        $checker->getConflicts($config->getNode('frontend'));
 
         $globalDataStore->getRewriteConflicts();
 
-        $printer = new Bronto_ConflictChecker_Model_Config_Printer();
+        $printer = new Bronto_Verify_Model_Config_Printer();
+
         return $printer->render($globalDataStore, 'XML configurations rewritten more than once');
     }
 }

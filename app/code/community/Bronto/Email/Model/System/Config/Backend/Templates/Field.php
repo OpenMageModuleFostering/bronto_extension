@@ -14,7 +14,7 @@ class Bronto_Email_Model_System_Config_Backend_Templates_Field extends Mage_Core
      */
     protected function _beforeSave()
     {
-        $path = $this->getPath();
+        $path     = $this->getPath();
         $realpath = str_replace('-', '/', array_pop(explode('/', $path)));
         $this->_saveConfigData($realpath, $this->getValue());
 
@@ -22,9 +22,12 @@ class Bronto_Email_Model_System_Config_Backend_Templates_Field extends Mage_Core
     }
 
     /**
-     * @param type $path
-     * @param type $value
-     * @return Bronto_Email_Model_System_Config_Backend_Templates_Field
+     * Save Configuration Data
+     *
+     * @param $path
+     * @param $value
+     *
+     * @return $this
      */
     protected function _saveConfigData($path, $value)
     {

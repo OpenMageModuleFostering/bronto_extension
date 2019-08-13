@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
 {
@@ -50,7 +49,7 @@ class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
 
         /* @var $httpHelper Mage_Core_Helper_Http */
         $httpHelper = Mage::helper('core/http');
-        $ipAddress = $httpHelper->getRemoteAddr();
+        $ipAddress  = $httpHelper->getRemoteAddr();
 
         if (!in_array($ipAddress, $this->_allowedIps)) {
             if (!Mage::getSingleton('admin/session')->isLoggedIn()) {
@@ -83,19 +82,14 @@ class Bronto_Common_LogController extends Mage_Core_Controller_Front_Action
     }
 
     /**
-     * Short description for function
+     * @param      $filePath
+     * @param bool $returnBytes
      *
-     * Long description (if any) ...
-     *
-     * @param unknown $filePath    Parameter description (if any) ...
-     * @param boolean $returnBytes Parameter description (if any) ...
-     * @return mixed   Return description (if any) ...
-     * @access private
+     * @return bool|int
      */
     private function _readfileChunked($filePath, $returnBytes = true)
     {
-        $buffer = '';
-        $cnt = 0;
+        $cnt    = 0;
         $handle = @fopen($filePath, 'rb');
         if ($handle === false) {
             return false;

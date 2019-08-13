@@ -2,7 +2,11 @@
 <layout version="0.1.0">
     <default>
         <reference name="before_body_end">
-            <block type="bronto_order/bta" name="bronto.bta" as="bronto_bta"/>
+            <block type="bronto_order/bta" name="bronto.bta" as="bronto_bta">
+                <action method="setTemplate">
+                    <template>bronto/order/js.phtml</template>
+                </action>
+            </block>
         </reference>
     </default>
 </layout>

@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Newsletter
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.1.5
  */
 class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Run extends Mage_Adminhtml_Block_Widget_Button
 {
@@ -14,6 +13,7 @@ class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Run extends Mage_Adminhtml
     {
         $this->setLabel('Run Now');
         $this->setOnClick("setLocation('" . Mage::helper('bronto_newsletter')->getScopeUrl('*/newsletter/run') . "'); return false;");
+        $this->setClass('bronto-cron-run');
 
         // Check to see if this module meets requirements
         if (!Mage::helper('bronto_newsletter')->isModuleActive()) {

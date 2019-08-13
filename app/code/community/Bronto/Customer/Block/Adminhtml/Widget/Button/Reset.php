@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Customer
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.1.5
  */
 class Bronto_Customer_Block_Adminhtml_Widget_Button_Reset extends Mage_Adminhtml_Block_Widget_Button
 {
@@ -15,7 +14,7 @@ class Bronto_Customer_Block_Adminhtml_Widget_Button_Reset extends Mage_Adminhtml
         $this->setLabel('Reset All Customers');
 
         $this->setOnClick("deleteConfirm('This will mark all customers as not-imported and will cause the importer to re-process each customer again.\\n\\nAre you sure you want to do this?', '" . Mage::helper('bronto_customer')->getScopeUrl('*/customer/reset') . "'); return false;");
-        $this->setClass('delete');
+        $this->setClass('delete bronto-cron-reset');
 
         if (!Mage::helper('bronto_customer')->isModuleActive() || (!Mage::helper('bronto_customer')->isDebugEnabled() && !Mage::helper('bronto_customer')->isTestModeEnabled())) {
             $this->setDisabled(true)->setClass('disabled');

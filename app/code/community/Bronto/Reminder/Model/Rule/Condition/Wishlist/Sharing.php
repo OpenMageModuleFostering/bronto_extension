@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Wishlist_Sharing extends Bronto_Reminder_Model_Condition_Abstract
 {
@@ -22,7 +21,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Sharing extends Bronto_Remin
     public function getNewChildSelectOptions()
     {
         return array('value' => $this->getType(),
-            'label' => Mage::helper('bronto_reminder')->__('Sharing'));
+                     'label' => Mage::helper('bronto_reminder')->__('Sharing'));
     }
 
     /**
@@ -59,14 +58,16 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Sharing extends Bronto_Remin
             '1' => Mage::helper('bronto_reminder')->__('is'),
             '0' => Mage::helper('bronto_reminder')->__('is not'),
         ));
+
         return $this;
     }
 
     /**
      * Get SQL select
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)

@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Model_Condition_Combine_Abstract
 {
@@ -42,6 +41,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
     public function loadValueOptions()
     {
         $this->setValueOption(array());
+
         return $this;
     }
 
@@ -54,9 +54,10 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
     {
         $this->setOperatorOption(array(
             '==' => Mage::helper('rule')->__('for'),
-//            '>'  => Mage::helper('rule')->__('for greater than'),
-//            '>=' => Mage::helper('rule')->__('for or greater than')
+            //            '>'  => Mage::helper('rule')->__('for greater than'),
+            //            '>=' => Mage::helper('rule')->__('for or greater than')
         ));
+
         return $this;
     }
 
@@ -79,7 +80,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
     {
         return $this->getTypeElementHtml()
         . Mage::helper('bronto_reminder')->__('Wishlist is not empty and abandoned for %s day(s) and %s of these conditions match:',
-//                $this->getOperatorElementHtml(),
+            //                $this->getOperatorElementHtml(),
             $this->getValueElementHtml(),
             $this->getAggregatorElement()->getHtml())
         . $this->getRemoveLinkHtml();
@@ -90,6 +91,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
      *
      * @param $rule
      * @param $website
+     *
      * @return Varien_Db_Select
      */
     protected function _prepareConditionsSql($rule, $website)
@@ -101,7 +103,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
         // Convert to minutes
         $conditionValue *= 1440;
 
-        $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
+        $wishlistTable     = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
 
         $select = $this->getResource()->createSelect();
@@ -127,14 +129,15 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist extends Bronto_Reminder_Mode
      *
      * @param $rule
      * @param $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
     {
-        $select = $this->_prepareConditionsSql($rule, $website);
-        $required = $this->_getRequiredValidation();
+        $select     = $this->_prepareConditionsSql($rule, $website);
+        $required   = $this->_getRequiredValidation();
         $aggregator = ($this->getAggregator() == 'all') ? ' AND ' : ' OR ';
-        $operator = $required ? '=' : '<>';
+        $operator   = $required ? '=' : '<>';
         $conditions = array();
 
         foreach ($this->getConditions() as $condition) {

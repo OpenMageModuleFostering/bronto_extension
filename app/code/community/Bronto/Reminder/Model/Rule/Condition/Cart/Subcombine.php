@@ -1,16 +1,13 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Cart_Subcombine extends Bronto_Reminder_Model_Condition_Combine_Abstract
 {
     /**
-     * Intialize model
-     *
-     * @return void
+     * Initialize model
      */
     public function __construct()
     {

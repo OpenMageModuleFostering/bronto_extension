@@ -4,7 +4,7 @@
  */
 
 $installer = $this;
-/* @var $installer Mage_Core_Model_Mysql4_Setup */
+/* @var $installer Mage_Core_Model_Resource_Setup|Mage_Core_Model_Mysql4_Setup */
 
 $installer->startSetup();
 
@@ -23,7 +23,8 @@ try {
             `created_at` timestamp NULL DEFAULT NULL COMMENT 'Created At',
             `updated_at` timestamp NULL DEFAULT NULL COMMENT 'Updated At',
             `bronto_suppressed` varchar(255) DEFAULT NULL,
-            PRIMARY KEY (`queue_id`,`order_id`,`store_id`,`quote_id`),
+            PRIMARY KEY (`order_id`,`store_id`,`quote_id`),
+            KEY `IDX_BRONTO_ORDER_QUEUE_QUEUE_ID` (`queue_id`),
             KEY `IDX_BRONTO_ORDER_QUEUE_STORE_ID` (`store_id`),
             KEY `IDX_BRONTO_ORDER_QUEUE_QUOTE_ID` (`quote_id`),
             KEY `IDX_BRONTO_ORDER_QUEUE_BRONTO_IMPORTED` (`bronto_imported`),

@@ -162,11 +162,11 @@
     margin: 3px 4px 1px;
     width: 16px;
     height: 16px;
-    background: url(../../../default/default/images/i_question-mark.png) 0 0 no-repeat;
+    background: url(../../../default/default/images/fam_help.gif) 0 0 no-repeat;
     text-decoration: none !important;
     text-indent: -999em;
     overflow: hidden;
-    z-index: 9999999;
+    z-index: 10;
 }
 
 .bronto-floater {

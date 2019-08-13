@@ -2,7 +2,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.6
  */
 class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 {
@@ -13,8 +12,11 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 
     /**
      * Load Template to import into Bronto
-     * @param int $templateId
-     * @param string|int $storeId
+     *
+     * @param int   $templateId
+     * @param mixed $storeId
+     *
+     * @return string
      * @throws Exception
      */
     public function importTemplate($templateId, $storeId = false)
@@ -31,8 +33,11 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 
     /**
      * Import template into Bronto
+     *
      * @param Bronto_Email_Model_Template $template
-     * @return type
+     * @param bool                        $storeId
+     *
+     * @return bool
      */
     protected function processMessage(Bronto_Email_Model_Template $template, $storeId = false)
     {
@@ -49,12 +54,12 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
         }
 
         // If module is not enabled for this store, don't proceed
-        if (!Mage::helper('bronto_email')->isEnabled($store->getId())) {
+        if (!Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
             return false;
         }
 
         // Get Token
-        $token = Mage::helper('bronto_common')->getApiToken($store->getId());
+        $token = Mage::helper('bronto_common')->getApiToken('store', $store->getId());
         if ($token) {
             $this->_apiObject = new Bronto_Api_Message(array(
                 'api' => new Bronto_Api($token)
@@ -70,6 +75,7 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
             ));
         } catch (Exception $e) {
             Mage::log('Bronto Failed creating apiObject:' . $e->getMessage());
+
             return false;
         }
 
@@ -112,23 +118,25 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 
                 if ($message->hasError()) {
                     Mage::throwException($message->getErrorCode() . ' ' . $message->getErrorMessage());
+
                     return false;
                 }
             } catch (Exception $e) {
                 Mage::throwException("Failed Importing Template `{$data['template_code']}` : [Bronto] " . $e->getMessage());
+
                 return false;
             }
 
             // Create Bronto Template Entry
             $brontoTemplate = Mage::getModel('bronto_email/message')
-                  ->load($template->getId())
-                  ->setCoreTemplateId($template->getId())
-                  ->setOrigTemplateText($templateText)
-                  ->setBrontoMessageId($message->id)
-                  ->setBrontoMessageName($message->name)
-                  ->setBrontoMessageApproved(1)
-                  ->setStoreId($store->getId())
-                  ->save();
+                ->load($template->getId())
+                ->setCoreTemplateId($template->getId())
+                ->setOrigTemplateText($templateText)
+                ->setBrontoMessageId($message->id)
+                ->setBrontoMessageName($message->name)
+                ->setBrontoMessageApproved(1)
+                ->setStoreId($store->getId())
+                ->save();
 
             // Clean Up
             unset($brontoTemplate);
@@ -162,8 +170,8 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 
     /**
      * Load Existing templates into Bronto Email Template table
-     * @param Bronto_Email_Model_Template $messageModel
-     * @return boolean
+     *
+     * @return bool
      */
     protected function _processExisting()
     {
@@ -182,11 +190,11 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
                 // If message does not already exist, then proceed
                 if (!$template->getBrontoMessageId() || is_null($template->getBrontoMessageId())) {
                     $template->setTemplateSendType('magento')
-                    ->setOrigTemplateText($customTemplate->getTemplateText())
-                    ->setBrontoMessageId(null)
-                    ->setBrontoMessageName(null)
-                    ->setBrontoMessageApproved(0)
-                    ->save();
+                        ->setOrigTemplateText($customTemplate->getTemplateText())
+                        ->setBrontoMessageId(null)
+                        ->setBrontoMessageName(null)
+                        ->setBrontoMessageApproved(0)
+                        ->save();
                 }
 
                 // Clean up
@@ -201,9 +209,10 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 
     /**
      * Load Default templates into Bronto Email Template table
-     * @param Bronto_Email_Model_Template $messageModel
+     *
      * @param array $allStores
-     * @return boolean
+     *
+     * @return bool
      */
     protected function _processDefaults(array $allStores)
     {
@@ -243,7 +252,7 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
                     // Build Bronto Template
                     /** @var $brontoTemplate Bronto_Email_Model_Message */
                     $brontoTemplate = Mage::getModel('bronto_email/message')
-                          ->load($templateId);
+                        ->load($templateId);
 
                     // If we didn't get a template match, set the Id
                     if (is_null($brontoTemplate->getId())) {
@@ -253,12 +262,12 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
                     // If message does not already exist, then proceed
                     if (!$brontoTemplate->getBrontoMessageId() || is_null($brontoTemplate->getBrontoMessageId())) {
                         $brontoTemplate->setTemplateSendType('magento')
-                          ->setOrigTemplateText($templateText)
-                          ->setBrontoMessageId(null)
-                          ->setBrontoMessageName(null)
-                          ->setBrontoMessageApproved(0)
-                          ->setStoreId($_storeId)
-                          ->save();
+                            ->setOrigTemplateText($templateText)
+                            ->setBrontoMessageId(null)
+                            ->setBrontoMessageName(null)
+                            ->setBrontoMessageApproved(0)
+                            ->setStoreId($_storeId)
+                            ->save();
                     }
 
                     // Clean up
@@ -276,7 +285,9 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
 
     /**
      * Remove HTML and multiple spaces
+     *
      * @param string $string
+     *
      * @return string
      */
     protected function ripTags($string)
@@ -284,6 +295,7 @@ class Bronto_Email_Model_Template_Import extends Bronto_Email_Model_Template
         $string = preg_replace('/<[^>]*>/', ' ', $string);
         // ----- remove multiple spaces -----
         $string = trim(preg_replace('/ {2,}/', ' ', $string));
+
         return $string;
     }
 

@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Form extends Mage_Adminhtml_Block_Widget_Form
 {
@@ -19,6 +18,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit_Form extends Mage_Adminhtml_
         $form = new Varien_Data_Form(array('id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post'));
         $form->setUseContainer(true);
         $this->setForm($form);
+
         return parent::_prepareForm();
     }
 }

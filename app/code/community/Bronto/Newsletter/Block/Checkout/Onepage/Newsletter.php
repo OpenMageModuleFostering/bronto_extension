@@ -3,10 +3,13 @@
 /**
  * @package   Newsletter
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.3.5
  */
 class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_Block_Onepage_Abstract
 {
+    private $_mode = 'loggedin';
+    private $_show = true;
+    private $_checked = false;
+
     /**
      * @return bool
      */
@@ -52,7 +55,16 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
      */
     public function isEnabledForLoggedinCheckout()
     {
-        // TODO: This can be replaced when fourth case is added
+        return Mage::helper('bronto_newsletter')->isEnabledForLoggedinCheckout();
+    }
+
+    /**
+     * This allows checkbox field to pre-load
+     *
+     * @return boolean
+     */
+    public function isEnabledForLoadingCheckout()
+    {
         return true;
     }
 
@@ -65,53 +77,128 @@ class Bronto_Newsletter_Block_Checkout_Onepage_Newsletter extends Mage_Checkout_
     }
 
     /**
+     * Get Url for Ajax call
+     *
+     * @return string
+     */
+    public function getRequestUrl()
+    {
+        return Mage::getSingleton('core/url')->getUrl('btnewsletter/index/checkbox', array('_secure' => true));
+    }
+
+    /**
+     * Get Url for Updating Subscription Status
+     *
+     * @return string
+     */
+    public function getSubscribeUrl()
+    {
+        return Mage::getSingleton('core/url')->getUrl('btnewsletter/index/subscribe', array('_secure' => true));
+    }
+
+    /**
+     * Set checkout mode
+     *
+     * @param string $mode 'guest', 'register', 'loggedin'
+     *
+     * @return Bronto_Newsletter_Block_Checkout_Onepage_Newsletter
+     */
+    public function setMode($mode)
+    {
+        if ($this->isCustomerLoggedIn()) {
+            $mode = 'loggedin';
+        } elseif (!in_array($mode, array('loggedin', 'guest', 'register'))) {
+            $mode = 'loading';
+        }
+
+        $this->_mode = $mode;
+
+        return $this;
+    }
+
+    /**
+     * Get value of Checked parameter
+     *
+     * @param bool $asInt
+     *
+     * @return bool|int
+     */
+    public function getChecked($asInt = false)
+    {
+        if ($asInt) {
+            return ($this->_checked) ? 1 : 0;
+        }
+
+        return $this->_checked;
+    }
+
+    /**
+     * Get Checkbox Checked status
+     *
+     * @return string
+     */
+    public function getCheckboxChecked()
+    {
+        return ($this->_checked) ? ' checked="checked"' : '';
+    }
+
+    /**
+     * Get Checkbox visibility
+     *
+     * @return string
+     */
+    public function getCheckboxShow()
+    {
+        return ($this->_show) ? '' : ' style="display:none;"';
+    }
+
+    /**
+     * Get Checkbox Checked value
+     *
+     * @return string
+     */
+    public function getCheckboxValue()
+    {
+        return ($this->_checked) ? '1' : '0';
+    }
+
+    /**
+     * Get the text to display for the checkbox label
+     *
      * @return bool
      */
     public function getCheckboxLabelText()
     {
-        return addslashes(Mage::helper('bronto_newsletter')->getCheckboxLabelText());
+        return Mage::helper('bronto_newsletter')->getCheckboxLabelText();
     }
 
     /**
-     *
-     * @param string $method
-     * @return string
+     * Calculate checkbox display settings
      */
-    public function getJsCheckedCode($method)
+    protected function _setCheckboxStatus()
     {
-        $js = "";
-        $methodName = 'isEnabledFor' . ucfirst($method) . 'Checkout';
+        // If customer subscribed, or checked by default is enabled, set checked
+        if ($this->isSubscribed() || $this->isEnabledCheckedByDefault()) {
+            $this->_checked = true;
 
-        // Default Values
-        $action = 'hide';
-        $checked = 'false';
-        $value = 'null';
-
-        // If function exists, use it, otherwise we hide and disable values
-        if (method_exists($this, $methodName)) {
-            if ($this->$methodName()) {
-                $action = 'show';
-                if ($this->isSubscribed() || $this->isEnabledCheckedByDefault()) {
-                    $checked = 'true';
-                    $value = '1';
-                }
-            }
+            // Set Initial subscription status to active
+            Mage::getSingleton('checkout/session')
+                ->setIsSubscribed(Bronto_Api_Contact::STATUS_ACTIVE);
+        } else {
+            // Set Initial subscription status to transactional
+            Mage::getSingleton('checkout/session')
+                ->setIsSubscribed(Bronto_Api_Contact::STATUS_TRANSACTIONAL);
         }
 
-        // If user is subscribed and enabled if already subscribed is not allowed,
-        // Hide it, but set the values to true
+        // If module enabled and checkbox enabled for checkout method, show it
+        $methodName = 'isEnabledFor' . ucfirst($this->_mode) . 'Checkout';
+        if (!$this->isEnabled() || (!method_exists($this, $methodName) || !$this->$methodName())) {
+            $this->_show = false;
+        }
+
+        // If customer subscribed, but checkbox not enabled if subscribed, hide
         if ($this->isSubscribed() && !$this->isEnabledIfAlreadySubscribed()) {
-            $action = 'hide';
-            $checked = 'true';
-            $value = '1';
+            $this->_show = false;
         }
-
-        // Create JS
-        $js .= "Element.{$action}('register-customer-newsletter');\r\n";
-        $js .= "$('billing:is_subscribed_box').checked    = {$checked};\r\n";
-        $js .= "$('billing:is_subscribed').value          = {$value};\r\n";
-        $js .= "$('billing:is_subscribed').value          = {$value};\r\n";
-
-        return $js;
     }
 }

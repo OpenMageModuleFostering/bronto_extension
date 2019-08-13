@@ -2,7 +2,7 @@
 <config>
     <sections>
         <bronto_news module="bronto_news">
-            <label><![CDATA[Announcements &amp; News]]></label>
+            <label><![CDATA[<div id="bronto_news_icon_block">Announcements &amp; News</div>]]></label>
             <tab>bronto</tab>
             <frontend_type>text</frontend_type>
             <frontend_model>bronto_news/adminhtml_system_config_form</frontend_model>

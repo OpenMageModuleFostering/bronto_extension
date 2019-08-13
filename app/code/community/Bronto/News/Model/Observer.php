@@ -12,11 +12,13 @@ class Bronto_News_Model_Observer
      * Sets the helper to be used with this observer
      *
      * @param Mage_Core_Helper_Abstract $helper
+     *
      * @return Bronto_News_Model_Observer
      */
     public function setHelper(Mage_Core_Helper_Abstract $helper)
     {
         $this->_helper = $helper;
+
         return $this;
     }
 

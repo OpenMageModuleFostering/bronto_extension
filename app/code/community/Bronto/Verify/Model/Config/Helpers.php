@@ -8,13 +8,13 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Config_Helpers
     extends Bronto_Verify_Model_Config_ConfigAbstract
 {
     /**
      * Type of rewrite
+     *
      * @var string
      * @access protected
      */
@@ -24,7 +24,7 @@ class Bronto_Verify_Model_Config_Helpers
      * Check helper section for rewrites
      *
      * @param Bronto_Verify_Model_Core_Config_Element $config   Config node
-     * @param array $rewrites Existing rewrites
+     * @param array                                   $rewrites Existing rewrites
      *
      * @return array rewrites
      * @access public

@@ -1,54 +1,68 @@
-<?php
-/**
- * @var $this Bronto_Newsletter_Block_Checkout_Onepage_Newsletter
- */
-?>
+<?php /* @var $this Bronto_Newsletter_Block_Checkout_Onepage_Newsletter */ ?>
 
 <?php if ($this->isEnabled()): ?>
-
-<script>
-function prepareNewsletterField() {
-    Element.show('register-customer-newsletter');
-    
-    if (checkout.method == 'register') {
-        <?php echo $this->getJsCheckedCode('register'); ?>
-    } else if (checkout.method == 'guest') {
-        <?php echo $this->getJsCheckedCode('guest'); ?>
+<script type="text/javascript">
+//<![CDATA[
+// Observe Page and fetch checkbox code
+Event.observe(window, 'load', function() {    
+    // Check if we are on One-Step-Checkout
+    if($('billing_address') != undefined) {
+        var billingFieldset = $$('#billing_address ul');
     } else {
-        <?php echo $this->getJsCheckedCode('loggedin'); ?>
+        var billingFieldset = $$('#co-billing-form fieldset ul.form-list');
     }
-}
+    
+    // Build checkbox container
+    var newRow = document.createElement('li').writeAttribute('id', 'billing-newsletter-signup');
+    billingFieldset[0].insert(newRow);
 
-function setSubscribedValue(checkbox)
+    // If Register/Guest button is clicked, Load Checkbox Code
+    if ($('onepage-guest-register-button') != null) {
+        Event.observe('onepage-guest-register-button', 'click', function() {
+            getCheckbox();
+        });
+    }
+
+    // Load Checkbox Code
+    getCheckbox();
+
+    // Observe Email change
+    if ($('billing:email')) {
+        $('billing:email').observe('change', function() {
+            setSubscribedValue();
+        });
+    }
+});
+
+function setSubscribedValue()
 {
-    var checked  = checkbox.checked ? 1 : 0;
-    var original = $('billing:is_subscribed_original').value;
+    var checked  = $('billing:is_subscribed_box').checked ? 1 : 0;
+    var email    = $('billing:email');
+    var starting = <?php $this->_setCheckboxStatus(); echo $this->getChecked(true) ?>;
+    $('billing:is_subscribed').value = checked;
     
-    if (checked != original) {
-        $('billing:is_subscribed').value = checked;
-    } else {
-        $('billing:is_subscribed').value = original;
-    }
+    // Update Subscribed Status
+    new Ajax.Request('<?php echo $this->getSubscribeUrl() ?>', {
+        method: 'post',
+        parameters: {starting: starting, checked: checked, email: email ? email.value : ''},
+        onSuccess: function(response) {
+            console.log(response.responseText);
+        }
+    });
     
     return false;
 }
 
-Event.observe(window, 'load', function() {
-    if ($('onepage-guest-register-button') != null) {
-        Event.observe('onepage-guest-register-button', 'click', function() {
-            prepareNewsletterField();
-        });
-    }
-    $$('#co-billing-form fieldset')[0].insert('<span id="register-customer-newsletter" style="display:none;"></span>')
-    $$('#co-billing-form fieldset #register-customer-newsletter')[0].insert('<style>.col1-layout .billing_is_subscribed_box { margin-left: 240px !important; } .col1-layout #billing_subscribed_label { text-align: left; }</style>');
-    $$('#co-billing-form fieldset #register-customer-newsletter')[0].insert(
-        '<input id="billing:is_subscribed_original" type="hidden" name="billing[is_subscribed_original]" value="1" />' +
-        '<input id="billing:is_subscribed" type="hidden" name="billing[is_subscribed]" value="1" />' +
-        '<input id="billing:is_subscribed_box" class="billing_is_subscribed_box" type="checkbox" onchange="setSubscribedValue(this); return false;" checked="checked" title="<?php echo $this->__($this->getCheckboxLabelText()) ?>" style="float:left; width: auto; margin: 2px 8px 0 0;" />' +
-        '<label id="billing_subscribed_label" for="billing[is_subscribed]"><?php echo $this->__($this->getCheckboxLabelText()) ?></label>'
-    );
-    prepareNewsletterField();
-});
+function getCheckbox() {
+    new Ajax.Request('<?php echo $this->getRequestUrl() ?>', {
+        method: 'post',
+        parameters: {checkoutMode: checkout.method},
+        onSuccess: function(response) {
+            console.log(response.responseText);
+            $('billing-newsletter-signup').update(response.responseText);
+        }
+    });
+}
+//]]>
 </script>
-
-<?php endif ?>
+<?php endif; ?>

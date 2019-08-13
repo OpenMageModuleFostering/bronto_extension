@@ -1,16 +1,19 @@
 <?php
 
-class Bronto_Common_Adminhtml_DebugController extends Mage_Adminhtml_Controller_Action {
+class Bronto_Common_Adminhtml_DebugController extends Mage_Adminhtml_Controller_Action
+{
 
     protected $_helper;
 
     /**
      * @return Mage_Core_Helper_Data
      */
-    protected function _getHelper() {
+    protected function _getHelper()
+    {
         if (is_null($this->_helper)) {
             $this->_helper = Mage::helper('bronto_common/support');
         }
+
         return $this->_helper;
     }
 
@@ -18,17 +21,21 @@ class Bronto_Common_Adminhtml_DebugController extends Mage_Adminhtml_Controller_
      * Sets this helper
      *
      * @param Mage_Core_Helper_Data $helper
+     *
      * @return Bronto_Common_Adminhtml_DebugController
      */
-    public function setHelper(Mage_Core_Helper_Data $helper) {
+    public function setHelper(Mage_Core_Helper_Data $helper)
+    {
         $this->_helper = $helper;
+
         return $this;
     }
 
     /**
      * Retrieves the system information in JSON via ajax request
      */
-    public function collectAction() {
+    public function collectAction()
+    {
         $debug = $this->_getHelper()->getDebugInformation();
 
         // Magento 1.4, 1.5, and 1.9 chokes on the json encoding array values
@@ -48,8 +55,9 @@ class Bronto_Common_Adminhtml_DebugController extends Mage_Adminhtml_Controller_
     /**
      * Sends an archive to the browser
      */
-    public function archiveAction() {
-        $zip = basename($this->_getHelper()->getLogArchive()->getFilename());
+    public function archiveAction()
+    {
+        $zip  = basename($this->_getHelper()->getLogArchive()->getFilename());
         $json = Mage::helper('core')->jsonEncode(array(
             'name' => $zip,
             'link' => $this->getUrl('*/*/download', array('file' => $zip)),
@@ -64,12 +72,14 @@ class Bronto_Common_Adminhtml_DebugController extends Mage_Adminhtml_Controller_
     /**
      * Sends the zip to the browser
      */
-    public function downloadAction() {
-        $file = $this->getRequest()->getParam('file');
+    public function downloadAction()
+    {
+        $file           = $this->getRequest()->getParam('file');
         $baseArchiveDir = $this->_getHelper()->getArchiveDirectory();
 
         if (!file_exists($baseArchiveDir . DS . $file)) {
             Mage::getSingleton('adminhtml/session')->addError("Archive '$file' does not exist.");
+
             return $this->_redirect('*/system_config/edit', array('section' => 'bronto'));
         } else {
             $this

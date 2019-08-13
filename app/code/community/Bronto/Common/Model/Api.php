@@ -2,7 +2,7 @@
 
 /**
  * @category Bronto
- * @package Common
+ * @package  Common
  */
 class Bronto_Common_Model_Api extends Bronto_Api
 {
@@ -18,7 +18,7 @@ class Bronto_Common_Model_Api extends Bronto_Api
 
     /**
      * @param string $token
-     * @param bool $debug
+     * @param bool   $debug
      *
      * @return Bronto_Common_Model_Api
      * @access public
@@ -27,12 +27,11 @@ class Bronto_Common_Model_Api extends Bronto_Api
     {
         $token = trim($token);
 
+        $options = Mage::helper('bronto_common')->getSoapOptions();
+
         if (!isset(self::$_instances[$token])) {
             Mage::helper('bronto_common')->writeDebug("Initiating API for token: {$token}");
-            self::$_instances[$token] = new self($token, array(
-                'retry_limit' => 2,
-                'debug' => $debug,
-            ));
+            self::$_instances[$token] = new self($token, $options);
         }
 
         return self::$_instances[$token];
@@ -43,8 +42,8 @@ class Bronto_Common_Model_Api extends Bronto_Api
 
     /**
      * @param string|Exception $exception
-     * @param string $message
-     * @param string $code
+     * @param string           $message
+     * @param string           $code
      *
      * @return void
      * @access public

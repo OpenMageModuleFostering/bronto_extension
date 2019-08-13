@@ -1,14 +1,17 @@
 <?php
 
-class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Debug extends Mage_Adminhtml_Block_System_Config_Form_Field {
+class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Debug extends Mage_Adminhtml_Block_System_Config_Form_Field
+{
 
     /**
      * Generate the button and surround html
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
-    protected function _getButtonHtml(Varien_Data_Form_Element_Abstract $element) {
+    protected function _getButtonHtml(Varien_Data_Form_Element_Abstract $element)
+    {
         $script = '
             <p class="note" style="margin-top: 3px; width:550px"><strong>Disclaimer:</strong> Only share with Bronto Support through an actual Bronto support case and not on any public forums.</p>
             <span id="debug-loadingmask" style="display:none; width: 100px;">
@@ -33,6 +36,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Debug extends Mage_
         ';
 
         $button = $this->getLayout()->createBlock('bronto_common/adminhtml_widget_button_debug');
+
         return $button->toHtml() . $script;
     }
 
@@ -40,9 +44,11 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Debug extends Mage_
      * Empty the element html
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
-    protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element) {
+    protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
+    {
         return '';
     }
 
@@ -50,11 +56,14 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Debug extends Mage_
      * Remove the "scope" value
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
-    public function render(Varien_Data_Form_Element_Abstract $element) {
+    public function render(Varien_Data_Form_Element_Abstract $element)
+    {
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
         $element->setLabel($this->_getButtonHtml($element));
+
         return parent::render($element);
     }
 }

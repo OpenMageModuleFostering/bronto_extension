@@ -13,6 +13,11 @@ class Bronto_Customer_Model_System_Config_Backend_Brontofield extends Mage_Core_
      */
     protected function _beforeSave()
     {
+        //if ($this->isValueChanged()) {
+        if ($this->field == 'reward_points' || $this->field == 'store_credit') {
+            Mage::throwException($this->getValue());
+        }
+
         /* @var $fieldObject Bronto_Api_Field */
         $fieldObject = Mage::getModel('bronto_common/system_config_source_field')->getFieldObjectById($this->getValue());
 
@@ -22,6 +27,7 @@ class Bronto_Customer_Model_System_Config_Backend_Brontofield extends Mage_Core_
             } elseif ('address_attributes' == $this->group_id) {
                 $attributes = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
             }
+
 
             if ($attributes) {
                 foreach ($attributes as $attribute) {
@@ -39,13 +45,16 @@ class Bronto_Customer_Model_System_Config_Backend_Brontofield extends Mage_Core_
             }
         }
 
+        //}
+
         return parent::_beforeSave();
     }
 
     /**
-     * @param type $path
-     * @param type $value
-     * @return Bronto_Customer_Model_System_Config_Backend_Brontofield
+     * @param $path
+     * @param $value
+     *
+     * @return $this
      */
     protected function _saveConfigData($path, $value)
     {

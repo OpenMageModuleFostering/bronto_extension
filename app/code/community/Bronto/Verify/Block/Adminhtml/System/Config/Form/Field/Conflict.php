@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Conflict extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
@@ -17,6 +16,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Conflict extends Ma
      * Get element ID of the dependent field's parent row
      *
      * @param object $element
+     *
      * @return String
      */
     protected function _getRowElementId($element)
@@ -28,6 +28,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Conflict extends Ma
      * Override method to output our custom HTML with JavaScript
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return String
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
@@ -66,7 +67,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Conflict extends Ma
         ";
 
 
-        $button = $this->getLayout()
+        $button     = $this->getLayout()
             ->createBlock('bronto_verify/adminhtml_widget_button_conflict')
             ->toHtml();
         $buttonHtml = "<p class=\"form-buttons\" id=\"verify-button\" style=\"float:none;\">{$button}</p>";
@@ -79,6 +80,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Conflict extends Ma
         // Show everything Else
         if (!empty($_html)) {
             $elementHtml = implode('', $_html);
+
             return $elementHtml;
         }
 

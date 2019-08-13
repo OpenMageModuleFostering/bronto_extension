@@ -7,7 +7,7 @@ class Bronto_News_Block_Adminhtml_Redirect
 
     protected function _toHtml()
     {
-        $html .= "You are about to be redirected off site to:<br /><br />";
+        $html = "You are about to be redirected off site to:<br /><br />";
         $html .= "<a href=\"{$this->_url}\">{$this->_url}</a>";
 
         return $html;
@@ -16,6 +16,7 @@ class Bronto_News_Block_Adminhtml_Redirect
     public function setRedirectUrl($url)
     {
         $this->_url = $url;
+
         return $this;
     }
 

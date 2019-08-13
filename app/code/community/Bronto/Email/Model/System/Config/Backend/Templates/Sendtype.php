@@ -20,9 +20,12 @@ class Bronto_Email_Model_System_Config_Backend_Templates_Sendtype extends Mage_C
     }
 
     /**
-     * @param type $path
-     * @param type $value
-     * @return Bronto_Email_Model_System_Config_Backend_Templates_Field
+     * Save Configuration Data
+     *
+     * @param $path
+     * @param $value
+     *
+     * @return $this
      */
     protected function _saveConfigData($path, $value)
     {

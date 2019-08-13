@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Validator_Group
     extends Bronto_Verify_Model_Validator_ValidatorAbstract
@@ -27,7 +26,7 @@ class Bronto_Verify_Model_Validator_Group
      * Checks to see if file group setting matches expected
      *
      * @param SplFileInfo $file     File to check
-     * @param array $badFiles current array of bad files to report
+     * @param array       $badFiles current array of bad files to report
      *
      * @return array
      * @access public
@@ -39,14 +38,15 @@ class Bronto_Verify_Model_Validator_Group
             if (filter_var($this->_targetGroup, FILTER_VALIDATE_INT)) {
                 $actualGroup = $file->getGroup();
             } else {
-                $group = posix_getgrgid($file->getGroup());
+                $group       = posix_getgrgid($file->getGroup());
                 $actualGroup = $group['name'];
             }
             if ($actualGroup != $this->_targetGroup) {
-                $path = substr_replace($file->__toString(), '', 0, strlen(Mage::getBaseDir()) + 1);
+                $path                     = substr_replace($file->__toString(), '', 0, strlen(Mage::getBaseDir()) + 1);
                 $badFiles[$path]['group'] = $actualGroup;
             }
         }
+
         return parent::validateSetting($file, $badFiles);
     }
 }

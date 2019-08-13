@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Cart_Amount extends Bronto_Reminder_Model_Condition_Abstract
 {
     /**
      * Description for protected
+     *
      * @var string
      */
     protected $_inputType = 'numeric';
@@ -28,7 +28,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Amount extends Bronto_Reminder_M
     public function getNewChildSelectOptions()
     {
         return array('value' => $this->getType(),
-            'label' => Mage::helper('bronto_reminder')->__('Total Amount'));
+                     'label' => Mage::helper('bronto_reminder')->__('Total Amount'));
     }
 
     /**
@@ -39,9 +39,10 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Amount extends Bronto_Reminder_M
     public function loadAttributeOptions()
     {
         $this->setAttributeOption(array(
-            'subtotal' => Mage::helper('bronto_reminder')->__('subtotal'),
+            'subtotal'    => Mage::helper('bronto_reminder')->__('subtotal'),
             'grand_total' => Mage::helper('bronto_reminder')->__('grand total')
         ));
+
         return $this;
     }
 
@@ -61,13 +62,14 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Amount extends Bronto_Reminder_M
     /**
      * Build condition limitations sql string for specific website
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
     {
-        $table = $this->getResource()->getTable('sales/quote');
+        $table    = $this->getResource()->getTable('sales/quote');
         $operator = $this->getResource()->getSqlOperator($this->getOperator());
 
         $select = $this->getResource()->createSelect();
@@ -89,6 +91,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Amount extends Bronto_Reminder_M
         $select->where("{$field} {$operator} ?", $this->getValue());
         $select->where('quote.entity_id = root.quote_id');
         $select->limit(1);
+
         return $select;
     }
 }

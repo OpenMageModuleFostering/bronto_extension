@@ -16,26 +16,29 @@ class Bronto_News_Adminhtml_AnnouncementController extends Mage_Adminhtml_Contro
         if (is_null($this->_helper)) {
             $this->setHelper(Mage::helper('bronto_news'));
         }
+
         return $this->_helper;
     }
 
     /**
      * @param Mage_Core_Helper_Abstract $helper
-     * @return Bronto_News_Adminhtml_RefreshController
+     *
+     * @return $this
      */
     public function setHelper(Mage_Core_Helper_Abstract $helper)
     {
         $this->_helper = $helper;
+
         return $this;
     }
 
     /**
-     * Refresh Feeds and send back to resquestUri
+     * Refresh Feeds and send back to requestUri
      * Example: admin/announcement/refresh
      */
     public function refreshAction()
     {
-        $helper = $this->_getHelper();
+        $helper  = $this->_getHelper();
         $session = Mage::getSingleton('adminhtml/session');
 
         try {

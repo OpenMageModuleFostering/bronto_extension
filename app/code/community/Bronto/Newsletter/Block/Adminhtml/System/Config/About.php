@@ -3,13 +3,13 @@
 /**
  * @package   Newsletter
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.3.5
  */
 class Bronto_Newsletter_Block_Adminhtml_System_Config_About extends Bronto_Common_Block_Adminhtml_System_Config_About
 {
 
     /**
      * Description for protected
+     *
      * @var string
      * @access protected
      */
@@ -17,6 +17,7 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_About extends Bronto_Commo
 
     /**
      * Description for protected
+     *
      * @var string
      * @access protected
      */

@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @var Mage_Adminhtml_System_Email_TemplateController
- */
 require_once 'Mage/Adminhtml/controllers/System/Email/TemplateController.php';
 
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.4
  */
 class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminhtml_System_Email_TemplateController
 {
@@ -18,6 +14,7 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
     /**
      * Main Grid view for Transactional Email Templates
      * Overwritten to show Bronto Templates
+     *
      * @return null
      */
     public function indexAction()
@@ -31,7 +28,8 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
 
         if ($this->getRequest()->getQuery('ajax')) {
             $this->_forward('brontoGrid');
-            return;
+
+            return false;
         }
 
         $this->loadLayout();
@@ -40,10 +38,13 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
 
         $this->_addContent($this->getLayout()->createBlock('bronto_email/adminhtml_system_email_template', 'template'));
         $this->renderLayout();
+
+        return $this;
     }
 
     /**
      * Main Grid view for Importing Transactional Email Templates into Bronto
+     *
      * @return null
      */
     public function importAction()
@@ -53,6 +54,7 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
 
         if ($this->getRequest()->getQuery('ajax')) {
             $this->_forward('grid');
+
             return;
         }
 
@@ -66,7 +68,8 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
 
     /**
      * Override Ajax grid for import to show custom grid for Magento Templates
-     * @return type
+     *
+     * @return $this|void
      */
     public function gridAction()
     {
@@ -75,11 +78,14 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
         }
 
         $this->getResponse()->setBody($this->getLayout()->createBlock('bronto_email/adminhtml_system_email_import_grid')->toHtml());
+
+        return $this;
     }
 
     /**
      * Override Ajax grid for index to show Bronto Templates
-     * @return type
+     *
+     * @return $this|void
      */
     public function brontoGridAction()
     {
@@ -88,6 +94,8 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
         }
 
         $this->getResponse()->setBody($this->getLayout()->createBlock('bronto_email/adminhtml_system_email_template_grid')->toHtml());
+
+        return $this;
     }
 
     /**
@@ -96,9 +104,9 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
     public function ajaxlistAction()
     {
         $template = $this->_initTemplate();
-        $request = $this->getRequest();
-        $filter = array();
-        $storeId = $request->getParam('id', null);
+        $request  = $this->getRequest();
+        $filter   = array();
+        $storeId  = $request->getParam('id', null);
         $sendType = $request->getParam('type', false);
         if ('transactional' == $sendType) {
             $filter = array('transactional_approval' => 'accepted');
@@ -166,7 +174,8 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
 
     /**
      * Override Save Action for Bronto Templates
-     * @return type
+     *
+     * @return $this|void
      */
     public function brontoSaveAction()
     {
@@ -181,62 +190,72 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
         if (!$template->getId() && $id) {
             Mage::getSingleton('adminhtml/session')->addError(Mage::helper('adminhtml')->__('This Email template no longer exists.'));
             $this->_redirect('*/*/');
-            return;
+
+            return $this;
         }
 
         try {
+            // Get Send Type
+            $sendType = $request->getParam('template_send_type');
+
+            // Get Store ID
+            $storeId = (Mage::app()->isSingleStoreMode()) ? Mage::app()->getDefaultStoreView()->getId() : $request->getParam('store_id');
+
+            // Core Template Details
+            $templateText    = ($sendType == 'magento') ? $request->getParam('template_text') : $request->getParam('template_text_hidden');
+            $templateSubject = ($sendType == 'magento') ? $request->getParam('template_subject') : $request->getParam('template_subject_hidden');
+            $templateStyles  = ($sendType == 'magento') ? $request->getParam('template_styles') : $request->getParam('template_styles_hidden');
+
             // Add Template Settings
             $template->setTemplateCode($request->getParam('template_code'))
                 ->setModifiedAt(Mage::getSingleton('core/date')->gmtDate())
-                ->setTemplateText($request->getParam('template_text'))
-                ->setTemplateSubject($request->getParam('template_subject'))
-                ->setTemplateStyles($request->getParam('template_styles'))
+                ->setTemplateText($templateText)
+                ->setTemplateSubject($templateSubject)
+                ->setTemplateStyles($templateStyles)
                 ->setOrigTemplateCode($request->getParam('orig_template_code'))
                 ->setOrigTemplateVariables($request->getParam('orig_template_variables'));
-
-            // Get Bronto Template and Add Template Settings
-            $brontoTemplate = Mage::getModel('bronto_email/message')
-                ->setTemplateSendType($request->getParam('template_send_type'))
-                ->setStoreId($request->getParam('store_id'));
 
             // Handle Template Type Settings
             if (!$template->getId()) {
                 $template->setTemplateType(Mage_Core_Model_Email_Template::TYPE_HTML);
             }
-
             if ($request->getParam('_change_type_flag')) {
                 $template->setTemplateType(Mage_Core_Model_Email_Template::TYPE_TEXT);
                 $template->setTemplateStyles('');
             }
 
-            // Add appropriate values based on send type
-            switch ($request->getParam('template_send_type')) {
-                case 'magento':
-                    $brontoTemplate
-                        ->setBrontoMessageId($request->getParam('bronto_message_id_hidden'))
-                        ->setOrigTemplateText($request->getParam('template_text'))
-                        ->setBrontoMessageName($this->_getMessageName($request->getParam('bronto_message_id_hidden')));
-                    break;
-
-                default:
-                    $template->setTemplateText($request->getParam('template_text_hidden'))
-                        ->setTemplateSubject($request->getParam('template_subject_hidden'))
-                        ->setTemplateStyles($request->getParam('template_styles_hidden'));
-
-                    if ('_new_' == $request->getParam('bronto_message_id')) {
-                        $template->save();
-
-                        $importModel = Mage::getModel('bronto_email/template_import');
-                        $importModel->importTemplate($template->getId(), $request->getParam('store_id'));
-                    } else {
-                        $brontoTemplate->setBrontoMessageId($request->getParam('bronto_message_id'))
-                            ->setBrontoMessageName($this->_getMessageName($request->getParam('bronto_message_id')))
-                            ->setOrigTemplateText($request->getParam('orig_template_text', null));
-                    }
-
-                    break;
+            // Bronto Template Details
+            $brontoMessageId   = ($sendType == 'magento') ? $request->getParam('bronto_message_id_hidden') : $request->getParam('bronto_message_id');
+            $brontoMessageName = $this->_getMessageName($brontoMessageId);
+            $origTemplateText  = ($sendType == 'magento') ? $request->getParam('template_text') : $request->getParam('orig_template_text', null);
+            // If Original Template Text value is empty, pull from the hidden field that should have a value
+            if ('' == $origTemplateText || is_null($origTemplateText)) {
+                $origTemplateText = $request->getParam('template_text_hidden');
             }
 
+            // If Bronto Message ID == '_new_' the importTemplate function will create the message
+            //  in Bronto and add the details to the template entry
+            if ('_new_' == $brontoMessageId && 'magento' != $sendType) {
+                $template->save();
+
+                $importModel = Mage::getModel('bronto_email/template_import');
+                $importModel->importTemplate($template->getId(), $storeId);
+                $brontoTemplate = Mage::getModel('bronto_email/message')
+                    ->load($template->getId());
+            } else {
+                // Get Bronto Template and Add Template Settings
+                $brontoTemplate = Mage::getModel('bronto_email/message')
+                    ->setStoreId($storeId)
+                    ->setBrontoMessageId($brontoMessageId)
+                    ->setBrontoMessageName($brontoMessageName)
+                    ->setOrigTemplateText($origTemplateText);
+            }
+
+            $brontoTemplate
+                ->setTemplateSendType($sendType)
+                ->setSalesRule($request->getParam('sales_rule', null));
+
+            // If Template doesn't exist or added_at is not set, set it
             if (!$template->getId() || !$template->getAddedAt()) {
                 $template->setAddedAt(Mage::getSingleton('core/date')->gmtDate());
             }
@@ -245,8 +264,10 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
             $template->save();
 
             // Set Bronto Template ID to match newly saved Template and then save
-            $brontoTemplate->setId($template->getId());
-            $brontoTemplate->save();
+            if ($brontoTemplate) {
+                $brontoTemplate->setId($template->getId());
+                $brontoTemplate->save();
+            }
 
             Mage::getSingleton('adminhtml/session')->setFormData(false);
             Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('adminhtml')->__('The email template has been saved.'));
@@ -256,12 +277,16 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
             Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
             $this->_forward('brontoNew');
         }
+
+        return $this;
     }
 
     /**
      * Get Message Name from Message ID
-     * @param type $messageId
-     * @return type
+     *
+     * @param string|int $messageId
+     *
+     * @return string
      */
     private function _getMessageName($messageId)
     {
@@ -271,10 +296,14 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
                 return $message['label'];
             }
         }
+
+        return false;
     }
 
     /**
      * Edit Default Templates
+     *
+     * @return $this
      */
     public function importEditAction()
     {
@@ -294,10 +323,12 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
         $this->_addContent($this->getLayout()->createBlock('bronto_email/adminhtml_system_email_import_edit', 'template_edit')
             ->setEditMode((bool)$this->getRequest()->getParam('id')));
         $this->renderLayout();
+
+        return $this;
     }
 
     /**
-     * Edit transactioanl email action
+     * Edit transactional email action
      */
     public function brontoEditAction()
     {
@@ -336,7 +367,7 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
             return parent::defaultTemplateAction();
         }
 
-        $template = $this->_initTemplate('id');
+        $template     = $this->_initTemplate('id');
         $templateCode = $this->getRequest()->getParam('code');
 
         $template->loadDefault($templateCode, $this->getRequest()->getParam('locale'));
@@ -347,6 +378,8 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
         $template->setData('orig_template_used_default_for', $templateBlock->getUsedDefaultForPaths(false));
 
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($template->getData()));
+
+        return $this;
     }
 
     /**
@@ -392,7 +425,7 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
     {
         $templateIds = $this->getRequest()->getParam('template_id', array());
         $deleteLevel = $this->getRequest()->getParam('delete_level', 'message');
-        $deleted = 0;
+        $deleted     = 0;
 
         // If single ID, set as array
         if (is_numeric($templateIds)) {
@@ -430,8 +463,8 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
     public function updateSendTypeAction()
     {
         $templateIds = $this->getRequest()->getParam('template_id', array());
-        $sendType = $this->getRequest()->getParam('send_type', 'marketing');
-        $updated = 0;
+        $sendType    = $this->getRequest()->getParam('send_type', 'marketing');
+        $updated     = 0;
 
         // If single ID, set as array
         if (is_numeric($templateIds)) {
@@ -444,11 +477,11 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
                 $template = Mage::getModel('bronto_email/message')->load($templateId);
 
                 // TODO: When approval status is available from api, implement this check
-//                if ('transactional' == $sendType && 0 === $template->getBrontoMessageApproved()) {
-//                    Mage::helper('bronto_email')->writeError(
-//                        Mage::helper('bronto_email')->__($template->getTemplateCode() . ' has not been approved for transactional sending')
-//                    );
-//                }
+                //                if ('transactional' == $sendType && 0 === $template->getBrontoMessageApproved()) {
+                //                    Mage::helper('bronto_email')->writeError(
+                //                        Mage::helper('bronto_email')->__($template->getTemplateCode() . ' has not been approved for transactional sending')
+                //                    );
+                //                }
 
                 if ($template->getId()) {
                     try {
@@ -500,13 +533,14 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
      * Load email template from request
      *
      * @param string $idFieldName
+     *
      * @return Mage_Adminhtml_Model_Email_Template $model
      */
     protected function _initTemplate($idFieldName = 'template_id')
     {
         $this->_title($this->__('System'))->_title($this->__('Transactional Emails'));
 
-        $id = (int)$this->getRequest()->getParam($idFieldName);
+        $id    = (int)$this->getRequest()->getParam($idFieldName);
         $model = Mage::getModel('bronto_email/template');
 
         if ($id) {
@@ -519,12 +553,7 @@ class Bronto_Email_Adminhtml_System_Email_TemplateController extends Mage_Adminh
         if (!Mage::registry('current_email_template')) {
             Mage::register('current_email_template', $model);
         }
+
         return $model;
     }
-
-    protected function _isAllowed()
-    {
-        return Mage::getSingleton('admin/session')->isAllowed('bronto_email/email_template');
-    }
-
 }

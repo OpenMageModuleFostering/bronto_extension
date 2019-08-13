@@ -3,14 +3,14 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
 {
     /**
      * @param string $email
      * @param string $customSource
-     * @param int $store
+     * @param int    $store
+     *
      * @return Bronto_Api_Contact_Row
      */
     public function getContactByEmail($email, $customSource = null, $store = null)
@@ -20,11 +20,11 @@ class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
         }
 
         /* @var $contactObject Bronto_Api_Contact */
-        $api = $this->getApi(null, $store);
+        $api           = $this->getApi(null, 'store', $store);
         $contactObject = $api->getContactObject();
 
         // Load Contact
-        $contact = $contactObject->createRow(array('email' => $email));
+        $contact        = $contactObject->createRow(array('email' => $email));
         $contact->email = $email;
         try {
             $contact = $contact->read();
@@ -42,7 +42,8 @@ class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
 
     /**
      * @param Bronto_Api_Contact_Row $contact
-     * @param bool $persistOnly
+     * @param bool                   $persistOnly
+     *
      * @return Bronto_Api_Contact_Row
      */
     public function saveContact(Bronto_Api_Contact_Row $contact, $persistOnly = false)
@@ -57,6 +58,7 @@ class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
                 } else {
                     // User doesn't exist and isn't @bronto
                     $this->writeInfo('TEST MODE: Not updating Contact with email: ' . $contact->email);
+
                     return $contact;
                 }
             }

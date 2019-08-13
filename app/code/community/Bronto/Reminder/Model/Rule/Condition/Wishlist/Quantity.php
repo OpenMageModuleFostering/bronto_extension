@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Wishlist_Quantity extends Bronto_Reminder_Model_Condition_Abstract
 {
@@ -27,7 +26,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Quantity extends Bronto_Remi
     public function getNewChildSelectOptions()
     {
         return array('value' => $this->getType(),
-            'label' => Mage::helper('bronto_reminder')->__('Number of Items'));
+                     'label' => Mage::helper('bronto_reminder')->__('Number of Items'));
     }
 
     /**
@@ -46,16 +45,17 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Quantity extends Bronto_Remi
     /**
      * Get SQL select
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
     {
-        $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
+        $wishlistTable     = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
-        $operator = $this->getResource()->getSqlOperator($this->getOperator());
-        $result = "IF (COUNT(*) {$operator} {$this->getValue()}, 1, 0)";
+        $operator          = $this->getResource()->getSqlOperator($this->getOperator());
+        $result            = "IF (COUNT(*) {$operator} {$this->getValue()}, 1, 0)";
 
         $select = $this->getResource()->createSelect();
         $select->from(array('item' => $wishlistItemTable), array(new Zend_Db_Expr($result)));
@@ -68,6 +68,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Quantity extends Bronto_Remi
 
         $this->_limitByStoreWebsite($select, $website, 'item.store_id');
         $select->where($this->_createCustomerFilter('list.customer_id'));
+
         return $select;
     }
 }

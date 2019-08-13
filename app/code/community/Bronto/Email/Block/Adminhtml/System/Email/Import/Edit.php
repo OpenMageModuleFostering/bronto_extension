@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Import_Edit
     extends Mage_Adminhtml_Block_System_Email_Template_Edit
@@ -16,9 +15,9 @@ class Bronto_Email_Block_Adminhtml_System_Email_Import_Edit
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(
                     array(
-                        'label' => Mage::helper('adminhtml')->__('Back'),
+                        'label'   => Mage::helper('adminhtml')->__('Back'),
                         'onclick' => "window.location.href = '" . $this->getUrl('*/*/import') . "'",
-                        'class' => 'back'
+                        'class'   => 'back'
                     )
                 )
         );

@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Contact_Builder
 {
@@ -25,6 +24,7 @@ class Bronto_Verify_Model_Contact_Builder
      * Instantiate Class and define API Object
      *
      * @param Bronto_Common_Model_Api $api
+     *
      * @access public
      */
     public function __construct(Bronto_Common_Model_Api $api)
@@ -41,8 +41,8 @@ class Bronto_Verify_Model_Contact_Builder
     protected function _buildContact()
     {
         /* @var $contactObject Bronto_Api_Contact */
-        $contactObject = $this->_api->getContactObject();
-        $contact = $contactObject->createRow();
+        $contactObject  = $this->_api->getContactObject();
+        $contact        = $contactObject->createRow(array());
         $contact->email = self::EMAIL;
 
         // Get Contact Info
@@ -56,8 +56,8 @@ class Bronto_Verify_Model_Contact_Builder
         if ($contact->id) {
             $contact->delete($contact->id);
 
-            $contactObject = $this->_api->getContactObject();
-            $contact = $contactObject->createRow();
+            $contactObject  = $this->_api->getContactObject();
+            $contact        = $contactObject->createRow(array());
             $contact->email = self::EMAIL;
         }
 
@@ -80,10 +80,12 @@ class Bronto_Verify_Model_Contact_Builder
         // Try to save with new info
         if (!Mage::helper('bronto_common/contact')->saveContact($contact)) {
             $helper->writeDebug('could not save contact');
+
             return false;
         }
 
         $helper->writeDebug('Added Contact');
+
         return $contact;
     }
 

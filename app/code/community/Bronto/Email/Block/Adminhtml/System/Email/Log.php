@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Log extends Mage_Adminhtml_Block_Widget_Grid_Container
 {
@@ -24,15 +23,15 @@ class Bronto_Email_Block_Adminhtml_System_Email_Log extends Mage_Adminhtml_Block
 
     public function __construct()
     {
-        $this->_headerText = Mage::helper('bronto_email')->__('Bronto Delivery Log');
+        $this->_headerText = Mage::helper('bronto_email')->__('Bronto Transactional Email Delivery Log');
 
         parent::__construct();
 
         $this->_addBackButton();
         $this->_addButton('clear', array(
-            'label' => $this->getClearButtonLabel(),
+            'label'   => $this->getClearButtonLabel(),
             'onclick' => 'setLocation(\'' . $this->getClearUrl() . '\')',
-            'class' => 'delete'
+            'class'   => 'delete'
         ));
 
         $this->_removeButton('add');

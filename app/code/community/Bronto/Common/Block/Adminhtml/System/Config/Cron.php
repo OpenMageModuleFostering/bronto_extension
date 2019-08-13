@@ -3,24 +3,26 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Block_System_Config_Form_Fieldset
 {
     /**
      * Job code
+     *
      * @var string
      */
     protected $_jobCode;
 
     /**
      * Button widgets
+     *
      * @var array
      */
     protected $_buttons = array();
 
     /**
      * Progress bar
+     *
      * @var boolean
      */
     protected $_hasProgressBar = false;
@@ -49,6 +51,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
      * Render the block
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     public function render(Varien_Data_Form_Element_Abstract $element)
@@ -75,6 +78,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
      * Note: Limits to 100 characters
      *
      * @param Mage_Cron_Model_Schedule $job
+     *
      * @return string
      */
     public function getTruncatedJobMessages($job)
@@ -97,7 +101,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
         }
 
         if (!empty($html)) {
-            $html = "<p class=\"form-buttons\">{$html}</p>";
+            $html = "<p class=\"form-buttons bronto-cron\">{$html}</p>";
         }
 
         return $html;
@@ -105,12 +109,12 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
 
     protected function _getProgressComplete($total, $getCount = false, $getBar = true, $getLegend = false)
     {
-        $html = '';
-        $percent = 0;
-        $pending = (int)$this->getProgressBarPending();
-        $disabled = $this->_getProgressDisabled($total, true);
+        $html       = '';
+        $percent    = 0;
+        $pending    = (int)$this->getProgressBarPending();
+        $disabled   = $this->_getProgressDisabled($total, true);
         $suppressed = $this->_getProgressSuppressed($total, true);
-        $pending = $pending - $disabled;
+        $pending    = $pending - $disabled;
 
         $count = $total - ($pending + $suppressed + $disabled);
 
@@ -142,9 +146,9 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
 
     protected function _getProgressSuppressed($total, $getCount = false, $getBar = true, $getLegend = false)
     {
-        $html = '';
+        $html    = '';
         $percent = 0;
-        $count = (int)$this->getProgressBarSuppressed();
+        $count   = (int)$this->getProgressBarSuppressed();
 
         if ($getCount) {
             return $count;
@@ -168,14 +172,15 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
             $html .= "<div class=\"bronto-progress-bar-legend-details\">Suppressed: {$percent}% ({$count}/{$total})</div>";
             $html .= '</div>';
         }
+
         return $html;
     }
 
     protected function _getProgressDisabled($total, $getCount = false, $getBar = true, $getLegend = false)
     {
-        $html = '';
+        $html    = '';
         $percent = 0;
-        $count = (int)$this->getProgressBarDisabled();
+        $count   = (int)$this->getProgressBarDisabled();
 
         if ($getCount) {
             return $count;
@@ -242,6 +247,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
      * Color code the job status
      *
      * @param string $status
+     *
      * @return string
      */
     public function decorateJobStatus($status)
@@ -272,11 +278,13 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
      * Add button widget
      *
      * @param Mage_Adminhtml_Block_Widget_Button $button
+     *
      * @return Bronto_Common_Block_Adminhtml_System_Config_Cron
      */
     public function addButton(Mage_Adminhtml_Block_Widget_Button $button)
     {
         $this->_buttons[] = $button;
+
         return $this;
     }
 
@@ -294,11 +302,13 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
      * Set if we're using a progress bar
      *
      * @param bool $hasProgressBar
+     *
      * @return Bronto_Common_Block_Adminhtml_System_Config_Cron
      */
     public function setHasProgressBar($hasProgressBar)
     {
         $this->_hasProgressBar = $hasProgressBar;
+
         return $this;
     }
 
@@ -342,5 +352,15 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
     protected function getProgressBarDisabled()
     {
         return 0;
+    }
+
+    /**
+     * Determine if should show the cron table
+     *
+     * @return mixed
+     */
+    public function showCronTable()
+    {
+        return true;
     }
 }

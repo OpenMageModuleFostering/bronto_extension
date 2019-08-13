@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bronto_Common>
-            <version>2.1.0</version>
+            <version>2.2.0</version>
         </Bronto_Common>
     </modules>
     <global>
@@ -34,6 +34,13 @@
         </resources>
     </global>
     <frontend>
+        <layout>
+            <updates>
+                <bronto_common>
+                    <file>bronto/common.xml</file>
+                </bronto_common>
+            </updates>
+        </layout>
         <routers>
             <bronto_common>
                 <use>standard</use>
@@ -56,14 +63,22 @@
         </routers>
     </admin>
     <adminhtml>
-    	<layout>
-	        <updates>
-	            <bronto_common>
-	                <file>bronto/common.xml</file>
-	            </bronto_common>
-	        </updates>
-    	</layout>
+        <layout>
+            <updates>
+                <bronto_common>
+                    <file>bronto/common.xml</file>
+                </bronto_common>
+            </updates>
+        </layout>
         <events>
+            <bronto_disable>
+                <observers>
+                    <bronto_common_disable>
+                        <class>bronto_common/observer</class>
+                        <method>watchDisableAction</method>
+                    </bronto_common_disable>
+                </observers>
+            </bronto_disable>
             <controller_action_predispatch>
                 <observers>
                     <bronto_common_controller_action_predispatch>
@@ -86,14 +101,19 @@
         <jobs>
             <bronto_common_delete_archives>
                 <!-- Run once a day -->
-                <schedule><cron_expr>0 0 * * *</cron_expr></schedule>
-                <run><model>bronto_common/observer::clearArchives</model></run>
+                <schedule>
+                    <cron_expr>0 0 * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>bronto_common/observer::clearArchives</model>
+                </run>
             </bronto_common_delete_archives>
         </jobs>
     </crontab>
     <default>
         <bronto>
             <settings>
+                <enabled>1</enabled>
                 <debug>1</debug>
                 <verbose>0</verbose>
                 <test>0</test>
@@ -103,6 +123,10 @@
                 <image_type>small_image</image_type>
                 <image_width>88</image_width>
                 <image_height>77</image_height>
+                <default_greeting>Valued Customer</default_greeting>
+                <default_greeting_prefix></default_greeting_prefix>
+                <default_greeting_firstname></default_greeting_firstname>
+                <default_greeting_lastname></default_greeting_lastname>
             </format>
             <support>
                 <registered>0</registered>

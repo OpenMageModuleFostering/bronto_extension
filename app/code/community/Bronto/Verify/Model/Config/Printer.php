@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Config_Printer
 {
@@ -16,7 +15,8 @@ class Bronto_Verify_Model_Config_Printer
      * Rewrite printer
      *
      * @param Bronto_Verify_Model_Config_Datastore $datastore Datastore to print from
-     * @param string $title     Title to print
+     * @param string                               $title     Title to print
+     *
      * @return string
      * @access public
      */

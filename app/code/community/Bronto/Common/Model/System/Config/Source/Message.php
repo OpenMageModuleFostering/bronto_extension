@@ -12,6 +12,10 @@ class Bronto_Common_Model_System_Config_Source_Message
     protected $_options = array();
 
     /**
+     * Get Messages as Array of Labels and Values for Select Fields
+     *
+     * @param null $token
+     *
      * @return array
      */
     public function toOptionArray($token = null)

@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Helper_Contact extends Bronto_Common_Helper_Contact
 {
@@ -18,7 +17,12 @@ class Bronto_Email_Helper_Contact extends Bronto_Common_Helper_Contact
     }
 
     /**
+     * Load Contact Object by Email Address
+     *
      * @param string $email
+     * @param string $customSource
+     * @param null   $store
+     *
      * @return Bronto_Api_Contact_Row
      */
     public function getContactByEmail($email, $customSource = 'bronto_email', $store = null)

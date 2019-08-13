@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rule_Model_Condition_Combine
 {
@@ -17,16 +16,18 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
         if (null === $this->_defaultOperatorInputByType) {
             parent::getDefaultOperatorInputByType();
             $this->_defaultOperatorInputByType['numeric'] = array('==', '!=', '>=', '>', '<=', '<');
-            $this->_defaultOperatorInputByType['string'] = array('==', '!=', '{}', '!{}');
+            $this->_defaultOperatorInputByType['string']  = array('==', '!=', '{}', '!{}');
         }
+
         return $this->_defaultOperatorInputByType;
     }
 
     /**
      * Add operator when loading array
      *
-     * @param array $arr
+     * @param array  $arr
      * @param string $key
+     *
      * @return Bronto_Reminder_Model_Rule_Condition_Combine
      */
     public function loadArray($arr, $key = 'conditions')
@@ -56,6 +57,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
      * Get filter by customer condition for rule matching sql
      *
      * @param string $fieldName
+     *
      * @return string
      */
     protected function _createCustomerFilter($fieldName)
@@ -68,14 +70,16 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
      *
      * @param $rule
      * @param $website
+     *
      * @return Varien_Db_Select
      */
     protected function _prepareConditionsSql($rule, $website)
     {
         $select = $this->getResource()->createSelect();
-        $table = $this->getResource()->getTable('customer/entity');
+        $table  = $this->getResource()->getTable('customer/entity');
         $select->from($table, array(new Zend_Db_Expr(1)));
         $select->where($this->_createCustomerFilter('entity_id'));
+
         return $select;
     }
 
@@ -94,6 +98,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
      *
      * @param $rule
      * @param $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
@@ -101,10 +106,10 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
         /**
          * Build base SQL
          */
-        $select = $this->_prepareConditionsSql($rule, $website);
-        $required = $this->_getRequiredValidation();
+        $select        = $this->_prepareConditionsSql($rule, $website);
+        $required      = $this->_getRequiredValidation();
         $whereFunction = ($this->getAggregator() == 'all') ? 'where' : 'orWhere';
-        $operator = $required ? '=' : '<>';
+        $operator      = $required ? '=' : '<>';
         //$operator       = '=';
 
         $gotConditions = false;
@@ -145,7 +150,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
     }
 
     /**
-     * Get infromation about subfilters map. Map contain children condition type and associated
+     * Get information about subfilters map. Map contain children condition type and associated
      * column name from itself select.
      * Example: array('my_subtype'=>'my_table.my_column')
      * In practice - date range can be as subfilter for different types of condition combines.
@@ -161,9 +166,10 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
     /**
      * Limit select by website with joining to store table
      *
-     * @param Zend_Db_Select $select
+     * @param Zend_Db_Select   $select
      * @param int|Zend_Db_Expr $website
-     * @param string $storeIdField
+     * @param string           $storeIdField
+     *
      * @return Bronto_Reminder_Model_Condition_Abstract
      */
     protected function _limitByStoreWebsite(Zend_Db_Select $select, $website, $storeIdField)
@@ -171,6 +177,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
         $storeTable = $this->getResource()->getTable('core/store');
         $select->join(array('store' => $storeTable), $storeIdField . '=store.store_id', array())
             ->where('store.website_id=?', $website);
+
         return $this;
     }
 
@@ -182,6 +189,7 @@ abstract class Bronto_Reminder_Model_Condition_Combine_Abstract extends Mage_Rul
         if (method_exists('Mage_Rule_Model_Condition_Combine', '_getRecursiveChildSelectOption')) {
             return parent::_getRecursiveChildSelectOption();
         }
+
         return array('value' => $this->getType(), 'label' => Mage::helper('rule')->__('Conditions Combination'));
     }
 }

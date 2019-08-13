@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Customer
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.0.2
  */
 class Bronto_Customer_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstract
 {
@@ -27,7 +26,8 @@ class Bronto_Customer_Model_Mysql4_Queue extends Mage_Core_Model_Mysql4_Abstract
 
     /**
      * Get Write adapter instance
-     * @return type
+     *
+     * @return Varien_Db_Adapter_Interface
      */
     public function getWriteAdapter()
     {

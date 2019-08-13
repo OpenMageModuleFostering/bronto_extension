@@ -3,14 +3,14 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Model_Observer
 {
-    const NOTICE_IDENTIFER = 'bronto_email';
+    const NOTICE_IDENTIFIER = 'bronto_email';
 
     /**
      * @param Varien_Event_Observer $observer
+     *
      * @return mixed
      */
     public function checkBrontoRequirements(Varien_Event_Observer $observer)
@@ -20,13 +20,14 @@ class Bronto_Email_Model_Observer
         }
 
         // Verify Requirements
-        if (!Mage::helper(self::NOTICE_IDENTIFER)->varifyRequirements(self::NOTICE_IDENTIFER, array('soap', 'openssl'))) {
+        if (!Mage::helper(self::NOTICE_IDENTIFIER)->varifyRequirements(self::NOTICE_IDENTIFIER, array('soap', 'openssl'))) {
             return;
         }
     }
 
     /**
      * Observes module becoming enabled and displays message warning user to configure settings
+     *
      * @param Varien_Event_Observer $observer
      */
     public function watchEnableAction(Varien_Event_Observer $observer)
@@ -37,12 +38,14 @@ class Bronto_Email_Model_Observer
     /**
      * Grab Config Data Object before save and handle the 'Create New...' value for
      * fields that were generated dynamically
+     *
      * @param Varien_Event_Observer $observer
+     *
      * @return Varien_Event_Observer
      */
     public function saveDynamicField(Varien_Event_Observer $observer)
     {
-        if (!Mage::helper(self::NOTICE_IDENTIFER)->isEnabled()) {
+        if (!Mage::helper(self::NOTICE_IDENTIFIER)->isEnabled()) {
             return $observer;
         }
 
@@ -71,9 +74,10 @@ class Bronto_Email_Model_Observer
 
     /**
      * Get Section, Group, and field from field path and save to "real" path
-     * @param type $website
-     * @param type $store
-     * @param type $groups
+     *
+     * @param $website
+     * @param $store
+     * @param $groups
      */
     protected function _handleAttributes($website, $store, $groups)
     {
@@ -99,10 +103,10 @@ class Bronto_Email_Model_Observer
             }
 
             $config->saveConfig(
-                $sectionName.'/'.$groupName.'/'.$fieldName,
+                $sectionName . '/' . $groupName . '/' . $fieldName,
                 $value,
                 $scope,
-                $scopeParams[$scopeParams['scope'].'_id']
+                $scopeParams[$scopeParams['scope'] . '_id']
             );
         }
     }

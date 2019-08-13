@@ -5,7 +5,7 @@ class Bronto_News_Model_Item extends Mage_Core_Model_Abstract
 
     const TYPE_GENERAL = 'general';
     const TYPE_RELEASE = 'releases';
-    const TYPE_OTHER = 'other';
+    const TYPE_OTHER   = 'other';
 
     /**
      * @var Mage_Core_Helper_Abstract
@@ -16,11 +16,13 @@ class Bronto_News_Model_Item extends Mage_Core_Model_Abstract
      * Sets the helper to be used with config data
      *
      * @param Mage_Core_Helper_Abstract $helper
+     *
      * @return Bronto_News_Model_Item
      */
     public function setHelper(Mage_Core_Helper_Abstract $helper)
     {
         $this->_helper = $helper;
+
         return $this;
     }
 
@@ -56,6 +58,7 @@ class Bronto_News_Model_Item extends Mage_Core_Model_Abstract
         if (!$this->getSilence()) {
             $this->_getHelper()->createAnnouncement($this);
         }
+
         return $this;
     }
 
@@ -103,6 +106,7 @@ class Bronto_News_Model_Item extends Mage_Core_Model_Abstract
      * Returns a collection of RSS items based on type
      *
      * @param string $type
+     *
      * @return Mage_Core_Model_Resource_Db_Collection_Abstract
      */
     public function getItemsOfType($type)

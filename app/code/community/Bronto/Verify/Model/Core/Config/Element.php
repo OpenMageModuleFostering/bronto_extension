@@ -1,14 +1,13 @@
 <?php
 
 /**
- * XML Configuation element
+ * XML Configuration element
  *
  * @category  Bronto
  * @package   Bronto_Verify
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Core_Config_Element
     extends Bronto_Verify_Model_Lib_Varien_Simplexml_Element
@@ -16,7 +15,7 @@ class Bronto_Verify_Model_Core_Config_Element
     /**
      * Is element enabled
      *
-     * @param string $var
+     * @param string  $var
      * @param boolean $value
      *
      * @return boolean
@@ -53,6 +52,7 @@ class Bronto_Verify_Model_Core_Config_Element
         } else {
             return false;
         }
+
         return Mage::getConfig()->getModelClassName($model);
     }
 }

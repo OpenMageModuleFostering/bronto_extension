@@ -19,6 +19,7 @@ class Bronto_News_Model_Resource_Setup extends Mage_Core_Model_Resource_Setup
             $helper->pullNewItems();
         } catch (Exception $e) {
             $helper->writeError('Failed to pull items on install.');
+
             return false;
         }
 
@@ -26,7 +27,7 @@ class Bronto_News_Model_Resource_Setup extends Mage_Core_Model_Resource_Setup
     }
 
     /**
-     * Load the inital config data for the module
+     * Load the initial config data for the module
      */
     public function loadInitialSettings()
     {

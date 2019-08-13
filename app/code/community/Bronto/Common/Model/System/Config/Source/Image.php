@@ -14,9 +14,9 @@ class Bronto_Common_Model_System_Config_Source_Image
         $this->_helper = Mage::helper('bronto_common');
 
         return array(
-            'image' => $this->_helper->__('Base Image'),
+            'image'       => $this->_helper->__('Base Image'),
             'small_image' => $this->_helper->__('Small Image'),
-            'thumbnail' => $this->_helper->__('Thumbnail'),
+            'thumbnail'   => $this->_helper->__('Thumbnail'),
         );
     }
 }

@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 abstract class Bronto_Verify_Model_Config_ConfigAbstract
     extends Mage_Core_Model_Abstract
@@ -16,10 +15,11 @@ abstract class Bronto_Verify_Model_Config_ConfigAbstract
 {
     /**
      * Chain of Responsibility link
+     *
      * @var object
      * @access protected
      */
-    protected $_nextHandler = NULL;
+    protected $_nextHandler = null;
 
     /**
      * psuedo constructor
@@ -38,8 +38,10 @@ abstract class Bronto_Verify_Model_Config_ConfigAbstract
 
     /**
      * Check if there are more handlers and if so get the rewrites from them
+     *
      * @param Bronto_Verify_Model_Core_Config_Element $config   XML node
-     * @param array $rewrites existing rewrites
+     * @param array                                   $rewrites existing rewrites
+     *
      * @return array  rewrites
      * @access public
      */
@@ -59,7 +61,7 @@ abstract class Bronto_Verify_Model_Config_ConfigAbstract
      * Find if XML node has any rewrites and if so append them into list
      *
      * @param Bronto_Verify_Model_Core_Config_Element $config    XML Node
-     * @param array &$rewrites existing rewrites
+     * @param array                                   &$rewrites existing rewrites
      *
      * @return void
      * @access protected
@@ -70,18 +72,18 @@ abstract class Bronto_Verify_Model_Config_ConfigAbstract
     )
     {
         $reflect = new ReflectionObject($config);
-        $props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+        $props   = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
 
         foreach ($props as $prop) {
-            $module = $prop->getName();
+            $module  = $prop->getName();
             $reflect = new ReflectionObject($config->$module);
             if ($reflect->hasProperty('rewrite')) {
-                $rewrite = new ReflectionObject($config->$module->rewrite);
+                $rewrite    = new ReflectionObject($config->$module->rewrite);
                 $properties = $rewrite->getProperties(ReflectionProperty::IS_PUBLIC);
                 foreach ($properties as $property) {
                     $class = $property->name;
                     $rewrites[$this->_type][$module][$class][]
-                        = (string)$config->$module->rewrite->$class;
+                           = (string)$config->$module->rewrite->$class;
                 }
             }
         }

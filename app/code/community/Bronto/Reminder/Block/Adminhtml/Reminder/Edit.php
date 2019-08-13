@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block_Widget_Form_Container
 {
@@ -36,7 +35,7 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
             if ($rule->getId()) {
                 $confirm = Mage::helper('bronto_reminder')->__('Are you sure you want to match this rule now?');
                 $this->_addButton('match_now', array(
-                    'label' => Mage::helper('bronto_reminder')->__('Match Now'),
+                    'label'   => Mage::helper('bronto_reminder')->__('Match Now'),
                     'onclick' => "confirmSetLocation('{$confirm}', '{$this->getMatchUrl()}')"
                 ), -1);
                 if ($limit = Mage::helper('bronto_reminder')->getOneRunLimit()) {
@@ -57,8 +56,8 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
             }
 
             $this->_addButton('save_and_continue_edit', array(
-                'class' => 'save',
-                'label' => Mage::helper('bronto_reminder')->__('Save and Continue Edit'),
+                'class'   => 'save',
+                'label'   => Mage::helper('bronto_reminder')->__('Save and Continue Edit'),
                 'onclick' => 'editForm.submit($(\'edit_form\').action + \'back/edit/\')',
             ), 3);
         }
@@ -75,24 +74,26 @@ class Bronto_Reminder_Block_Adminhtml_Reminder_Edit extends Mage_Adminhtml_Block
     }
 
     /**
-     * Get url for immidiately run sending process
+     * Get url for immediately run sending process
      *
      * @return string
      */
     public function getRunUrl()
     {
         $rule = Mage::registry('current_reminder_rule');
+
         return $this->getUrl('*/*/run', array('id' => $rule->getRuleId()));
     }
 
     /**
-     * Get url for immidiately matching customers
+     * Get url for immediately matching customers
      *
      * @return string
      */
     public function getMatchUrl()
     {
         $rule = Mage::registry('current_reminder_rule');
+
         return $this->getUrl('*/*/match', array('id' => $rule->getRuleId()));
     }
 }

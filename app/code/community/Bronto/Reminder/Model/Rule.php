@@ -1,15 +1,17 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
- * @method      Bronto_Reminder_Model_Mysql4_Rule _getResource()
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
+ *
+ * @method Bronto_Reminder_Model_Mysql4_Rule _getResource()
  */
-class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
+class Bronto_Reminder_Model_Rule
+    extends Mage_Rule_Model_Rule
 {
     /**
      * Contains data defined per store view, will be used in Messages as variables
+     *
      * @var array
      */
     protected $_messageData = array();
@@ -29,7 +31,12 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
     {
         Mage_Core_Model_Abstract::_afterLoad();
 
-        if (Mage::helper('bronto_verify')->isVersionMatch(Mage::getVersionInfo(), 1, array(array('<=', 6), 9, 10, 11))) {
+        if (Mage::helper('bronto_verify')->isVersionMatch(
+            Mage::getVersionInfo(),
+            1,
+            array(array('<=', 6), 9, 10, 11)
+        )
+        ) {
             $conditionsArr = unserialize($this->getConditionsSerialized());
             if (!empty($conditionsArr) && is_array($conditionsArr)) {
                 $this->getConditions()->loadArray($conditionsArr);
@@ -39,8 +46,10 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         $messageData = $this->_getResource()->getMessageData($this->getId());
 
         foreach ($messageData as $data) {
-            $message = (empty($data['message_id'])) ? null : $data['message_id'];
-            $this->setData('store_message_' . $data['store_id'], $message);
+            $message  = (empty($data['message_id'])) ? null : $data['message_id'];
+            $sendType = (empty($data['send_type'])) ? 'transactional' : $data['send_type'];
+            $this->setData('store_message_' . $data['store_id'], $message)
+                ->setData('store_message_sendtype_' . $data['store_id'], $sendType);
         }
 
         return $this;
@@ -91,12 +100,15 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         if (!$this->hasData('website_ids')) {
             $this->setData('website_ids', $this->_getResource()->getWebsiteIds($this->getId()));
         }
+
         return $this->_getData('website_ids');
     }
 
     /**
      * Get array of Registered User abandons and then Guest abandons
+     *
      * @param int $limit
+     *
      * @return array
      */
     protected function _getRecipients($limit)
@@ -107,8 +119,10 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
 
     /**
      * Get customer object for recipient
-     * @param array $recipient
+     *
+     * @param array                  $recipient
      * @param Mage_Sales_Model_Quote $quote
+     *
      * @return boolean|Mage_Customer_Model_Customer
      */
     protected function _getRecipientCustomer(array $recipient, $quote)
@@ -118,7 +132,7 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
             $customer = Mage::getModel('customer/customer')->load($recipient['customer_id']);
         } elseif ($quote) {
             // Guest Abandon.  Create Customer on the fly
-            $storeId = $recipient['store_id'];
+            $storeId  = $recipient['store_id'];
             $customer = Mage::getModel('customer/customer')
                 ->setFirstName($quote->getCustomerFirstname())
                 ->setLastName($quote->getCustomerLastname())
@@ -139,19 +153,24 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
      * Send reminder emails
      *
      * @param bool $dontSend
+     *
      * @return Bronto_Reminder_Model_Rule
      */
     public function sendReminderEmails($dontSend = false)
     {
         // If we aren't matching and we aren't allow to send emails, say so
-        if (!$dontSend && !Mage::helper('bronto_reminder')->isAllowSendForAny() || !Mage::helper('bronto_reminder')->isEnabledForAny()) {
+        if (!$dontSend &&
+            !Mage::helper('bronto_reminder')->isAllowSendForAny() ||
+            !Mage::helper('bronto_reminder')->isEnabledForAny()
+        ) {
             Mage::helper('bronto_reminder')->writeInfo(Mage::helper('bronto_reminder')->getNotAllowedText());
+
             return $this;
         }
 
         /* @var $mail Bronto_Reminder_Model_Email_Message */
-        $mail = Mage::getModel('bronto_reminder/email_message');
-        $limit = Mage::helper('bronto_reminder')->getOneRunLimit();
+        $mail     = Mage::getModel('bronto_reminder/email_message');
+        $limit    = Mage::helper('bronto_reminder')->getOneRunLimit();
         $identity = Mage::helper('bronto_reminder')->getEmailIdentity();
 
         $this->_matchCustomers();
@@ -163,13 +182,13 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         // Get Array of Recipients
         $recipients = $this->_getRecipients($limit);
 
-        $total = 0;
+        $total   = 0;
         $success = 0;
-        $error = 0;
+        $error   = 0;
         foreach ($recipients as $recipient) {
             $total++;
 
-            $quote = false;
+            $quote    = false;
             $wishlist = false;
 
             // Load Store
@@ -223,12 +242,12 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
             }
 
             $templateVars = array(
-                'store' => $store,
-                'customer' => $customer,
-                'promotion_name' => $messageData['label'],
+                'store'                 => $store,
+                'customer'              => $customer,
+                'promotion_name'        => $messageData['label'],
                 'promotion_description' => $messageData['description'],
-                'coupon' => $coupon,
-                'rule' => $this,
+                'coupon'                => $coupon,
+                'rule'                  => $this,
             );
 
 
@@ -242,8 +261,12 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
             Mage::helper('bronto_reminder')->writeDebug('Sending message to: ' . $customer->getEmail());
 
             try {
-                $message = Mage::helper('bronto_reminder/message')->getMessageById($messageData['message_id'], $store->getId(), $store->getWebsiteId());
-                $mail->setTemplateSendType('transactional');
+                $message = Mage::helper('bronto_reminder/message')->getMessageById(
+                    $messageData['message_id'],
+                    $store->getId(),
+                    $store->getWebsiteId()
+                );
+                $mail->setTemplateSendType($messageData['send_type']);
                 $mail->sendTransactional(
                     $message,
                     $identity,
@@ -263,7 +286,10 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
                 $this->_getResource()
                     ->deactivateMatchedCustomer($recipient['unique_id'])
                     ->addNotificationLog(
-                        $recipient['rule_id'], $recipient['unique_id'], $mail->getLastDeliveryId(), $messageData['message_id']
+                        $recipient['rule_id'],
+                        $recipient['unique_id'],
+                        $mail->getLastDeliveryId(),
+                        $messageData['message_id']
                     );
 
                 $success++;
@@ -275,9 +301,9 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         }
 
         return array(
-            'total' => $total,
+            'total'   => $total,
             'success' => $success,
-            'error' => $error,
+            'error'   => $error,
         );
     }
 
@@ -288,9 +314,9 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
      */
     protected function _matchCustomers()
     {
-        $threshold = Mage::helper('bronto_reminder')->getSendFailureThreshold();
+        $threshold   = Mage::helper('bronto_reminder')->getSendFailureThreshold();
         $currentDate = Mage::getModel('core/date')->date('Y-m-d');
-        $rules = $this->getCollection()
+        $rules       = $this->getCollection()
             ->addDateFilter($currentDate)
             ->addIsActiveFilter(1);
 
@@ -299,14 +325,14 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         }
 
         foreach ($rules as $rule) {
-//            $this->_getResource()->deactivateMatchedCustomers($rule->getId());
+            //            $this->_getResource()->deactivateMatchedCustomers($rule->getId());
 
             if ($rule->getSalesruleId()) {
                 /* @var $salesRule Mage_SalesRule_Model_Rule */
-                $salesRule = Mage::getSingleton('salesrule/rule')->load($rule->getSalesruleId());
+                $salesRule  = Mage::getSingleton('salesrule/rule')->load($rule->getSalesruleId());
                 $websiteIds = array_intersect($rule->getWebsiteIds(), $salesRule->getWebsiteIds());
             } else {
-                $salesRule = null;
+                $salesRule  = null;
                 $websiteIds = $rule->getWebsiteIds();
             }
 
@@ -326,6 +352,7 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
      *
      * @param int $ruleId
      * @param int $storeId
+     *
      * @return array|false
      */
     public function getMessageData($ruleId, $storeId)
@@ -340,14 +367,16 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
                 return false;
             }
         }
+
         return $this->_messageData[$ruleId][$storeId];
     }
 
     /**
-     * @param int $ruleId
-     * @param int $storeId
-     * @param int $customerId
+     * @param int    $ruleId
+     * @param int    $storeId
+     * @param int    $customerId
      * @param string $messageId
+     *
      * @return boolean|array
      */
     public function getRuleLogItems($ruleId, $storeId, $customerId, $messageId = null)
@@ -355,16 +384,15 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         if ($data = $this->_getResource()->getRuleLogItemsData($ruleId, $storeId, $customerId, $messageId)) {
             return $data;
         }
+
         return false;
     }
 
     /**
      * Remove row from coupon table by column, value and store_id
      *
-     * @param type $column
-     * @param type $value
-     * @param type $storeId
-     * @return Bronto_Reminder_Model_Mysql4_Rule
+     * @param $column
+     * @param $value
      */
     public function removeFromReminders($column, $value)
     {

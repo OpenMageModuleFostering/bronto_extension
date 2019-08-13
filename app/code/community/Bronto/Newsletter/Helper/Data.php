@@ -3,29 +3,57 @@
 /**
  * @package   Newsletter
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.3.5
  */
 class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 {
-    const XML_PATH_ENABLED = 'bronto_newsletter/settings/enabled';
-    const XML_PATH_LIMIT = 'bronto_newsletter/settings/limit';
-    const XML_PATH_SYNC_LIMIT = 'bronto_newsletter/settings/sync_limit';
-    const XML_PATH_DEFAULT = 'bronto_newsletter/checkout/default_checked';
-    const XML_PATH_SHOW_GUEST = 'bronto_newsletter/checkout/show_to_guests';
-    const XML_PATH_SHOW_REGISTRAR = 'bronto_newsletter/checkout/show_to_registrars';
+    const XML_PATH_ENABLED         = 'bronto_newsletter/settings/enabled';
+    const XML_PATH_MAGE_CRON       = 'bronto_newsletter/settings/mage_cron';
+    const XML_PATH_LIMIT           = 'bronto_newsletter/settings/limit';
+    const XML_PATH_SYNC_LIMIT      = 'bronto_newsletter/settings/sync_limit';
+    const XML_PATH_DEFAULT         = 'bronto_newsletter/checkout/default_checked';
+    const XML_PATH_SHOW_LOGGEDIN   = 'bronto_newsletter/checkout/show_to_loggedin';
+    const XML_PATH_SHOW_GUEST      = 'bronto_newsletter/checkout/show_to_guests';
+    const XML_PATH_SHOW_REGISTRAR  = 'bronto_newsletter/checkout/show_to_registrars';
     const XML_PATH_SHOW_SUBSCRIBED = 'bronto_newsletter/checkout/show_if_subscribed';
-    const XML_PATH_LABEL_TEXT = 'bronto_newsletter/checkout/label_text';
-    const XML_PATH_USE_CUSTOM_TEMPLATE = 'bronto_newsletter/checkout/use_custom_template';
-    const XML_PATH_BILLING_TEMPLATE = 'bronto_newsletter/checkout/billing_template';
-    const XML_PATH_INSTALL_DATE = 'bronto_newsletter/settings/install_date';
-    const XML_PATH_UPGRADE_DATE = 'bronto_newsletter/settings/upgrade_date';
+    const XML_PATH_LABEL_TEXT      = 'bronto_newsletter/checkout/label_text';
+    const XML_PATH_INSTALL_DATE    = 'bronto_newsletter/settings/install_date';
+    const XML_PATH_UPGRADE_DATE    = 'bronto_newsletter/settings/upgrade_date';
+
+    const XML_PATH_CRON_STRING = 'crontab/jobs/bronto_newsletter_import/schedule/cron_expr';
+    const XML_PATH_CRON_MODEL  = 'crontab/jobs/bronto_newsletter_import/run/model';
 
     /**
+     * Module Human Readable Name
+     */
+    protected $_name = 'Bronto Newsletter Subscription';
+
+    /**
+     * Get Human Readable Name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->__($this->_name);
+    }
+
+    /**
+     * Check if module is enabled
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED);
+        // Check if valid token is present
+        if (!$this->validApiToken(null, $scope, $scopeId)) {
+            return false;
+        }
+
+        // Get Enabled Scope
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
 
     /*
@@ -35,7 +63,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
      */
     public function getModuleEnabledText()
     {
-        $message = parent::getModuleEnabledText();
+        $message   = parent::getModuleEnabledText();
         $scopeData = $this->getScopeParams();
         if ($scopeData['scope'] != 'default') {
             $message = $this->__(
@@ -44,16 +72,22 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
                 'group on this page and select the desired list(s).'
             );
         }
+
         return $message;
     }
 
     /**
-     * @param string $path
+     * Disable Specified Module
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     * @param bool   $deleteConfig
+     *
      * @return bool
      */
-    public function disableModule($scope = 'default', $scopeId = 0)
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
     {
-        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId);
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
     }
 
     /**
@@ -65,15 +99,42 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
     }
 
     /**
+     * Get import limit from config
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return int
      */
-    public function getLimit($storeId = null)
+    public function getLimit($scope = 'default', $scopeId = 0)
     {
-        if (!$this->isEnabled()) {
-            return false;
-        }
+        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT, $scope, $scopeId);
+    }
 
-        return (int)$this->getAdminScopedConfig(self::XML_PATH_LIMIT, $storeId);
+    /**
+     * Check if module can use the magento cron
+     *
+     * @return bool
+     */
+    public function canUseMageCron()
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_MAGE_CRON, 'default', 0);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronStringPath()
+    {
+        return self::XML_PATH_CRON_STRING;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronModelPath()
+    {
+        return self::XML_PATH_CRON_MODEL;
     }
 
     /**
@@ -82,6 +143,14 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
     public function isEnabledCheckedByDefault()
     {
         return (bool)$this->getAdminScopedConfig(self::XML_PATH_DEFAULT);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEnabledForLoggedinCheckout()
+    {
+        return (bool)Mage::getStoreConfig(self::XML_PATH_SHOW_LOGGEDIN);
     }
 
     /**
@@ -118,6 +187,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 
     /**
      * @param Mage_Customer_Model_Customer $customer
+     *
      * @return boolean
      */
     public function isCustomerSubscribed(Mage_Customer_Model_Customer $customer = null)
@@ -128,6 +198,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 
         /* @var $subscriber Mage_Newsletter_Model_Subscriber */
         $subscriber = Mage::getModel('newsletter/subscriber')->loadByCustomer($customer);
+
         return (bool)$subscriber->isSubscribed();
     }
 
@@ -143,6 +214,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 
     /**
      * Get Count of Subscribers not in queue
+     *
      * @return int
      */
     public function getMissingSubscribersCount()
@@ -153,6 +225,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
 
     /**
      * Get Subscribers which aren't in queue
+     *
      * @return array
      */
     public function getMissingSubscribers()

@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Order
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.1.5
+ * @package   Bronto\Order
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Order_Model_System_Config_Source_Description
 {
@@ -14,7 +13,7 @@ class Bronto_Order_Model_System_Config_Source_Description
     {
         return array(
             'short_description' => 'short_description',
-            'description' => 'description',
+            'description'       => 'description',
         );
     }
 }

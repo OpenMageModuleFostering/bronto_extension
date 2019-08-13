@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Newsletter
  * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.3.5
  */
 class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Block_Adminhtml_System_Config_Cron
 {
@@ -55,12 +54,13 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common
 
     /**
      * Get number of customers not imported from stores that don't have module enabled
+     *
      * @return int
      */
     protected function getProgressBarDisabled()
     {
         $collection = Mage::getModel('bronto_newsletter/queue')->getCollection();
-        $storeIds = Mage::helper('bronto_newsletter')->getStoreIds();
+        $storeIds   = Mage::helper('bronto_newsletter')->getStoreIds();
 
         if ($storeIds) {
             if (!is_array($storeIds)) {
@@ -79,6 +79,7 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common
                     ->getSize();
             }
         }
+
         return 0;
     }
 
@@ -88,12 +89,22 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common
     protected function getNewsletterResourceCollection()
     {
         $collection = Mage::getModel('bronto_newsletter/queue')->getCollection();
-        $storeIds = Mage::helper('bronto_newsletter')->getStoreIds();
+        $storeIds   = Mage::helper('bronto_newsletter')->getStoreIds();
 
         if ($storeIds) {
             $collection->addStoreFilter($storeIds);
         }
 
         return $collection;
+    }
+
+    /**
+     * Determine if should show the cron table
+     *
+     * @return mixed
+     */
+    public function showCronTable()
+    {
+        return Mage::helper('bronto_newsletter')->canUseMageCron();
     }
 }

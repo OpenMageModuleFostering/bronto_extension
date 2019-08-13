@@ -6,13 +6,12 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 -->
 <config>
     <sections>
         <bronto_verify translate="label" module="bronto_verify">
-            <label>Install Verification</label>
+            <label><![CDATA[<div id="bronto_verify_icon_block">Advanced</div>]]></label>
             <tab>bronto</tab>
             <sort_order>900</sort_order>
             <show_in_default>1</show_in_default>
@@ -53,11 +52,54 @@
                             <frontend_model>bronto_verify/adminhtml_system_config_form_field_roundtrip</frontend_model>
                             <sort_order>11</sort_order>
                             <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
+                            <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
                         </roundtrip_status>
                     </fields>
                 </apitoken>
+                <installs>
+                    <label>Install Status</label>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_verify/adminhtml_system_config_installs</frontend_model>
+                    <sort_order>21</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <expanded>0</expanded>
+                </installs>
+                <advanced>
+                    <label>Advanced Debugging</label>
+                    <frontend_type>text</frontend_type>
+                    <!--<frontend_model>bronto_verify/adminhtml_system_config_advanced</frontend_model>-->
+                    <sort_order>30</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <expanded>0</expanded>
+                    <fields>
+                        <classpath_search>
+                            <label>Class to get Path for</label>
+                            <comment>
+                                <![CDATA[Enter Class Name or Alias* to find path for, and then select the class type.<br /><em> * Aliases only work for Model and Helper classes</em>]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_classpath</frontend_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </classpath_search>
+                        <observer_search>
+                            <label>Event to search for</label>
+                            <comment>Find all observers for this event</comment>
+                            <frontend_type>text</frontend_type>
+                            <frontend_model>bronto_verify/adminhtml_system_config_form_field_events</frontend_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </observer_search>
+                    </fields>
+                </advanced>
                 <conflictchecker>
                     <label>Conflict Checker</label>
                     <frontend_type>text</frontend_type>
@@ -65,7 +107,7 @@
                     <show_in_default>1</show_in_default>
                     <show_in_website>0</show_in_website>
                     <show_in_store>0</show_in_store>
-                    <expanded>1</expanded>
+                    <expanded>0</expanded>
                     <fields>
                         <check_conflicts>
                             <label>Check Conflicts</label>
@@ -87,7 +129,7 @@
                     <show_in_default>1</show_in_default>
                     <show_in_website>0</show_in_website>
                     <show_in_store>0</show_in_store>
-                    <expanded>1</expanded>
+                    <expanded>0</expanded>
                     <fields>
                         <owner translate="label comment">
                             <label>Owner</label>
@@ -143,8 +185,7 @@
                     <show_in_default>1</show_in_default>
                     <show_in_website>0</show_in_website>
                     <show_in_store>0</show_in_store>
-                    <expanded>1</expanded>
-                    <collapseable>0</collapseable>
+                    <expanded>0</expanded>
                     <fields>
                         <validate translate="label">
                             <label>Check Permissions</label>
@@ -166,6 +207,148 @@
                         </results>
                     </fields>
                 </permissionchecker_validate>
+                <cron_settings>
+                    <label>Cron Settings</label>
+                    <frontend_type>text</frontend_type>
+                    <frontend_model>bronto_verify/adminhtml_system_config_form_magecron</frontend_model>
+                    <sort_order>52</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <comment>
+                        <![CDATA[This section is provided as an Advanced Option for handling the Cron processes for the Bronto Extension Modules.  If you find that the Magento cron management system fails to trigger the cron processes for these modules, you may utilize the cron.php file provided with this extension.  Simply set the 'Use Magento Cron' setting to 'No' for any modules you wish, click 'Save Config', and then follow the Cron configuration details below to set up the external cron.]]></comment>
+                    <expanded>0</expanded>
+                    <fields>
+                        <bronto_customer-settings-mage_cron>
+                            <label>Contact Import: Use Magento Cron</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <backend_model>bronto_verify/system_config_backend_magecron</backend_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </bronto_customer-settings-mage_cron>
+                        <bronto_newsletter-settings-mage_cron>
+                            <label>Newsletter Opt-in: Use Magento Cron</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <backend_model>bronto_verify/system_config_backend_magecron</backend_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </bronto_newsletter-settings-mage_cron>
+                        <bronto_order-settings-mage_cron>
+                            <label>Order Import: Use Magento Cron</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <backend_model>bronto_verify/system_config_backend_magecron</backend_model>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </bronto_order-settings-mage_cron>
+                        <bronto_reminder-settings-mage_cron>
+                            <label>Reminder Emails: Use Magento Cron</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <backend_model>bronto_verify/system_config_backend_magecron</backend_model>
+                            <sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </bronto_reminder-settings-mage_cron>
+                    </fields>
+                </cron_settings>
+                <soap_options>
+                    <label>SOAP Options</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>55</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <expanded>0</expanded>
+                    <fields>
+                        <soap_client>
+                            <label>SOAP class</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment><![CDATA[Overrides the Bronto_SoapClient class.<br/>
+                              <em>* Provided class name must be available via
+                                Magento's autoloader.</em>]]></comment>
+                        </soap_client>
+                        <stream_context>
+                            <label>Use Stream Context</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>6</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment><![CDATA[Replace the SSL stream context for the
+                              underlying SOAP client.<br/><em>* Use this option if you
+                              are experiencing errors related to SSL or reaching
+                              the Bronto API WSDL.</em>]]></comment>
+                        </stream_context>
+                        <retry_limit>
+                            <label>Retry Limit</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <validate>validate-digits validate-digits-range digits-range-0-5</validate>
+                            <comment><![CDATA[The number of times the SOAP client will attempt to retry API call. Must be between 0 and 5.<br />Default: 2]]>
+                            </comment>
+                        </retry_limit>
+                        <connection_timeout>
+                            <label>Connection Timeout</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <validate>validate-digits validate-digits-range digits-range-0-3600</validate>
+                            <comment><![CDATA[The number of seconds the SOAP client will wait before attempting to retry the API call. Must be between 0 and 3600.<br />
+                              Default: 30]]>
+                            </comment>
+                        </connection_timeout>
+                        <trace>
+                            <label>Trace</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment><![CDATA[If <em>Yes</em>, the SOAP client will trace its call.<br />Default: <em>No</em>]]></comment>
+                        </trace>
+                        <exceptions>
+                            <label>Exceptions</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment><![CDATA[If <em>Yes</em>, the SOAP client will throw exceptions on failure.<br />Default: <em>Yes</em>]]></comment>
+                        </exceptions>
+                        <cache_wsdl>
+                            <label>WSDL Cache</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bronto_verify/system_config_source_wsdlcache</source_model>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <comment><![CDATA[If <em>Yes</em>, the SOAP client will cache the WSDL.<br />Default: <em>WSDL_CACHE_BOTH</em>]]></comment>
+                        </cache_wsdl>
+                    </fields>
+                </soap_options>
             </groups>
         </bronto_verify>
     </sections>

@@ -19,11 +19,11 @@ class Bronto_Common_Model_System_Config_Source_Role
             return $this->_options;
         }
 
-        $helper = Mage::helper('bronto_common');
+        $helper         = Mage::helper('bronto_common');
         $this->_options = array(
             'developer' => $helper->__('Developer'),
-            'market' => $helper->__('Marketer'),
-            'partner' => $helper->__('Solution Partner'),
+            'market'    => $helper->__('Marketer'),
+            'partner'   => $helper->__('Solution Partner'),
         );
 
         return $this->_options;

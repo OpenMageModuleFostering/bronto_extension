@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package   Order
- * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.1.5
+ * @package   Bronto\Order
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Order_Block_Adminhtml_Sales_Order_View_Tab_Info extends Mage_Adminhtml_Block_Sales_Order_View_Tab_Info
 {
@@ -14,10 +13,10 @@ class Bronto_Order_Block_Adminhtml_Sales_Order_View_Tab_Info extends Mage_Adminh
      */
     protected function _toHtml()
     {
-        $order = $this->getOrder();
+        $order    = $this->getOrder();
         $orderRow = Mage::getModel('bronto_order/queue')->load($order->getId());
 
-        $tid = $orderRow->getBrontoTid();
+        $tid      = $orderRow->getBrontoTid();
         $imported = $orderRow->getBrontoImported();
 
         $deliveryHtml = empty($tid) ? $this->_getNoHtml() : $this->_getYesHtml();

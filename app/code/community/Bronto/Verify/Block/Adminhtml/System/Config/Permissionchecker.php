@@ -11,7 +11,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Block_Adminhtml_System_Config_Permissionchecker
     extends Mage_Adminhtml_Block_Abstract
@@ -19,25 +18,22 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Permissionchecker
     /**
      * Render all files that don't validate to the proper permissions
      *
-     * @param Varien_Data_Form_Element_Abstract $element Form element
-     *
      * @return string
-     * @access public
      */
     protected function _toHtml()
     {
         //  Chain of Responsibility
         //  each checker looks through its designated area to validate the node we're at.
-        $file = Mage::getModel('bronto_verify/validator_file');
-        $dir = Mage::getModel('bronto_verify/validator_directory', array($file));
+        $file  = Mage::getModel('bronto_verify/validator_file');
+        $dir   = Mage::getModel('bronto_verify/validator_directory', array($file));
         $group = Mage::getModel('bronto_verify/validator_group', array($dir));
         $owner = Mage::getModel('bronto_verify/validator_owner', array($group));
 
         $checker = Mage::getModel('bronto_verify/validator_checker', array($owner));
 
-        $directory = new RecursiveDirectoryIterator(Mage::getBaseDir());
-        $filter = new Bronto_Verify_Model_Validator_Filter_PatternIterator($directory);
-        $iterator = new RecursiveIteratorIterator(
+        $directory    = new RecursiveDirectoryIterator(Mage::getBaseDir());
+        $filter       = new Bronto_Verify_Model_Validator_Filter_PatternIterator($directory);
+        $iterator     = new RecursiveIteratorIterator(
             $filter,
             RecursiveIteratorIterator::SELF_FIRST,
             RecursiveIteratorIterator::CATCH_GET_CHILD
@@ -45,6 +41,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Permissionchecker
         $invalidFiles = $checker->validateSettings($iterator);
 
         $printer = new Bronto_Verify_Model_Validator_Printer();
+
         return $printer->render($invalidFiles);
     }
 }

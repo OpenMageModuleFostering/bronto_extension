@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Adminhtml_PermissioncheckerController extends Mage_Adminhtml_Controller_Action
 {
@@ -19,24 +18,21 @@ class Bronto_Verify_Adminhtml_PermissioncheckerController extends Mage_Adminhtml
 
     /**
      * Briefly validates roundtrip via ajax.
-     *
-     * @return json
-     * @access public
      */
     public function AjaxvalidationAction()
     {
         //  Chain of Responsibility
         //  each checker looks through its designated area to validate the node we're at.
-        $file = Mage::getModel('bronto_verify/validator_file');
-        $dir = Mage::getModel('bronto_verify/validator_directory', array($file));
+        $file  = Mage::getModel('bronto_verify/validator_file');
+        $dir   = Mage::getModel('bronto_verify/validator_directory', array($file));
         $group = Mage::getModel('bronto_verify/validator_group', array($dir));
         $owner = Mage::getModel('bronto_verify/validator_owner', array($group));
 
         $checker = Mage::getModel('bronto_verify/validator_checker', array($owner));
 
-        $directory = new RecursiveDirectoryIterator(Mage::getBaseDir());
-        $filter = new Bronto_Verify_Model_Validator_Filter_PatternIterator($directory);
-        $iterator = new RecursiveIteratorIterator(
+        $directory    = new RecursiveDirectoryIterator(Mage::getBaseDir());
+        $filter       = new Bronto_Verify_Model_Validator_Filter_PatternIterator($directory);
+        $iterator     = new RecursiveIteratorIterator(
             $filter,
             RecursiveIteratorIterator::LEAVES_ONLY,
             RecursiveIteratorIterator::CATCH_GET_CHILD
@@ -70,23 +66,28 @@ class Bronto_Verify_Adminhtml_PermissioncheckerController extends Mage_Adminhtml
     protected function _isSectionAllowed($section)
     {
         try {
-            $session = Mage::getSingleton('admin/session');
+            $session        = Mage::getSingleton('admin/session');
             $resourceLookup = "admin/system/config/{$section}";
             if ($session->getData('acl') instanceof Mage_Admin_Model_Acl) {
                 $resourceId = $session->getData('acl')->get($resourceLookup)->getResourceId();
                 if (!$session->isAllowed($resourceId)) {
                     throw new Exception('');
                 }
+
                 return true;
             }
         } catch (Zend_Acl_Exception $e) {
             $this->norouteAction();
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
+
             return false;
         } catch (Exception $e) {
             $this->deniedAction();
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
+
             return false;
         }
+
+        return false;
     }
 }

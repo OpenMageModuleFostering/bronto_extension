@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_CatalogRule_Model_Rule_Condition_Product
 {
@@ -16,16 +15,18 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_Cata
 
     /**
      * Customize default operator input by type mapper for some types
+     *
      * @return array
      */
     public function getDefaultOperatorInputByType()
     {
         if (null === $this->_defaultOperatorInputByType) {
             parent::getDefaultOperatorInputByType();
-            $this->_defaultOperatorInputByType['numeric'] = array('==', '!=', '>=', '>', '<=', '<');
-            $this->_defaultOperatorInputByType['string'] = array('==', '!=', '{}', '!{}');
+            $this->_defaultOperatorInputByType['numeric']  = array('==', '!=', '>=', '>', '<=', '<');
+            $this->_defaultOperatorInputByType['string']   = array('==', '!=', '{}', '!{}');
             $this->_defaultOperatorInputByType['category'] = array('{}', '!{}');
         }
+
         return $this->_defaultOperatorInputByType;
     }
 
@@ -116,21 +117,22 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_Cata
      * Apply product attribute subfilter to parent/base condition query
      *
      * @param string $fieldName    base query field name
-     * @param bool $requireValid strict validation flag
-     * @param $website
+     * @param bool   $requireValid strict validation flag
+     * @param        $website
+     *
      * @return string
      */
     public function getSubfilterSql($fieldName, $requireValid, $website)
     {
         $attribute = $this->getAttributeObject();
-        $table = $attribute->getBackendTable();
+        $table     = $attribute->getBackendTable();
 
         $resource = $this->getResource();
-        $select = $resource->createSelect();
+        $select   = $resource->createSelect();
         $select->from(array('main' => $table), array('entity_id'));
 
         if ($attribute->getAttributeCode() == 'category_ids') {
-            $condition = $resource->createConditionSql(
+            $condition      = $resource->createConditionSql(
                 'cat.category_id', $this->getOperator(), explode(',', $this->getValue())
             );
             $categorySelect = $resource->createSelect();
@@ -154,6 +156,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Attributes extends Mage_Cata
         }
         $select->where($condition);
         $inOperator = ($requireValid ? 'IN' : 'NOT IN');
+
         return sprintf("%s %s (%s)", $fieldName, $inOperator, $select);
     }
 }

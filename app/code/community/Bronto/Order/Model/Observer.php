@@ -3,24 +3,30 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.7
  */
 class Bronto_Order_Model_Observer
 {
 
-    const NOTICE_IDENTIFER = 'bronto_order';
+    const NOTICE_IDENTIFIER = 'bronto_order';
 
     private $_helper;
 
     public function __construct()
     {
-        /* @var $_helper Bronto_Order_Helper_Data */
-        $this->_helper = Mage::helper(self::NOTICE_IDENTIFER);
+        /* @var Bronto_Order_Helper_Data $_helper */
+        $this->_helper = Mage::helper(self::NOTICE_IDENTIFIER);
+    }
+
+    public function setHelper($helper)
+    {
+        $this->_helper = $helper;
     }
 
     /**
      * Verify that all requirements are met for this module
+     *
      * @param Varien_Event_Observer $observer
+     *
      * @return null
      * @access public
      */
@@ -31,15 +37,17 @@ class Bronto_Order_Model_Observer
         }
 
         // Verify Requirements
-        if (!$this->_helper->varifyRequirements(self::NOTICE_IDENTIFER, array('soap', 'openssl'))) {
+        if (!$this->_helper->varifyRequirements(self::NOTICE_IDENTIFIER, array('soap', 'openssl'))) {
             return;
         }
     }
 
     /**
      * Process specified number of items for specified store
-     * @param mixed $storeId    can be store object or id
-     * @param int $limit      must be greater than 0
+     *
+     * @param mixed $storeId can be store object or id
+     * @param int   $limit   must be greater than 0
+     *
      * @return array
      * @access public
      */
@@ -51,11 +59,12 @@ class Bronto_Order_Model_Observer
         // If limit is false or 0, return
         if (!$limit) {
             $this->_helper->writeDebug('  Limit empty. Skipping...');
+
             return $result;
         }
 
         // Get Store object and ID
-        $store = Mage::app()->getStore($storeId);
+        $store   = Mage::app()->getStore($storeId);
         $storeId = $store->getId();
 
         // Log that we have begun importing for this store
@@ -64,6 +73,7 @@ class Bronto_Order_Model_Observer
         // If module is not enabled for this store, log that fact and return
         if (!$store->getConfig(Bronto_Order_Helper_Data::XML_PATH_ENABLED)) {
             $this->_helper->writeDebug('  Module disabled for this store. Skipping...');
+
             return $result;
         }
 
@@ -91,28 +101,33 @@ class Bronto_Order_Model_Observer
         // If we didn't get any order queue rows with this pull, log and return
         if (empty($orderRows)) {
             $this->_helper->writeVerboseDebug('  No Orders to process. Skipping...');
+
             return $result;
         }
 
         /* @var $productHelper Bronto_Common_Helper_Product */
-        $productHelper = Mage::helper('bronto_common/product');
+        $productHelper   = Mage::helper('bronto_common/product');
         $descriptionAttr = $store->getConfig(Bronto_Order_Helper_Data::XML_PATH_DESCRIPTION);
-        $orderCache = array();
+        $basePrefix      = $this->_helper->getPriceAttribute('store', $store->getId());
+        $inclTaxes       = $this->_helper->isTaxIncluded('store', $store->getId());
+        $inclDiscounts   = $this->_helper->isDiscountIncluded('store', $store->getId());
+        $orderCache      = array();
 
         // Cycle through each order queue row
         foreach ($orderRows as $orderRow/* @var $orderRow Bronto_Order_Model_Queue */) {
             $orderId = $orderRow->getOrderId();
+            $quoteId = $orderRow->getQuoteId();
 
             // Check if the order id is still attached to an order in magento
             if ($order = Mage::getModel('sales/order')->load($orderId)/* @var $order Mage_Sales_Model_Order */) {
                 // Log that we are processing the current order
                 $this->_helper->writeDebug("  Processing Order ID: {$orderId}");
-                $orderCache[] = $orderId;
+                $orderCache[] = array('orderId' => $orderId, 'quoteId' => $quoteId, 'storeId' => $storeId);
 
                 /* @var $brontoOrder Bronto_Api_Order_Row */
-                $brontoOrder = $orderObject->createRow();
-                $brontoOrder->email = $order->getCustomerEmail();
-                $brontoOrder->id = $order->getIncrementId();
+                $brontoOrder            = $orderObject->createRow();
+                $brontoOrder->email     = $order->getCustomerEmail();
+                $brontoOrder->id        = $order->getIncrementId();
                 $brontoOrder->orderDate = date('c', strtotime($order->getCreatedAt()));
 
                 // If there is a conversion tracking id attached to this order, add it to the row
@@ -147,10 +162,15 @@ class Bronto_Order_Model_Observer
                                 // Bundled products need child items
                                 case Mage_Catalog_Model_Product_Type::TYPE_BUNDLE:
                                     if (count($item->getChildrenItems()) > 0) {
-                                        foreach ($item->getChildrenItems() as $child_item) {
-                                            $fullItems[] = $child_item;
+                                        foreach ($item->getChildrenItems() as $childItem) {
+                                            if ($childItem->getPrice() != 0) {
+                                                $item->setPrice(0);
+                                            }
+                                            $fullItems[] = $childItem;
                                         }
                                     }
+                                    $fullItems[] = $item;
+
                                     break;
 
                                 // Configurable products just need simple config item
@@ -165,7 +185,7 @@ class Bronto_Order_Model_Observer
                                         // Build Selected Options Name
                                         $nameWithOptions = array();
                                         foreach ($productAttributeOptions as $productAttribute) {
-                                            $itemValue = $productHelper->getProductAttribute($childItem->getProductId(), $productAttribute['attribute_code'], $storeId);
+                                            $itemValue         = $productHelper->getProductAttribute($childItem->getProductId(), $productAttribute['attribute_code'], $storeId);
                                             $nameWithOptions[] = $productAttribute['label'] . ': ' . $itemValue;
                                         }
 
@@ -215,8 +235,8 @@ class Bronto_Order_Model_Observer
                             $categories = array();
                             foreach ($categoryIds as $categoryId) {
                                 /* @var $category Mage_Catalog_Model_Category */
-                                $category = Mage::getModel('catalog/category')->load($categoryId);
-                                $parent = $category->getParentCategory();
+                                $category     = Mage::getModel('catalog/category')->load($categoryId);
+                                $parent       = $category->getParentCategory();
                                 $categories[] = $parent->getUrlKey() ? $parent->getUrlKey() : $parent->formatUrlKey($parent->getName());
                                 $categories[] = $category->getUrlKey() ? $category->getUrlKey() : $category->formatUrlKey($category->getName());
                             }
@@ -226,15 +246,15 @@ class Bronto_Order_Model_Observer
 
                             // Write orderItem
                             $brontoOrderItems[] = array(
-                                'id' => $item->getId(),
-                                'sku' => $item->getSku(),
-                                'name' => $item->getName(),
+                                'id'          => $item->getId(),
+                                'sku'         => $item->getSku(),
+                                'name'        => $item->getName(),
                                 'description' => $productHelper->getProductAttribute($item->getProductId(), $descriptionAttr),
-                                'category' => implode(' ', $categories),
-                                'image' => $this->_helper->getItemImg($item, $product, $storeId),
-                                'url' => $this->_helper->getItemUrl($item, $product, $storeId),
-                                'quantity' => (int)$item->getQtyOrdered(),
-                                'price' => (float)$item->getPrice(),
+                                'category'    => implode(' ', $categories),
+                                'image'       => $this->_helper->getItemImg($item, $product, $storeId),
+                                'url'         => $this->_helper->getItemUrl($item, $product, $storeId),
+                                'quantity'    => (int)$item->getQtyOrdered(),
+                                'price'       => $this->_helper->getItemPrice($item, $basePrefix, $inclTaxes, $inclDiscounts)
                             );
                         }
                         $brontoOrder->products = $brontoOrderItems;
@@ -242,14 +262,17 @@ class Bronto_Order_Model_Observer
                         break;
                 }
 
+                // increment total number of items processed
+                $result['total']++;
+
                 try {
                     // Mark order as imported
-                    $orderRow->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
-                    $orderRow->save();
+//                    $orderRow->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
+//                    $orderRow->save();
 
                     // Flush every 10 orders
                     if ($result['total'] % 100 === 0) {
-                        $result = $this->_flushOrders($orderObject, $orderCache, $result);
+                        $result     = $this->_flushOrders($orderObject, $orderCache, $result);
                         $orderCache = array();
                     }
                 } catch (Exception $e) {
@@ -262,14 +285,13 @@ class Bronto_Order_Model_Observer
                     // increment number of errors
                     $result['error']++;
                 }
-
-                // increment total number of items processed
-                $result['total']++;
             }
         }
 
         // Final flush (for any we miss)
-        $results = $this->_flushOrders($orderObject, $orderCache, $result);
+        if (!empty($orderCache)) {
+            $results = $this->_flushOrders($orderObject, $orderCache, $result);
+        }
 
         // Log results
         $this->_helper->writeDebug('  Success: ' . $results['success']);
@@ -281,8 +303,9 @@ class Bronto_Order_Model_Observer
 
     /**
      * @param Bronto_Api_Order $orderObject
-     * @param array $orderCache
-     * @param array $result
+     * @param array            $orderCache
+     * @param array            $result
+     *
      * @return array
      * @access protected
      */
@@ -290,54 +313,77 @@ class Bronto_Order_Model_Observer
     {
         // Get delivery results from order object
         $flushResult = $orderObject->flush();
+        $flushCount  = count($flushResult);
 
         // Log Order import flush process starting
+        $this->_helper->writeDebug("  Flush resulted in {$flushCount} orders processed");
         $this->_helper->writeVerboseDebug('===== FLUSH =====', 'bronto_order_api.log');
         $this->_helper->writeVerboseDebug(var_export($orderObject->getApi()->getLastRequest(), true), 'bronto_order_api.log');
         $this->_helper->writeVerboseDebug(var_export($orderObject->getApi()->getLastResponse(), true), 'bronto_order_api.log');
 
         // Cycle through flush results and handle any errors that were returned
         foreach ($flushResult as $i => $flushResultRow) {
-            $order = Mage::getModel('sales/order')->load($orderCache[$i]);
-
             if ($flushResultRow->hasError()) {
-                // Get error code from result
-                $errorCode = $flushResultRow->getErrorCode();
-
-                // Get error message from result
+                $hasError     = true;
+                $errorCode    = $flushResultRow->getErrorCode();
                 $errorMessage = $flushResultRow->getErrorMessage();
+            } else {
+                $hasError     = false;
+                $errorCode    = false;
+                $errorMessage = false;
+            }
 
-                // Check to see if this item exists in the order cache
-                if (isset($orderCache[$i])) {
-                    /* @var $order Mage_Sales_Model_Order */
-                    $order = Mage::getModel('sales/order')->load($orderCache[$i]);
+            if (isset($orderCache[$i])) {
+                /** @var Mage_Sales_Model_Order $order */
+                $order = Mage::getModel('sales/order')->load($orderCache[$i]['orderId']);
 
-                    // If error code is 915, try to pull customer email address
-                    if (915 == $errorCode) {
-                        if ($customerEmail = $order->getCustomerEmail()) {
-                            $errorMessage = "Invalid Email Address: `{$customerEmail}`";
-                        } else {
-                            $errorMessage = "Email Address is empty for this order";
-                        }
-                    }
+                /** @var Mage_Core_Model_Store $store */
+                $store = Mage::getModel('core/store')->load($orderCache[$i]['storeId']);
 
-                    // Append order id to message to assiste troubleshooting
-                    $errorMessage .= " (Order #: {$order->getIncrementId()})";
+                /** @var Mage_Core_Model_Website $website */
+                $website = Mage::getModel('core/website')->load($store->getWebsiteId());
 
-                    // Reset Bronto Import status
-                    Mage::getModel('bronto_order/queue')
-                        ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId())
-                        ->setBrontoImported(null)
-                        ->setBrontoSuppressed($errorMessage)
-                        ->save();
+                $storeMessage = "For `{$website->getName()}`:`{$store->getName()}`: ";
+
+                /** @var Bronto_Order_Model_Queue $orderRow */
+                $orderRow = Mage::getModel('bronto_order/queue')
+                    ->getOrderRow($order->getId(), $order->getQuoteId(), $order->getStoreId());
+            } else {
+                if ($hasError) {
+                    Mage::helper('bronto_order')->writeError("[{$errorCode}] {$errorMessage}");
+                    $result['error']++;
                 }
 
+                continue;
+            }
+
+            if ($hasError) {
+                // If error code is 915, try to pull customer email address
+                if (915 == $errorCode) {
+                    if ($customerEmail = $order->getCustomerEmail()) {
+                        $errorMessage = "Invalid Email Address: `{$customerEmail}`";
+                    } else {
+                        $errorMessage = "Email Address is empty for this order";
+                    }
+                }
+
+                // Append order id to message to assist troubleshooting
+                $errorMessage .= " (Order #: {$order->getIncrementId()})";
+
                 // Log and Display error message
-                $this->_helper->writeError("[{$errorCode}] {$errorMessage}");
+                $this->_helper->writeError("[{$errorCode}] {$storeMessage}{$errorMessage}");
+
+                // Reset Bronto Import status
+                $orderRow->setBrontoImported(null)
+                    ->setBrontoSuppressed($errorMessage)
+                    ->save();
 
                 // Increment number of errors
                 $result['error']++;
             } else {
+                $orderRow->setBrontoImported(Mage::getSingleton('core/date')->gmtDate());
+                $orderRow->save();
+
                 // Increment number of successes
                 $result['success']++;
             }
@@ -348,41 +394,46 @@ class Bronto_Order_Model_Observer
 
     /**
      * Process Orders for all stores
+     *
+     * @param bool $brontoCron
+     *
      * @return array
-     * @access public
      */
-    public function processOrders()
+    public function processOrders($brontoCron = false)
     {
         // Set default result values
         $result = array(
-            'total' => 0,
+            'total'   => 0,
             'success' => 0,
-            'error' => 0,
+            'error'   => 0,
         );
 
-        // Get limit value from config
-        $limit = $this->_helper->getLimit();
+        // Only allow cron to run if isset to use mage cron or is coming from bronto cron
+        if (Mage::helper('bronto_order')->canUseMageCron() || $brontoCron) {
+            // Get limit value from config
+            $limit = $this->_helper->getLimit();
 
-        // Pull array of stores to cycle through
-        $stores = Mage::app()->getStores(true);
+            // Pull array of stores to cycle through
+            $stores = Mage::app()->getStores(true);
 
-        // Cycle through stores
-        foreach ($stores as $_store) {
-            // If limit is spent, don't process
-            if ($limit <= 0) {
-                continue;
+            // Cycle through stores
+            foreach ($stores as $_store) {
+                // If limit is spent, don't process
+                if ($limit <= 0) {
+                    continue;
+                }
+
+                // Process Orders for store and collect results
+                $storeResult = $this->processOrdersForStore($_store, $limit);
+
+                // Append results to totals
+                $result['total'] += $storeResult['total'];
+                $result['success'] += $storeResult['success'];
+                $result['error'] += $storeResult['error'];
+
+                // Decrement limit by resultant total
+                $limit = $limit - $storeResult['total'];
             }
-
-            // Process Orders for store and collect results
-            $storeResult = $this->processOrdersForStore($_store, $limit);
-
-            // Append results to totals
-            $result['total'] += $storeResult['total'];
-            $result['success'] += $storeResult['success'];
-            $result['error'] += $storeResult['error'];
-
-            // Decrement limit by resultant total
-            $limit = $limit - $storeResult['total'];
         }
 
         return $result;

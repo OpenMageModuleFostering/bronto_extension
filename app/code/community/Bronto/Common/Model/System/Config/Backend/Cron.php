@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 abstract class Bronto_Common_Model_System_Config_Backend_Cron
     extends Mage_Core_Model_Config_Data
@@ -24,6 +23,27 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
     protected $_xml_path_enabled = 'enabled';
 
     /**
+     * @var string
+     */
+    protected $_xml_path_mage_cron = 'mage_cron';
+
+    /**
+     * @return string
+     */
+    public function getCronStringPath()
+    {
+        return $this->_cron_string_path;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronModelPath()
+    {
+        return $this->_cron_model_path;
+    }
+
+    /**
      * Cron settings after save
      *
      * @return Bronto_Common_Model_System_Config_Backend_Cron
@@ -32,29 +52,36 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
     {
         $cronExprString = '';
 
-        if ($this->getFieldsetDataValue($this->_xml_path_enabled)) {
+        $useMageCron = $this->getFieldsetDataValue($this->_xml_path_mage_cron); //bronto_verify/cron_settings/
+
+        $pathParts  = explode('/', $this->getPath());
+        $pathValues = array_values($pathParts);
+        $pathPart   = array_pop($pathValues);
+        if ($pathPart == 'mage_cron') {
+            $verify_path = 'bronto_verify/cron_settings/' . implode('-', $pathParts);
+            $this->_saveConfigData($verify_path, $useMageCron);
+        }
+
+        if ($this->getFieldsetDataValue($this->_xml_path_enabled) && '1' == $useMageCron) {
             $minutely  = Bronto_Common_Model_System_Config_Source_Cron_Frequency::CRON_MINUTELY;
             $hourly    = Bronto_Common_Model_System_Config_Source_Cron_Frequency::CRON_HOURLY;
             $daily     = Bronto_Common_Model_System_Config_Source_Cron_Frequency::CRON_DAILY;
             $frequency = $this->getFieldsetDataValue('frequency');
 
             if ($frequency == $minutely) {
-                $interval       = (int) $this->getFieldsetDataValue('interval');
+                $interval       = (int)$this->getFieldsetDataValue('interval');
                 $cronExprString = "*/{$interval} * * * *";
-            }
-            elseif ($frequency == $hourly) {
-                $minutes = (int) $this->getFieldsetDataValue('minutes');
+            } elseif ($frequency == $hourly) {
+                $minutes = (int)$this->getFieldsetDataValue('minutes');
                 if ($minutes >= 0 && $minutes <= 59) {
                     $cronExprString = "{$minutes} * * * *";
-                }
-                else {
+                } else {
                     Mage::throwException(Mage::helper('bronto_common')->__('Please, specify correct minutes of hour.'));
                 }
-            }
-            elseif ($frequency == $daily) {
-                $time           = $this->getFieldsetDataValue('time');
-                $timeMinutes    = $time[1];
-                $timeHours      = $time[0];
+            } elseif ($frequency == $daily) {
+                $time        = $this->getFieldsetDataValue('time');
+                $timeMinutes = $time[1];
+                $timeHours   = $time[0];
                 // Fix Midnight Issue
                 if ('00' == $timeMinutes && '00' == $timeHours) {
                     $timeMinutes = '59';
@@ -65,23 +92,32 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
         }
 
         try {
-            if (!empty($this->_cron_string_path)) {
-                $this->_saveConfigData($this->_cron_string_path, $cronExprString);
+            if ($this->getCronStringPath()) {
+                if ('0' == $useMageCron) {
+                    $this->_deleteConfigData($this->getCronStringPath());
+                } else {
+                    $this->_saveConfigData($this->getCronStringPath(), $cronExprString);
+                }
             }
-            if (!empty($this->_cron_model_path)) {
-                $this->_saveConfigData(
-                    $this->_cron_model_path,
-                    (string) Mage::getConfig()->getNode($this->_cron_model_path)
-                );
+            if ($this->getCronModelPath()) {
+                if ('0' == $useMageCron) {
+                    $this->_deleteConfigData($this->getCronModelPath());
+                } else {
+                    $this->_saveConfigData(
+                        $this->getCronModelPath(),
+                        (string)Mage::getConfig()->getNode($this->getCronModelPath())
+                    );
+                }
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             Mage::throwException(Mage::helper('adminhtml')->__('Unable to save Cron expression'));
         }
     }
 
     /**
      * Get value by key for new user data from <section>/groups/<group>/fields/<field>
+     *
+     * @param string $key
      *
      * @return string
      */
@@ -109,22 +145,40 @@ abstract class Bronto_Common_Model_System_Config_Backend_Cron
             }
         }
 
-        return NULL;
+        return null;
     }
 
     /**
-     * @param type $path
-     * @param type $value
+     * Save Config Value by Path
+     *
+     * @param string $path
+     * @param mixed  $value
      *
      * @return Bronto_Common_Model_System_Config_Backend_Cron
      */
     protected function _saveConfigData($path, $value)
     {
         Mage::getModel('core/config_data')
-        ->load($path, 'path')
-        ->setValue($value)
-        ->setPath($path)
-        ->save();
+            ->load($path, 'path')
+            ->setValue($value)
+            ->setPath($path)
+            ->save();
+
+        return $this;
+    }
+
+    /**
+     * Delete Config Value by Path
+     *
+     * @param string $path
+     *
+     * @return Bronto_Common_Model_System_Config_Backend_Cron
+     */
+    protected function _deleteConfigData($path)
+    {
+        Mage::getModel('core/config_data')
+            ->load($path, 'path')
+            ->delete();
 
         return $this;
     }

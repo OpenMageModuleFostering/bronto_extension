@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.7.0
  */
 class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_List extends Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Hidden
 {
@@ -11,6 +10,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_List extends Bronto
      * Override method to output our custom HTML with JavaScript
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return String
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
@@ -29,6 +29,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_List extends Bronto
 
     /**
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     public function render(Varien_Data_Form_Element_Abstract $element)

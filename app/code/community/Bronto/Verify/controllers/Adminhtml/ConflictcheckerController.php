@@ -8,15 +8,11 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Adminhtml_ConflictcheckerController extends Mage_Adminhtml_Controller_Action
 {
     /**
      * Briefly validates roundtrip via ajax.
-     *
-     * @return json
-     * @access public
      */
     public function AjaxvalidationAction()
     {
@@ -27,18 +23,18 @@ class Bronto_Verify_Adminhtml_ConflictcheckerController extends Mage_Adminhtml_C
 
         //  Chain of Responsibility
         //  each checker looks through its designated area for rewrites
-        $blocks = Mage::getModel('bronto_verify/config_blocks');
-        $models = Mage::getModel('bronto_verify/config_models', array($blocks));
-        $helpers = Mage::getModel('bronto_verify/config_helpers', array($models));
+        $blocks    = Mage::getModel('bronto_verify/config_blocks');
+        $models    = Mage::getModel('bronto_verify/config_models', array($blocks));
+        $helpers   = Mage::getModel('bronto_verify/config_helpers', array($models));
         $resources = Mage::getModel('bronto_verify/config_resources', array($helpers));
-        $checker = Mage::getModel('bronto_verify/config_checker', array($resources));
+        $checker   = Mage::getModel('bronto_verify/config_checker', array($resources));
 
-        $conflicts = $checker->getConflicts($config->getNode('frontend'));
+        $checker->getConflicts($config->getNode('frontend'));
 
         $globalDataStore->getRewriteConflicts();
 
         $printer = new Bronto_Verify_Model_Config_Printer();
-        //return $printer->render($globalDataStore, 'XML configurations rewritten more than once');
+
         $this->getResponse()->setBody($printer->render($globalDataStore, 'XML configurations rewritten more than once'));
     }
 
@@ -64,23 +60,28 @@ class Bronto_Verify_Adminhtml_ConflictcheckerController extends Mage_Adminhtml_C
     protected function _isSectionAllowed($section)
     {
         try {
-            $session = Mage::getSingleton('admin/session');
+            $session        = Mage::getSingleton('admin/session');
             $resourceLookup = "admin/system/config/{$section}";
             if ($session->getData('acl') instanceof Mage_Admin_Model_Acl) {
                 $resourceId = $session->getData('acl')->get($resourceLookup)->getResourceId();
                 if (!$session->isAllowed($resourceId)) {
                     throw new Exception('');
                 }
+
                 return true;
             }
         } catch (Zend_Acl_Exception $e) {
             $this->norouteAction();
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
+
             return false;
         } catch (Exception $e) {
             $this->deniedAction();
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
+
             return false;
         }
+
+        return false;
     }
 }

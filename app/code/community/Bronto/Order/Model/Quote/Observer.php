@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.7
  */
 class Bronto_Order_Model_Quote_Observer
 {

@@ -3,12 +3,13 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Helper_Data
     extends Mage_Core_Helper_Abstract
 {
-
+    /**
+     * Common Settings
+     */
     const XML_PATH_GLOBAL_SETTINGS = 'bronto/settings/';
     const XML_PATH_API_TOKEN       = 'bronto/settings/api_token';
     const XML_PATH_DEBUG           = 'bronto/settings/debug';
@@ -17,17 +18,57 @@ class Bronto_Common_Helper_Data
     const XML_PATH_NOTICES         = 'bronto/settings/notices';
     const XML_PATH_ENABLED         = 'bronto/settings/enabled';
 
-    const XML_PATH_IMAGE_TYPE   = 'bronto/format/image_type';
-    const XML_PATH_IMAGE_WIDTH  = 'bronto/format/image_width';
-    const XML_PATH_IMAGE_HEIGHT = 'bronto/format/image_height';
-    const XML_PATH_USE_SYMBOL   = 'bronto/format/use_symbol';
+    /**
+     * Formatting Settings
+     */
+    const XML_PATH_IMAGE_TYPE     = 'bronto/format/image_type';
+    const XML_PATH_IMAGE_WIDTH    = 'bronto/format/image_width';
+    const XML_PATH_IMAGE_HEIGHT   = 'bronto/format/image_height';
+    const XML_PATH_USE_SYMBOL     = 'bronto/format/use_symbol';
+    const XML_PATH_INCL_TAX       = 'bronto/format/incl_tax';
+    const XML_PATH_GREETING_FULL  = 'bronto/format/default_greeting';
+    const XML_PATH_GREETING_PRE   = 'bronto/format/default_greeting_prefix';
+    const XML_PATH_GREETING_FIRST = 'bronto/format/default_greeting_firstname';
+    const XML_PATH_GREETING_LAST  = 'bronto/format/default_greeting_lastname';
 
     /**
+     * Cron Settings
+     */
+    const XML_PATH_MAGE_CRON   = 'bronto/settings/mage_cron';
+    const XML_PATH_CRON_STRING = 'crontab/jobs/bronto_common_delete_archives/schedule/cron_expr';
+    const XML_PATH_CRON_MODEL  = 'crontab/jobs/bronto_common_delete_archives/run/model';
+
+    /**
+     * Pop-up Settings
+     */
+    const XML_PATH_POPUP_CODE = 'bronto_popup/settings/code';
+
+    /**
+     * Module Human Readable Name
+     */
+    protected $_name = 'Bronto Extension for Magento';
+
+    /**
+     * Get Human Readable Name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->__($this->_name);
+    }
+
+    /**
+     * Check if module is enabled
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_ENABLED);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
 
     /*
@@ -41,135 +82,236 @@ class Bronto_Common_Helper_Data
     }
 
     /**
-     * @param string $path
+     * Get Javascript for Pop-up
      *
-     * @return bool
+     * @return string
      */
-    public function disableModule($scope = 'default', $scopeId = 0)
+    public function getPopupCode()
     {
-        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId);
+        return $this->getAdminScopedConfig(self::XML_PATH_POPUP_CODE);
     }
 
     /**
      * Determine if email can be sent through bronto
      *
      * @param Mage_Core_Model_Email_Template $template
+     * @param string|int                     $storeId
      *
      * @return boolean
      */
     public function canSendBronto(Mage_Core_Model_Email_Template $template, $storeId = null)
     {
-        if ($this->isEnabled($storeId)) {
-            return TRUE;
+        if ($this->isEnabled('store', $storeId)) {
+            return true;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
+     * Get Image URL for Product, sized to config specs
+     *
+     * @param Mage_Catalog_Model_Product $product
+     *
      * @return string
      */
     public function getProductImageUrl($product)
     {
-        return (string) Mage::helper('catalog/image')
-                        ->init($product, $this->getImageType($product->getStoreId()))
-                        ->resize(
+        return (string)Mage::helper('catalog/image')
+            ->init($product, $this->getImageType($product->getStoreId()))
+            ->resize(
                 $this->getImageWidth($product->getStoreId()),
                 $this->getImageHeight($product->getStoreId())
             );
     }
 
     /**
+     * @param  string|int $storeId
+     *
      * @return string
      */
     public function getImageType($storeId = null)
     {
-        return $this->getAdminScopedConfig(self::XML_PATH_IMAGE_TYPE, $storeId);
+        return $this->getAdminScopedConfig(self::XML_PATH_IMAGE_TYPE, 'store', $storeId);
     }
 
     /**
+     * @param  string|int $storeId
+     *
      * @return int|null
      */
     public function getImageWidth($storeId = null)
     {
-        $width = (int) $this->getAdminScopedConfig(self::XML_PATH_IMAGE_WIDTH, $storeId);
+        $width = (int)$this->getAdminScopedConfig(self::XML_PATH_IMAGE_WIDTH, 'store', $storeId);
 
-        return empty($width) ? NULL : abs($width);
+        return empty($width) ? null : abs($width);
     }
 
     /**
+     * @param  string|int $storeId
+     *
      * @return int|null
      */
     public function getImageHeight($storeId = null)
     {
-        $height = (int) $this->getAdminScopedConfig(self::XML_PATH_IMAGE_HEIGHT, $storeId);
+        $height = (int)$this->getAdminScopedConfig(self::XML_PATH_IMAGE_HEIGHT, 'store', $storeId);
 
-        return empty($height) ? NULL : abs($height);
+        return empty($height) ? null : abs($height);
     }
 
     /**
+     * @param string|int $storeId
+     *
      * @return bool
      */
-    public function useCurrenySymbol($storeId = null)
+    public function useCurrencySymbol($storeId = null)
     {
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_USE_SYMBOL, $storeId);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_USE_SYMBOL, 'store', $storeId);
+    }
+
+    /**
+     * @param mixed $storeId
+     *
+     * @return bool
+     */
+    public function displayPriceIncTax($storeId = null)
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_INCL_TAX, 'store', $storeId);
+    }
+
+    /**
+     * Get Default Greeting Settings
+     *
+     * @param string $piece
+     * @param string $scope
+     * @param int    $scopeId
+     *
+     * @return mixed
+     */
+    public function getDefaultGreeting($piece = 'full', $scope = 'default', $scopeId = 0)
+    {
+        switch ($piece) {
+            case 'prefix':
+                return $this->getAdminScopedConfig(self::XML_PATH_GREETING_PRE, $scope, $scopeId);
+            case 'firstname':
+                return $this->getAdminScopedConfig(self::XML_PATH_GREETING_FIRST, $scope, $scopeId);
+            case 'lastname':
+                return $this->getAdminScopedConfig(self::XML_PATH_GREETING_LAST, $scope, $scopeId);
+            case 'full':
+            default:
+                return $this->getAdminScopedConfig(self::XML_PATH_GREETING_FULL, $scope, $scopeId);
+        }
+    }
+
+    /**
+     * Check if module can use the magento cron
+     *
+     * @return bool
+     */
+    public function canUseMageCron()
+    {
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_MAGE_CRON, 'default', 0);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronStringPath()
+    {
+        return self::XML_PATH_CRON_STRING;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCronModelPath()
+    {
+        return self::XML_PATH_CRON_MODEL;
+    }
+
+    /**
+     * Disable Specified Module
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     * @param bool   $deleteConfig
+     *
+     * @return bool
+     */
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
+    {
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
     }
 
     /**
      * @param string $path
      * @param string $scope
      * @param int    $scopeId
+     * @param bool   $deleteConfig
      *
      * @return bool
      */
-    protected function _disableModule($path, $scope = 'default', $scopeId = 0)
+    protected function _disableModule($path, $scope = 'default', $scopeId = 0, $deleteConfig = false)
     {
-        $config = Mage::getModel('core/config');
-        $config->saveConfig($path, 0, $scope, $scopeId);
-
-        if (!$this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
-            //  Get the Module alias from the path
-            //  $path = bronto_email/settings/api_token
-            //  $module = bronto_email
-            list($module) = explode('/', $path);
-            //  we have to physically insert the enabled path into the
-            //  core_config_data table of the DB w/ a value of 0, or the module
-            //  could inherit from its parent and not actually get disabled.
-            //  b/c the state of the checkbox is determined by whether or not
-            //  a value is set in the core_config_data table.
-            $configData = Mage::getModel('core/config_data');
-            $configData->setScope($scope)
-            ->setScopeId($scopeId)
-            ->setPath("$module/settings/enabled")
-            ->setValue(0)
-            ->save();
+        if ($scope == 'website' || $scope == 'store') {
+            $scope .= 's';
         }
+
+        $coreConfig     = Mage::getModel('core/config');
+        $coreConfigData = Mage::getModel('core/config_data');
+
+        // If set, we delete the config value instead of just setting it to 0
+        if ($deleteConfig) {
+            $coreConfig->deleteConfig($path, $scope, $scopeId);
+
+            $coreConfigData
+                ->load($path)
+                ->setScope($scope)
+                ->setScopeId($scopeId)
+                ->delete();
+        } else {
+            $coreConfig->saveConfig($path, 0, $scope, $scopeId);
+
+            if (!$this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
+                list($module) = explode('/', $path);
+
+                $coreConfigData->setScope($scope)
+                    ->setScopeId($scopeId)
+                    ->setPath("$module/settings/enabled")
+                    ->setValue(0)
+                    ->save();
+            }
+        }
+
+        Mage::getConfig()->reinit();
+        Mage::app()->reinitStores();
 
         return $this;
     }
 
     /**
      * Determine if module is active
+     *
      * @return boolean
      */
     public function isModuleActive()
     {
         // If module is not enabled, return false
         if (!$this->isEnabled()) {
-            return FALSE;
+            return false;
         }
 
         // If module is missing token, return false
         if (!$this->getApiToken()) {
-            return FALSE;
+            return false;
         }
 
         // If requirements are not met, return false
         if (!$this->verifyRequirements($this->_getModuleName())) {
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -179,7 +321,7 @@ class Bronto_Common_Helper_Data
      */
     public function hasCustomConfig()
     {
-        return FALSE;
+        return false;
     }
 
     /**
@@ -202,7 +344,7 @@ class Bronto_Common_Helper_Data
     public function verifyRequirements($module, $required = array())
     {
         // Check for required PHP extensions
-        $verified        = TRUE;
+        $verified        = true;
         $missing         = array();
         $defaultRequired = array('soap', 'openssl');
         $required        = array_merge($required, $defaultRequired);
@@ -216,12 +358,11 @@ class Bronto_Common_Helper_Data
             try {
                 if (!extension_loaded($extName)) {
                     $missing[] = $extName;
-                    $verified  = FALSE;
+                    $verified  = false;
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 $missing[] = $extName;
-                $verified  = FALSE;
+                $verified  = false;
             }
         }
 
@@ -245,39 +386,44 @@ class Bronto_Common_Helper_Data
             $message->setIdentifier($module);
             Mage::getSingleton('adminhtml/session')->addMessage($message);
 
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
-     * @param string $token
-     * @param int    $store
-     * @param int    $websiteId
+     * Get Token Instance
+     *
+     * @param null   $token
+     * @param string $scope
+     * @param int    $scopeId
      *
      * @return Bronto_Common_Model_Api
      */
-    public function getApi($token = NULL, $store = NULL, $websiteId = NULL)
+    public function getApi($token = null, $scope = 'default', $scopeId = 0)
     {
         if (empty($token)) {
-            $token = $this->getApiToken($store, $websiteId);
+            $token = $this->getApiToken($scope, $scopeId);
         }
 
         return Bronto_Common_Model_Api::getInstance($token);
     }
 
     /**
-     * @param string $store
+     * Get API Token from Config
      *
-     * @return string
+     * @param string $scope
+     * @param int    $scopeId
+     *
+     * @return bool|mixed
      */
-    public function getApiToken($store = NULL, $websiteId = NULL)
+    public function getApiToken($scope = 'default', $scopeId = 0)
     {
-        $token = $this->getAdminScopedConfig(self::XML_PATH_API_TOKEN, $store, $websiteId);
+        $token = $this->getAdminScopedConfig(self::XML_PATH_API_TOKEN, $scope, $scopeId);
 
-        if (!$token || empty($token)) {
-            return FALSE;
+        if (!$token || empty($token) || is_null($token) || $token == 'NULL') {
+            return false;
         }
 
         return $token;
@@ -286,49 +432,107 @@ class Bronto_Common_Helper_Data
     /**
      * Determine if API token is valid
      *
-     * @param string $token
-     * @param int    $store
-     * @param int    $websiteId
+     * @param null   $token
+     * @param string $scope
+     * @param int    $scopeId
      *
+     * @return bool
+     */
+    public function validApiToken($token = null, $scope = 'default', $scopeId = 0)
+    {
+        // If token is specifically set to false, then there is no token and is technically valid
+        if (false === $token) {
+            return true;
+        }
+
+        // If token is empty try to pull from config
+        if (empty($token)) {
+            $token = $this->getApiToken($scope, $scopeId);
+        }
+
+        // If token is not correct length, return false
+        if (strlen($token) != 36) {
+            return false;
+        }
+
+        try {
+            $api = new Bronto_Api($token, array('debug' => true));
+            $api->login();
+            $tokenRow = $api->getTokenInfo();
+
+            return $tokenRow->hasPermissions(7);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Determines if the last API token used is in a valid state at the current
+     * scope.
+     *
+     * @return bool
+     */
+    public function validApiStatus()
+    {
+        if (!Mage::helper('bronto_verify/apitoken')->getStatus()) {
+            $this->_addSingleSessionMessage(
+                'error',
+                'The Bronto API Token you have entered for this scope appears to be invalid.'
+            );
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Adds a single message to the session, as to not flood the
+     * session messages with the same content
+     *
+     * @param $type string
+     * @param $msg string
+     * @param $module string (optional)
      * @return boolean
      */
-    public function validApiToken($token = NULL, $store = NULL, $websiteId = NULL)
+    protected function _addSingleSessionMessage($type, $msg, $module = 'bronto_common')
     {
-        if (empty($token)) {
-            $token = $this->getApiToken($store, $websiteId);
+        $message = Mage::getSingleton('core/message')->{$type}($this->__($msg));
+        $message->setIdentifier($module);
+        $session = Mage::getSingleton('adminhtml/session');
+        foreach ($session->getMessages()->getItemsByType($type) as $set) {
+            if ($set->getIdentifier() == $message->getIdentifier()) {
+                $exists = true;
+                break;
+            }
         }
 
-        if (strlen($token) < 36) {
-            return FALSE;
-        }
-        try {
-            $api = new Bronto_Api($token, array('debug' => TRUE));
-            $api->login();
-        }
-        catch (Exception $e) {
-            return FALSE;
+        if (empty($exists)) {
+            $session->addMessage($message);
         }
 
-        return TRUE;
+        return empty($exists);
     }
 
     /**
      * Check all API tokens are valid
-     * @return boolean
+     *
+     * @param string $identifier
+     *
+     * @return bool
      */
     public function validApiTokens($identifier = 'bronto_common')
     {
-        $valid = TRUE;
-        if (!$this->validApiToken()) {
+        $valid = true;
+        if (!$this->validApiToken($this->getApiToken())) {
             $message = Mage::getSingleton('core/message')->error(
                 $this->__('The Bronto API Token you have entered for Default Configuration appears to be invalid.')
             );
             $message->setIdentifier($identifier);
             Mage::getSingleton('adminhtml/session')->addMessage($message);
-            $valid = FALSE;
+            $valid = false;
         }
         foreach (Mage::app()->getWebsites() as $website) {
-            if (!$this->validApiToken(NULL, NULL, $website->getId())) {
+            if (!$this->validApiToken($this->getApiToken('website', $website->getId()), 'website', $website->getId())) {
                 $message = Mage::getSingleton('core/message')->error(
                     $this->__(
                         sprintf(
@@ -339,13 +543,13 @@ class Bronto_Common_Helper_Data
                 );
                 $message->setIdentifier($identifier);
                 Mage::getSingleton('adminhtml/session')->addMessage($message);
-                $valid = FALSE;
+                $valid = false;
             }
             foreach ($website->getGroups() as $group) {
                 $stores = $group->getStores();
                 if (count($stores) > 0) {
                     foreach ($stores as $store) {
-                        if (!$this->validApiToken(NULL, $store->getId(), $website->getId())) {
+                        if (!$this->validApiToken($this->getApiToken('store', $store->getId()), 'store', $store->getId())) {
                             $message = Mage::getSingleton('core/message')->error(
                                 $this->__(
                                     sprintf(
@@ -357,7 +561,7 @@ class Bronto_Common_Helper_Data
                             );
                             $message->setIdentifier($identifier);
                             Mage::getSingleton('adminhtml/session')->addMessage($message);
-                            $valid = FALSE;
+                            $valid = false;
                         }
                     }
                 }
@@ -372,15 +576,38 @@ class Bronto_Common_Helper_Data
      *
      * @return bool
      */
-    public function isModuleInstalled($moduleName = NULL)
+    public function isModuleInstalled($moduleName = null)
     {
-        $modules = (array) Mage::getConfig()->getNode('modules')->children();
+        $modules = (array)Mage::getConfig()->getNode('modules')->children();
 
-        if ($moduleName === NULL) {
+        if ($moduleName === null) {
             $moduleName = $this->_getModuleName();
         }
 
-        return isset($modules[$moduleName]);
+        if (!isset($modules[$moduleName])) {
+            return false;
+        }
+
+        return ($modules[$moduleName]->active == 'true');
+    }
+
+    /**
+     * Get SOAP Options
+     *
+     * @return array
+     */
+    public function getSoapOptions()
+    {
+        // If Verify Module is enabled, use the settings from there
+        if ($this->isModuleInstalled('Bronto_Verify') && $this->isModuleActive()) {
+            return Mage::helper('bronto_verify')->getSoapOptions();
+        }
+
+        // Return Default Options
+        return array(
+            'retry_limit' => 2,
+            'debug'       => $this->isDebugEnabled(),
+        );
     }
 
     /**
@@ -388,15 +615,15 @@ class Bronto_Common_Helper_Data
      *
      * @return string
      */
-    public function getModuleVersion($moduleName = NULL)
+    public function getModuleVersion($moduleName = null)
     {
-        $modules = (array) Mage::getConfig()->getNode('modules')->children();
+        $modules = (array)Mage::getConfig()->getNode('modules')->children();
 
-        if ($moduleName === NULL) {
+        if ($moduleName === null) {
             $moduleName = $this->_getModuleName();
         }
 
-        return isset($modules[$moduleName]) ? (string) $modules[$moduleName]->version : NULL;
+        return isset($modules[$moduleName]) ? (string)$modules[$moduleName]->version : null;
     }
 
     /**
@@ -405,10 +632,10 @@ class Bronto_Common_Helper_Data
     public function isDebugEnabled()
     {
         if (!$this->getApiToken()) {
-            return FALSE;
+            return false;
         }
 
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_DEBUG);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_DEBUG);
     }
 
     /**
@@ -417,10 +644,10 @@ class Bronto_Common_Helper_Data
     public function isVerboseEnabled()
     {
         if (!$this->isDebugEnabled()) {
-            return FALSE;
+            return false;
         }
 
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_VERBOSE);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_VERBOSE);
     }
 
     /**
@@ -429,10 +656,10 @@ class Bronto_Common_Helper_Data
     public function isTestModeEnabled()
     {
         if (!$this->getApiToken()) {
-            return FALSE;
+            return false;
         }
 
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_TEST);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_TEST);
     }
 
     /**
@@ -441,27 +668,32 @@ class Bronto_Common_Helper_Data
     public function isNoticesEnabled()
     {
         if (!$this->getApiToken()) {
-            return FALSE;
+            return false;
         }
 
-        return (bool) $this->getAdminScopedConfig(self::XML_PATH_NOTICES);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_NOTICES);
     }
 
     /**
-     * @param string      $message
-     * @param string|null $file
+     * Write message to Debug log
+     *
+     * @param mixed $message
+     * @param null  $file
+     * @param bool  $verbose
      *
      * @return bool|void
      */
-    public function writeDebug($message, $file = NULL, $verbose = FALSE)
+    public function writeDebug($message, $file = null, $verbose = false)
     {
         if ($verbose && !$this->isVerboseEnabled()) {
-            return;
+            return false;
         }
 
         if ($this->isDebugEnabled()) {
             return $this->writeLog($message, $file, Zend_Log::DEBUG);
         }
+
+        return false;
     }
 
     /**
@@ -470,11 +702,13 @@ class Bronto_Common_Helper_Data
      *
      * @return bool|void
      */
-    public function writeVerboseDebug($message, $file = NULL)
+    public function writeVerboseDebug($message, $file = null)
     {
         if ($this->isVerboseEnabled()) {
-            return $this->writeDebug($message, $file, TRUE);
+            return $this->writeDebug($message, $file, true);
         }
+
+        return false;
     }
 
     /**
@@ -483,15 +717,14 @@ class Bronto_Common_Helper_Data
      *
      * @return bool|void
      */
-    public function writeInfo($message, $file = NULL)
+    public function writeInfo($message, $file = null)
     {
         if ($this->isNoticesEnabled()) {
             if (Mage::getSingleton('admin/session')->isLoggedIn()) {
                 /* @var $message Mage_Core_Model_Message_Notice */
                 $message = Mage::getSingleton('core/message')->notice("[Bronto] {$message}");
                 Mage::getSingleton('adminhtml/session')->addMessage($message);
-            }
-            else {
+            } else {
                 Mage::getSingleton('core/session')->addNotice("[Bronto] {$message}");
             }
         }
@@ -505,7 +738,7 @@ class Bronto_Common_Helper_Data
      *
      * @return bool|void
      */
-    public function writeError($message, $file = NULL)
+    public function writeError($message, $file = null)
     {
         if (is_object($message) && $message instanceOf Exception) {
             $message = $message->getMessage();
@@ -515,8 +748,7 @@ class Bronto_Common_Helper_Data
                 /* @var $message Mage_Core_Model_Message_Error */
                 $message = Mage::getSingleton('core/message')->error("[Bronto] {$message}");
                 Mage::getSingleton('adminhtml/session')->addMessage($message);
-            }
-            else {
+            } else {
                 Mage::getSingleton('core/session')->addError("[Bronto] {$message}");
             }
         }
@@ -531,7 +763,7 @@ class Bronto_Common_Helper_Data
      *
      * @return bool|void
      */
-    public function writeLog($message, $file = NULL, $level = Zend_Log::DEBUG)
+    public function writeLog($message, $file = null, $level = Zend_Log::DEBUG)
     {
         if (empty($file)) {
             $file = strtolower($this->_getModuleName()) . '.log';
@@ -539,28 +771,28 @@ class Bronto_Common_Helper_Data
         if (!is_string($message)) {
             if (method_exists($message, '__toString')) {
                 $message = $message->__toString();
-            }
-            else {
-                return FALSE;
+            } else {
+                return false;
             }
         }
 
-        return Mage::log($message, $level, $this->_stampFile($file), TRUE);
+        return Mage::log($message, $level, $this->_stampFile($file), true);
     }
 
     /**
      * Add Date Stamp to log file name
      *
-     * @param type $filename
+     * @param      $filename
+     * @param bool $withTime
      *
-     * @return type
+     * @return mixed
      */
-    protected function _stampFile($filename, $withTime = TRUE)
+    protected function _stampFile($filename, $withTime = true)
     {
         // Ensure var/log/bronto exists
         $logDir = Mage::getBaseDir('var') . DS . 'log' . DS . 'bronto';
         if (!is_dir($logDir)) {
-            mkdir($logDir, 0777, TRUE);
+            mkdir($logDir, 0777, true);
         }
 
         // If time stamp requested, append
@@ -575,15 +807,22 @@ class Bronto_Common_Helper_Data
 
     /**
      * Get list of active custom modules
+     *
+     * @param bool $brontoOnly
+     *
      * @return array
      */
-    public function getInstalledModules()
+    public function getInstalledModules($brontoOnly = false)
     {
         $moduleList = array();
         $modules    = Mage::getConfig()->getNode('modules')->children();
 
         foreach ($modules as $name => $module) {
-            if (strpos($name, 'Mage_') === FALSE && strpos($name, 'Enterprise_') === FALSE &&
+            if ($brontoOnly) {
+                if (strpos($name, 'Bronto_') !== false && $module->active == 'true') {
+                    $moduleList[] = strtolower($name);
+                }
+            } else if (strpos($name, 'Mage_') === false && strpos($name, 'Enterprise_') === false &&
                 $module->active == 'true'
             ) {
                 $moduleList[] = $name . ' [v' . $module->version . ' codePool: ' . $module->codePool . ']';
@@ -595,6 +834,7 @@ class Bronto_Common_Helper_Data
 
     /**
      * Get array of current scope parameters
+     *
      * @return array
      */
     public function getScopeParams()
@@ -607,11 +847,11 @@ class Bronto_Common_Helper_Data
             'scope'      => 'default',
             'default'    => 0,
             'default_id' => 0,
-            'store'      => $request->getParam('store', FALSE),
+            'store'      => $request->getParam('store', false),
             'store_id'   => 0,
-            'website'    => $request->getParam('website', FALSE),
+            'website'    => $request->getParam('website', false),
             'website_id' => 0,
-            'group'      => $request->getParam('group', FALSE),
+            'group'      => $request->getParam('group', false),
             'group_id'   => 0,
         );
 
@@ -622,15 +862,13 @@ class Bronto_Common_Helper_Data
                 $scopeParams['store_id'] = $store->getId();
             }
             $scopeParams['scope'] = 'store';
-        }
-        elseif ($scopeParams['website']) {
+        } elseif ($scopeParams['website']) {
             $website = Mage::app()->getWebsite($scopeParams['website']);
             if ($website->getId()) {
                 $scopeParams['website_id'] = $website->getId();
             }
             $scopeParams['scope'] = 'website';
-        }
-        elseif ($scopeParams['group']) {
+        } elseif ($scopeParams['group']) {
             $group = Mage::app()->getGroup($scopeParams['group']);
             if ($group->getId()) {
                 $scopeParams['group_id'] = $group->getId();
@@ -645,9 +883,10 @@ class Bronto_Common_Helper_Data
     /**
      * Get Url with scope data included
      *
-     * @param string $url
+     * @param       $url
+     * @param array $scopeParams
      *
-     * @return string
+     * @return mixed
      */
     public function getScopeUrl($url, $scopeParams = array())
     {
@@ -656,31 +895,41 @@ class Bronto_Common_Helper_Data
             'scope'                  => $curScopeParams['scope'],
             $curScopeParams['scope'] => $curScopeParams[$curScopeParams['scope']],
         );
-        $scopeParams    = array_merge($scopeParams, $curScope);
+
+        if (array_key_exists('scope', $scopeParams)) {
+            if ($scopeParams['scope'] != $curScope['scope']) {
+                unset($curScope[$curScope['scope']]);
+            }
+
+            unset($scopeParams['scope']);
+        }
+        unset($curScope['scope']);
+
+        $scopeParams = array_merge($scopeParams, $curScope);
 
         return Mage::helper('adminhtml')->getUrl($url, $scopeParams);
     }
 
     /**
-     * @param string $path
-     * @param mixed  $store
-     * @param int    $websiteId
+     * Get Scoped Config Data
+     *
+     * @param        $path
+     * @param string $scope
+     * @param int    $scopeId
      *
      * @return mixed
      */
-    public function getAdminScopedConfig($path, $store = NULL, $websiteId = NULL)
+    public function getAdminScopedConfig($path, $scope = 'default', $scopeId = 0)
     {
-        if (!is_null($store)) {
-            return Mage::getStoreConfig($path, $store);
-        }
-        elseif (!is_null($websiteId)) {
-            $website = Mage::app()->getWebsite($websiteId);
+        if ('store' == $scope) {
+            return Mage::getStoreConfig($path, $scopeId);
+        } elseif ('website' == $scope) {
+            $website = Mage::app()->getWebsite($scopeId);
 
             return $website->getConfig($path);
         }
 
         $scopeParams = $this->getScopeParams();
-        $source      = FALSE;
 
         switch ($scopeParams['scope']) {
             case 'store':
@@ -706,6 +955,7 @@ class Bronto_Common_Helper_Data
 
     /**
      * Get Array of Store Ids based on current store/website/group
+     *
      * @return boolean|array
      */
     public function getStoreIds()
@@ -726,7 +976,7 @@ class Bronto_Common_Helper_Data
                 $storeIds = $source->getStoreIds();
                 break;
             default:
-                $storeIds = array_keys(Mage::app()->getStores(TRUE));
+                $storeIds = array_keys(Mage::app()->getStores(true));
                 break;
         }
 
@@ -744,13 +994,23 @@ class Bronto_Common_Helper_Data
     }
 
     /**
+     * Is this the Professional edition?
+     *
+     * @return bool
+     */
+    public function isProfessionalEdition()
+    {
+        return ('Professional' == $this->getEdition());
+    }
+
+    /**
      * Get Edition from version Info
      *
      * @param  array|boolean $versionInfo
      *
      * @return string|boolean
      */
-    public function getEdition($versionInfo = FALSE)
+    public function getEdition($versionInfo = false)
     {
         // Ensure we have version info
         if (!$versionInfo || !is_array($versionInfo)) {
@@ -768,30 +1028,30 @@ class Bronto_Common_Helper_Data
             if (1 == $major) {
                 if ($minor < 9) {
                     return 'Community';
-                }
-                else if ($minor >= 9 && $minor < 11) {
+                } else if ($minor >= 9 && $minor < 11) {
                     return 'Professional';
-                }
-                else if ($minor >= 11) {
+                } else if ($minor >= 11) {
                     return 'Enterprise';
                 }
             }
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
      * Takes major and minor version info and determines if current magento install matches
      *
-     * @param array            $versionInfo
-     * @param int|string|array $major
-     * @param int|string|array $minor
-     * @param int|string|array $revision (Optional)
-     * @param int|string|array $patch    (Optional)
-     * @param string           $edition  (Optional)      'CE'|'Community'|'PE'|'Professional'|'EE'|'Enterprise'
+     * Uses magic method to get Arguments
      *
-     * @return boolean
+     * param array            $versionInfo
+     * param int|string|array $major
+     * param int|string|array $minor
+     * param int|string|array $revision (Optional)
+     * param int|string|array $patch    (Optional)
+     * param string           $edition  (Optional)      'CE'|'Community'|'PE'|'Professional'|'EE'|'Enterprise'
+     *
+     * @return bool
      */
     public function isVersionMatch()
     {
@@ -809,7 +1069,7 @@ class Bronto_Common_Helper_Data
 
         // At least version info and one other
         if (!array_key_exists('versionInfo', $parts) || count($parts) < 2) {
-            return FALSE;
+            return false;
         }
 
         // Get Magento Version from passed arguments
@@ -833,7 +1093,7 @@ class Bronto_Common_Helper_Data
 
             // Cycle through compare value array to compare against 
             // current Magento version element
-            $internalMatch = FALSE;
+            $internalMatch = false;
             foreach ($value as $option) {
                 $operator = '==';
                 $compare  = $option;
@@ -845,7 +1105,7 @@ class Bronto_Common_Helper_Data
                 }
 
                 if ($index == 'edition') {
-                    // handle posibility of initials being used
+                    // handle possibility of initials being used
                     switch (strtoupper($compare)) {
                         case 'EE':
                             $compare = 'Enterprise';
@@ -862,8 +1122,7 @@ class Bronto_Common_Helper_Data
 
                     // If response from getEdition matches compare edition
                     $internalMatch = ($mValue == $compare);
-                }
-                else {
+                } else {
                     // Use version_compare to compare the Magento version to the
                     // Current compare version using the provided operator
                     $internalMatch = version_compare($mValue, $compare, $operator);
@@ -877,12 +1136,12 @@ class Bronto_Common_Helper_Data
             // If the internal Match flag hasn't been set to true, 
             // there is no match
             if (!$internalMatch) {
-                return FALSE;
+                return false;
             }
         }
 
         // If we haven't returned false yet, that means there is a match
-        return TRUE;
+        return true;
     }
 
     /**
@@ -896,7 +1155,7 @@ class Bronto_Common_Helper_Data
     {
         // Parts must be array
         if (!is_array($parts)) {
-            return FALSE;
+            return false;
         }
 
         // Generate index map values

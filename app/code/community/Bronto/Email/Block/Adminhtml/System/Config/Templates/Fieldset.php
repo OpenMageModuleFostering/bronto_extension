@@ -1,6 +1,7 @@
 <?php
 
-class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage_Adminhtml_Block_System_Config_Form_Fieldset {
+class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage_Adminhtml_Block_System_Config_Form_Fieldset
+{
 
     protected $_dummyElement;
     protected $_dummyLabel;
@@ -8,31 +9,40 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * @see parent
+     *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
-    protected function _getHeaderHtml($element) {
-        return '<tr id="' . $element->getId() . '"><td cellspan="5">
+    protected function _getHeaderHtml($element)
+    {
+        return '<tr id="' . $element->getId() . '"><td colspan="5">
                 <fieldset><legend style="font-weight:bold; visibility:inherit; font-size:16px; width:inherit; height:inherit; line-height:inherit;">' . $element->getLabel() . '</legend>
                 <table class="form-list" cellspacing="0">';
     }
 
     /**
      * @see parent
+     *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
-    protected function _getFooterHtml($element) {
+    protected function _getFooterHtml($element)
+    {
         return '</table></fieldset></td></tr>';
     }
 
     /**
      * @see parent
+     *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
-    public function render(Varien_Data_Form_Element_Abstract $element) {
-        $html = $this->_getHeaderHtml($element);
+    public function render(Varien_Data_Form_Element_Abstract $element)
+    {
+        $html  = $this->_getHeaderHtml($element);
         $order = 0;
         foreach ($element->getFieldConfig()->getGroups() as $group => $groupData) {
             $order = $order + 5;
@@ -48,32 +58,37 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
         }
 
         $html .= $this->_getFooterHtml($element);
+
         return $html;
     }
 
     /**
      * this sets the fields renderer. If you have a custom renderer you can change this.
-     * @return type
+     *
+     * @return object
      */
     protected function _getFieldRenderer()
     {
         if (empty($this->_fieldRenderer)) {
             $this->_fieldRenderer = Mage::getBlockSingleton('adminhtml/system_config_form_field');
         }
+
         return $this->_fieldRenderer;
     }
 
     /**
      * Get HTML for field element
+     *
      * @param Varien_Data_Form_Element_Abstract $fieldset
-     * @param array $field
-     * @param int $order
+     * @param array                             $field
+     * @param int                               $order
+     *
      * @return string
      */
     protected function _getFieldHtml(Varien_Data_Form_Element_Abstract $fieldset, array $field, $order)
     {
         // Create Select Field
-        $element = $this->_getDummyElement($order);
+        $element   = $this->_getDummyElement($order);
         $tempField = $this->_createField($fieldset, $element, $field);
         if (!$tempField) {
             return '';
@@ -84,17 +99,19 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Get HTML for label element
+     *
      * @param Varien_Data_Form_Element_Abstract $fieldset
-     * @param string $section
-     * @param string $group
-     * @param array $groupData
-     * @param int $order
+     * @param string                            $section
+     * @param string                            $group
+     * @param array                             $groupData
+     * @param int                               $order
+     *
      * @return string
      */
     protected function _getLabelHtml(Varien_Data_Form_Element_Abstract $fieldset, $section, $group, array $groupData, $order)
     {
         $element = $this->_getDummyLabel($order);
-        $label = $this->_createLabel($fieldset, $element, $groupData, $section, $group);
+        $label   = $this->_createLabel($fieldset, $element, $groupData, $section, $group);
         if (!$label) {
             return '';
         }
@@ -104,21 +121,23 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Get dummy field element to set specific configurations
+     *
      * @param int $order
+     *
      * @return Varien_Object
      */
     protected function _getDummyElement($order)
     {
         if (empty($this->_dummyElement)) {
             $this->_dummyElement = new Varien_Object(array(
-                'sort_order' => $order,
-                'frontend_type' => 'select',
-                'frontend_model' => 'bronto_email/adminhtml_system_config_templates_field',
-                'backend_model' => 'bronto_email/system_config_backend_templates_field',
-                'source_model' => 'bronto_email/system_config_source_email_template',
+                'sort_order'      => $order,
+                'frontend_type'   => 'select',
+                'frontend_model'  => 'bronto_email/adminhtml_system_config_templates_field',
+                'backend_model'   => 'bronto_email/system_config_backend_templates_field',
+                'source_model'    => 'bronto_email/system_config_source_email_template',
                 'show_in_default' => 1,
                 'show_in_website' => 1,
-                'show_in_store' => 1,
+                'show_in_store'   => 1,
             ));
         }
 
@@ -127,19 +146,21 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Get dummy label element to set specific configurations
+     *
      * @param int $order
+     *
      * @return Varien_Object
      */
     protected function _getDummyLabel($order)
     {
         if (empty($this->_dummyLabel)) {
             $this->_dummyLabel = new Varien_Object(array(
-                'sort_order' => $order,
-                'frontend_type' => 'label',
-                'frontend_model' => 'bronto_email/adminhtml_system_config_templates_label',
+                'sort_order'      => $order,
+                'frontend_type'   => 'label',
+                'frontend_model'  => 'bronto_email/adminhtml_system_config_templates_label',
                 'show_in_default' => 1,
                 'show_in_website' => 1,
-                'show_in_store' => 1,
+                'show_in_store'   => 1,
             ));
         }
 
@@ -148,9 +169,11 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Create Field and Return it
+     *
      * @param Varien_Data_Form_Element_Abstract $fieldset
-     * @param Varien_Object $element
-     * @param array $field
+     * @param Varien_Object                     $element
+     * @param array                             $field
+     *
      * @return Varien_Data_Form_Element_Abstract
      */
     protected function _createField(
@@ -166,18 +189,18 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
         $configData = $this->getConfigData($path);
 
         // Build Id and Code from Path
-        $fieldId = implode('-', explode('/', $field['path']));
+        $fieldId   = implode('-', explode('/', $field['path']));
         $fieldCode = 'bronto_email_templates_' . $fieldId;
 
-        $data = false;
+        $data    = false;
         $inherit = true;
         if (array_key_exists($path, $configData)) {
-            $data = $configData[$path]['data'];
+            $data    = $configData[$path]['data'];
             $inherit = $configData[$path]['inherit'];
         }
 
         if (!$data) {
-            $data = (string)Mage::getConfig()->getNode(null, $this->getForm()->getScope(), $this->getForm()->getScopeCode())->descend($path);
+            $data    = (string)Mage::getConfig()->getNode(null, $this->getForm()->getScope(), $this->getForm()->getScopeCode())->descend($path);
             $inherit = true;
         }
 
@@ -190,12 +213,12 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
         // Define Type, Name, and Label
         $fieldType = (string)$element->frontend_type ? (string)$element->frontend_type : 'text';
-        $name = 'groups[templates][fields][' . $fieldId . '][value]';
+        $name      = 'groups[templates][fields][' . $fieldId . '][value]';
 
         // Build Field Label from path
         $pathParts = explode('/', $path);
         $labelPart = array_pop($pathParts);
-        $label = str_replace('_', ' ', uc_words($labelPart));
+        $label     = str_replace('_', ' ', uc_words($labelPart));
 
         // Pass through backend model in case it needs to modify value
         if ($element->backend_model) {
@@ -210,14 +233,14 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
         // Select Field for Existing attributes.
         $field = $fieldset->addField($fieldCode, $fieldType,
             array(
-                'name' => $name,
-                'label' => $label,
-                'value' => $data,
-                'inherit' => $inherit,
-                'field_config' => $element,
-                'scope' => $this->getForm()->getScope(),
-                'scopeId' => $this->getForm()->getScopeId(),
-                'scope_label' => $this->getForm()->getScopeLabel($element),
+                'name'                  => $name,
+                'label'                 => $label,
+                'value'                 => $data,
+                'inherit'               => $inherit,
+                'field_config'          => $element,
+                'scope'                 => $this->getForm()->getScope(),
+                'scopeId'               => $this->getForm()->getScopeId(),
+                'scope_label'           => $this->getForm()->getScopeLabel($element),
                 'can_use_default_value' => $this->getForm()->canUseDefaultValue((int)$element->show_in_default),
                 'can_use_website_value' => $this->getForm()->canUseWebsiteValue((int)$element->show_in_website),
             )
@@ -251,10 +274,14 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Create Label and Return it
+     *
      * @param Varien_Data_Form_Element_Abstract $fieldset
-     * @param Varien_Object $e
-     * @param array $field
-     * @return Varien_Data_Form_Element_Abstract
+     * @param Varien_Object                     $element
+     * @param array                             $groupData
+     * @param                                   $section
+     * @param                                   $group
+     *
+     * @return string|Varien_Data_Form_Element_Abstract
      */
     protected function _createLabel(
         Varien_Data_Form_Element_Abstract $fieldset,
@@ -266,7 +293,7 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
     {
         $configCode = 'bronto_email_templates_label_' . $section . '_' . $group;
 
-        $data = $groupData['parts'][2]['title'];
+        $data    = $groupData['parts'][2]['title'];
         $inherit = false;
 
         // Get field Renderer
@@ -278,17 +305,17 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
         // Define Type, Name, and Label
         $fieldType = 'label';
-        $label = $data;
+        $label     = $data;
 
         try {
             // Select Field for Existing attributes.
             $field = $fieldset->addField($configCode, $fieldType,
                 array(
-                    'label' => $label,
-                    'inherit' => $inherit,
-                    'field_config' => $element,
-                    'scope' => $this->getForm()->getScope(),
-                    'scopeId' => $this->getForm()->getScopeId(),
+                    'label'                 => $label,
+                    'inherit'               => $inherit,
+                    'field_config'          => $element,
+                    'scope'                 => $this->getForm()->getScope(),
+                    'scopeId'               => $this->getForm()->getScopeId(),
                     'can_use_default_value' => $this->getForm()->canUseDefaultValue((int)$element->show_in_default),
                     'can_use_website_value' => $this->getForm()->canUseWebsiteValue((int)$element->show_in_website),
                 )
@@ -298,6 +325,7 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
             $field->setRenderer($fieldRenderer);
         } catch (Exception $e) {
             Mage::helper('bronto_customer')->writeDebug('Creating field failed: ' . $e->getMessage());
+
             return '';
         }
 
@@ -306,8 +334,10 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Override getConfigData to handle us altering the path
-     * @param type $path
-     * @return type
+     *
+     * @param $path
+     *
+     * @return array
      */
     public function getConfigData($path)
     {
@@ -316,7 +346,7 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
         $configDataCollection = $this->_getConfigCollection($path);
 
         // Get Scope
-        $scope = $this->getForm()->getScope();
+        $scope   = $this->getForm()->getScope();
         $scopeId = $this->getForm()->getScopeId();
 
         $inherit = false;
@@ -328,15 +358,16 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
                         ($scopeId == $config->getScopeId()) &&
                         (!is_null($config->getValue()))
                     ) {
-                        $configData[$path]['data'] = $config->getValue();
+                        $configData[$path]['data']    = $config->getValue();
                         $configData[$path]['inherit'] = $inherit;
+
                         return $configData;
                     }
                 }
                 $scopeParent = $this->_getScopeParent($scope, $scopeId);
-                $scope = $scopeParent['scope'];
-                $scopeId = $scopeParent['scope_id'];
-                $inherit = true;
+                $scope       = $scopeParent['scope'];
+                $scopeId     = $scopeParent['scope_id'];
+                $inherit     = true;
             }
         }
 
@@ -345,7 +376,9 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Get Config Data Collection for Path
-     * @param type $path
+     *
+     * @param $path
+     *
      * @return Mage_Core_Model_Resource_Config_Data_Collection
      */
     protected function _getConfigCollection($path)
@@ -359,8 +392,10 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
     /**
      * Get Parent Scope
-     * @param string $scope
+     *
+     * @param string     $scope
      * @param string|int $scopeId
+     *
      * @return array
      */
     protected function _getScopeParent($scope, $scopeId)
@@ -371,16 +406,16 @@ class Bronto_Email_Block_Adminhtml_System_Config_Templates_Fieldset extends Mage
 
         switch ($scope) {
             case 'stores':
-                $scope = 'websites';
+                $scope   = 'websites';
                 $scopeId = Mage::app()->getStore($scopeId)->getWebsiteId();
                 break;
             case 'websites':
-                $scope = 'default';
+                $scope   = 'default';
                 $scopeId = 0;
                 break;
             case 'default':
             default:
-                $scope = false;
+                $scope   = false;
                 $scopeId = false;
                 break;
         }

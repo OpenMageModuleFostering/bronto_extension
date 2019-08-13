@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 interface Bronto_Verify_Model_Config_ConfigInterface
 {
@@ -16,6 +15,7 @@ interface Bronto_Verify_Model_Config_ConfigInterface
      * find all rewrites on XML node elements
      *
      * @param Bronto_Verify_Model_Core_Config_Element $config XML node
+     *
      * @access public
      */
     public function getRewrites(Bronto_Verify_Model_Core_Config_Element $config);

@@ -105,6 +105,7 @@
         <bronto_customer>
             <settings>
                 <enabled>0</enabled>
+                <mage_cron>1</mage_cron>
                 <frequency>D</frequency>
                 <interval>15</interval>
                 <minutes>0</minutes>

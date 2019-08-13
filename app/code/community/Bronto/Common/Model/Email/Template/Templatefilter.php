@@ -19,6 +19,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
     /**
      *
      * @param array $construction
+     *
      * @return string
      */
     public function layoutDirective($construction)
@@ -41,6 +42,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
                 return '';
                 break;
         }
+
         return $this->_addBrontoStyle($return);
     }
 
@@ -48,6 +50,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
      * Retrieve block parameters
      *
      * @param mixed $value
+     *
      * @return array
      */
     protected function _getBlockParameters($value)
@@ -63,6 +66,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
      * Support url and direct_url properties
      *
      * @param array $construction
+     *
      * @return string
      */
     public function storeDirective($construction)
@@ -104,16 +108,16 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
      *     allowed_tags - Comma separated html tags that have not to be converted
      *
      * @param array $construction
+     *
      * @return string
      */
     public function htmlescapeDirective($construction)
     {
-        $params = $this->_getIncludeParameters($construction[2]);
-
-        if (strstr($construction[2], 'var') === FALSE) {
+        if (strstr($construction[2], 'var') === false) {
             return '';
         }
         $returnVariable = $this->processVariable(str_replace('var=$', '', $construction[2]));
+
         return $this->_addBrontoStyle($returnVariable);
     }
 
@@ -121,11 +125,13 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
      * Var directive with modifiers support
      *
      * @param array $construction
+     *
      * @return string
      */
     public function varDirective($construction)
     {
         $returnVariable = $this->processVariable($construction[2]);
+
         return $this->_addBrontoStyle($returnVariable);
     }
 
@@ -160,6 +166,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
                 unset($parts[$i]);
             }
         }
+
         return implode('_', $parts);
     }
 
@@ -173,6 +180,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
      * also allow additional parameter "store"
      *
      * @param array $construction
+     *
      * @return string
      */
     public function protocolDirective($construction)
@@ -184,11 +192,11 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
      * Store config directive
      *
      * @param array $construction
+     *
      * @return string
      */
     public function configDirective($construction)
     {
-        $configValue = '';
         $params = $this->_getIncludeParameters($construction[2]);
 
         switch ($params['path']) {
@@ -205,14 +213,16 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
                 $returnValue = str_replace('/', '_', $params['path']);
                 break;
         }
+
         return $this->_addBrontoStyle($returnValue);
     }
 
     /**
      * Filter the string as template.
-     * Rewrited for logging exceptions
+     * Rewritten for logging exceptions
      *
      * @param string $value
+     *
      * @return string
      */
     public function filter($value)
@@ -223,6 +233,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
             $value = '';
             Mage::logException($e);
         }
+
         return $value;
     }
 
@@ -255,6 +266,7 @@ class Bronto_Common_Model_Email_Template_Templatefilter extends Mage_Core_Model_
                 $string{0} = strtolower($string{0});
             }
         }
+
         return $string;
     }
 

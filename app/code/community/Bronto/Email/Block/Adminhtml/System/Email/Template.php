@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_Block_System_Email_Template
 {
@@ -28,18 +27,18 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_
         $this->setChild('add_button',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label' => Mage::helper('adminhtml')->__('Add Bronto Message'),
+                    'label'   => Mage::helper('adminhtml')->__('Add Bronto Message'),
                     'onclick' => "window.location='" . $this->getCreateUrl() . "'",
-                    'class' => 'add'
+                    'class'   => 'add'
                 ))
         );
 
         $this->setChild('import_button',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label' => Mage::helper('adminhtml')->__('Import Existing Templates'),
+                    'label'   => Mage::helper('adminhtml')->__('Import Existing Templates'),
                     'onclick' => "window.location='" . $this->getImportUrl() . "'",
-                    'class' => 'go'
+                    'class'   => 'go'
                 ))
         );
 
@@ -47,9 +46,9 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_
             $this->setChild('log_button',
                 $this->getLayout()->createBlock('adminhtml/widget_button')
                     ->setData(array(
-                        'label' => Mage::helper('adminhtml')->__('Delivery Log'),
+                        'label'   => Mage::helper('adminhtml')->__('Delivery Log'),
                         'onclick' => "window.location='" . $this->getLogUrl() . "'",
-                        'class' => 'go'
+                        'class'   => 'go'
                     ))
             );
         }
@@ -76,7 +75,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_
     /**
      * Get URL for create new email template
      *
-     * @return type
+     * @return string
      */
     public function getCreateUrl()
     {
@@ -105,11 +104,13 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_
 
     /**
      * Get link to transactional email configuration
-     * @return type
+     *
+     * @return string
      */
     public function getConfigLink()
     {
-        $url = $this->getUrl('/system_config/edit/section/bronto_email');
+        $url = $this->getUrl('*/system_config/edit', array('section' => 'bronto_email'));
+
         return '<strong>System &rsaquo; Configuration &raquo; Bronto &rsaquo; <a href="' . $url . '" title="Transactional Emails">Transactional Emails</a></strong>';
     }
 
@@ -117,7 +118,8 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template extends Mage_Adminhtml_
      * Generate url by route and parameters
      *
      * @param   string $route
-     * @param   array $params
+     * @param   array  $params
+     *
      * @return  string
      */
     public function getUrl($route = '', $params = array())

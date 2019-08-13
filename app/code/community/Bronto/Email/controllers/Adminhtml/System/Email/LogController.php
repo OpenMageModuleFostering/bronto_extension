@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Adminhtml_System_Email_LogController extends Mage_Adminhtml_Controller_Action
 {
@@ -16,6 +15,7 @@ class Bronto_Email_Adminhtml_System_Email_LogController extends Mage_Adminhtml_C
                 Mage::helper('bronto_email')->__('Bronto Delivery Log'),
                 Mage::helper('bronto_email')->__('Bronto Delivery Log')
             );
+
         return $this;
     }
 

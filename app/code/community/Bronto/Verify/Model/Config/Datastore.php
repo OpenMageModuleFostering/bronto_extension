@@ -8,13 +8,13 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Config_Datastore
     extends Mage_Core_Model_Abstract
 {
     /**
      * data store
+     *
      * @var array
      * @access protected
      */
@@ -23,8 +23,8 @@ class Bronto_Verify_Model_Config_Datastore
     /**
      * store rewrite
      *
-     * @param string $oldValue   node name being overwritten
-     * @param string $newValue   node name that is being set to current
+     * @param string      $oldValue   node name being overwritten
+     * @param string      $newValue   node name that is being set to current
      * @param string|null $configFile (optional) Config file with rewrite
      * @param string|null $path       (optional) path to node in XML
      *
@@ -45,8 +45,8 @@ class Bronto_Verify_Model_Config_Datastore
         $this->_store[] = array(
             'oldValue' => $oldValue,
             'newValue' => $newValue,
-            'file' => $configFile,
-            'path' => $path
+            'file'     => $configFile,
+            'path'     => $path
         );
     }
 

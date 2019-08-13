@@ -3,12 +3,12 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Hidden extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
     /**
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     public function render(Varien_Data_Form_Element_Abstract $element)

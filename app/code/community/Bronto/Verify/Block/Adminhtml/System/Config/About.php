@@ -8,7 +8,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Block_Adminhtml_System_Config_About
     extends Bronto_Common_Block_Adminhtml_System_Config_About
@@ -16,6 +15,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_About
 
     /**
      * Description for protected
+     *
      * @var string
      * @access protected
      */
@@ -23,6 +23,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_About
 
     /**
      * Description for protected
+     *
      * @var string
      * @access protected
      */

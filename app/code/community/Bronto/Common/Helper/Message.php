@@ -3,23 +3,38 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.6.7
  */
 class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
 {
     /**
-     * @param string $messageId
+     * Get Bronto Message Object by ID
+     *
+     * @param      $messageId
+     * @param null $storeId
+     * @param null $websiteId
+     *
      * @return Bronto_Api_Message_Row
      */
     public function getMessageById($messageId, $storeId = null, $websiteId = null)
     {
+        if (!is_null($storeId)) {
+            $scope   = 'store';
+            $scopeId = $storeId;
+        } elseif (!is_null($websiteId)) {
+            $scope   = 'website';
+            $scopeId = $websiteId;
+        } else {
+            $scope   = 'default';
+            $scopeId = 0;
+        }
+
         /* @var $messageObject Bronto_Api_Message */
-        $messageObject = $this->getApi(null, $storeId, $websiteId)->getMessageObject();
+        $messageObject = $this->getApi(null, $scope, $scopeId)->getMessageObject();
 
         // Load Message
         try {
             /* @var $message Bronto_Api_Message_Row */
-            $message = $messageObject->createRow();
+            $message     = $messageObject->createRow();
             $message->id = $messageId;
             $message->read();
         } catch (Exception $e) {
@@ -42,12 +57,11 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
                     continue;
                 }
                 foreach ($stores as $store) {
-                    if (Mage::helper('bronto_email')->isEnabled($store->getId())) {
-                        $storeMessages = Mage::helper('bronto_common/message')
-                            ->getMessagesOptionsArray(
-                                $store->getId(),
-                                $website->getId()
-                            );
+                    if (Mage::helper('bronto_email')->isEnabled('store', $store->getId())) {
+                        $storeMessages  = $this->getMessagesOptionsArray(
+                            $store->getId(),
+                            $website->getId()
+                        );
                         $messageOptions = array_merge($messageOptions, $storeMessages);
                     }
                 }
@@ -69,18 +83,34 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
     /**
      * Retrieve array of available Bronto Messages
      *
+     * @param null  $store
+     * @param null  $websiteId
+     * @param array $filter
+     * @param bool  $withCreateNew
+     *
      * @return array
      */
     public function getMessagesOptionsArray($store = null, $websiteId = null, $filter = array(), $withCreateNew = false)
     {
+        if (!is_null($store)) {
+            $scope   = 'store';
+            $scopeId = $store;
+        } elseif (!is_null($websiteId)) {
+            $scope   = 'website';
+            $scopeId = $websiteId;
+        } else {
+            $scope   = 'default';
+            $scopeId = 0;
+        }
+
         /* @var $api Bronto_Api */
-        $api = $this->getApi(null, $store, $websiteId);
+        $api = $this->getApi(null, $scope, $scopeId);
 
         if ($api) {
             /* @var $messageObject Bronto_Api_Message */
             $messageObject = $api->getMessageObject();
 
-            $options = array();
+            $options    = array();
             $pageNumber = 1;
 
             try {
@@ -106,14 +136,14 @@ class Bronto_Common_Helper_Message extends Bronto_Common_Helper_Data
         if ($withCreateNew) {
             // Add Create New.. Option
             array_unshift($options, array(
-                 'label' => '** Create New...',
-                 'value' => '_new_'
+                'label' => '** Create New...',
+                'value' => '_new_'
             ));
         } else {
             // Add -- None Selected -- Option
             array_unshift($options, array(
-                 'label' => '-- None Selected --',
-                 'value' => ''
+                'label' => '-- None Selected --',
+                'value' => ''
             ));
         }
 

@@ -8,13 +8,13 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Helper_Roundtrip
     extends Bronto_Verify_Helper_Data
 {
     /**
      * API Token Status
+     *
      * @var integer
      * @access private
      */
@@ -22,9 +22,6 @@ class Bronto_Verify_Helper_Roundtrip
 
     /**
      * Get API Token Validation Status
-     *
-     * @return void
-     * @access public
      */
     public function __construct()
     {
@@ -66,12 +63,12 @@ class Bronto_Verify_Helper_Roundtrip
     /**
      * Get a formatted version of the API Token status text scoped to current admin scope
      *
-     * @return type
-     * @access public
+     * @return string
      */
     public function getAdminScopedRoundtripStatusText()
     {
         $this->_status = $this->getAdminScopedConfig($this->getPath('roundtrip_status'));
+
         return $this->_getRoundtripStatusText();
     }
 }

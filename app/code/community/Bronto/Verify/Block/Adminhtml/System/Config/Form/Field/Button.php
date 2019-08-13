@@ -23,6 +23,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Button
     public function render(Varien_Data_Form_Element_Abstract $element)
     {
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
+
         return parent::render($element);
     }
 
@@ -31,8 +32,8 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Form_Field_Button
         $originalData = $element->getOriginalData();
         $this->addData(array(
             'button_label' => Mage::helper('bronto_verify')->__($originalData['button_label']),
-            'html_id' => $element->getHtmlId(),
-            'ajax_url' => Mage::getSingleton('adminhtml/url')->getUrl('*/permissionchecker/verify')
+            'html_id'      => $element->getHtmlId(),
+            'ajax_url'     => Mage::getSingleton('adminhtml/url')->getUrl('*/permissionchecker/verify')
         ));
 
         return $this->_toHtml();

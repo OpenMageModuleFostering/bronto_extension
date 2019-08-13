@@ -7,12 +7,12 @@ class Bronto_Common_Block_Adminhtml_System_Config_Form_Field_Support extends Mag
      * Override for disabling support information until API token is set
      *
      * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
-        $helper = Mage::helper('bronto_common');
-        if (!$helper->validApiToken()) {
+        if (!Mage::helper('bronto_verify/apitoken')->getStatus()) {
             $element->setDisabled('disabled');
         }
 

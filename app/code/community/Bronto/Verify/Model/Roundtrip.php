@@ -8,13 +8,13 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Roundtrip
 {
     /**
      * Helper Object for class
-     * @var type
+     *
+     * @var
      */
     private $_helper;
 
@@ -38,7 +38,7 @@ class Bronto_Verify_Model_Roundtrip
         ob_start();
 
         // Commented out due to a 500 error when not requesting body
-//	curl_setopt($ch, CURLOPT_NOBODY, true); // don't return body, just return header
+        //	curl_setopt($ch, CURLOPT_NOBODY, true); // don't return body, just return header
 
         $ch = curl_init(Bronto_Api::BASE_WSDL);
         curl_exec($ch);

@@ -6,6 +6,9 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
      */
     protected $_helper = 'bronto_email';
 
+    /**
+     * Constructor
+     */
     public function _construct()
     {
         $this->_init('bronto_email/template');
@@ -13,9 +16,12 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
 
     /**
      * Get Template from original template code and store Id
-     * @param string $templateCode
-     * @param int|bool $storeId
-     * @return array
+     *
+     * @param      $templateCode
+     * @param bool $storeId
+     * @param null $locale
+     *
+     * @return $this
      */
     public function loadByOriginalCode($templateCode, $storeId = false, $locale = null)
     {
@@ -33,6 +39,7 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
 
     /**
      * Handle loading Existing and Default Magento templates
+     *
      * @return boolean
      */
     public function handleDefaultTemplates()
@@ -54,13 +61,15 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
      * Load default email template from locale translate
      *
      * @param string $templateId
-     * @param string $locale
+     * @param mixed  $locale
+     *
+     * @return $this
      */
     public function loadDefault($templateId, $locale = null)
     {
         $defaultTemplates = self::getDefaultTemplates();
 
-        if (!is_string($templateId) || !array_key_exists($templateId, $defaultTemplates)) {
+        if (!is_string($templateId) || !array_key_exists($templateId, $defaultTemplates) || $templateId == 'nosend') {
             return $this;
         }
 
@@ -99,7 +108,7 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
     }
 
     /**
-     * Collect all system config pathes where current template is used as default
+     * Collect all system config paths where current template is used as default
      *
      * @return array
      */
@@ -111,7 +120,7 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
         }
 
         $templatePaths = Mage::helper($this->_helper)->getTemplatePaths();
-        $paths = array();
+        $paths         = array();
 
         // find nodes which are using $templateCode value
         $defaultCfgNodes = Mage::getConfig()->getXpath('default/*/*[*="' . $templateCode . '"]');
@@ -123,9 +132,9 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
         foreach ($defaultCfgNodes as $node) {
             // create email template path in system.xml
             $sectionName = $node->getParent()->getName();
-            $groupName = $node->getName();
-            $fieldName = substr($templateCode, strlen($sectionName . '_' . $groupName . '_'));
-            $path = implode('/', array($sectionName, $groupName, $fieldName));
+            $groupName   = $node->getName();
+            $fieldName   = substr($templateCode, strlen($sectionName . '_' . $groupName . '_'));
+            $path        = implode('/', array($sectionName, $groupName, $fieldName));
 
             if (in_array($path, $templatePaths)) {
                 $paths[] = array('path' => $path);
@@ -136,7 +145,7 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
     }
 
     /**
-     * Collect all system config pathes where current template is currently used
+     * Collect all system config paths where current template is currently used
      *
      * @return array
      */
@@ -184,8 +193,8 @@ class Bronto_Email_Model_Template extends Bronto_Common_Model_Email_Template
     /**
      * Log data on sending message
      *
-     * @param bool $success
-     * @param string $error
+     * @param bool                    $success
+     * @param string                  $error
      * @param Bronto_Api_Delivery_Row $delivery
      *
      * @return void

@@ -3,28 +3,49 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
-class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bronto_Common_Helper_DataInterface
+class Bronto_Email_Helper_Data
+    extends Bronto_Common_Helper_Data
+    implements Bronto_Common_Helper_DataInterface
 {
-    const XML_PATH_ENABLED = 'bronto_email/settings/enabled';
-    const XML_PATH_USE_BRONTO = 'bronto_email/settings/use_bronto';
-    const XML_PATH_LOG_ENABLED = 'bronto_email/settings/log_enabled';
+    const XML_PATH_ENABLED            = 'bronto_email/settings/enabled';
+    const XML_PATH_USE_BRONTO         = 'bronto_email/settings/use_bronto';
+    const XML_PATH_LOG_ENABLED        = 'bronto_email/settings/log_enabled';
     const XML_PATH_LOG_FIELDS_ENABLED = 'bronto_email/settings/log_fields_enabled';
-
-    /**
-     * @param string $path
-     * @return bool
-     */
-    public function disableModule($scope = 'default', $scopeId = 0)
-    {
-        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId);
-    }
 
     /**
      * Xml path to email template nodes
      */
     const XML_PATH_TEMPLATE_EMAIL = '//sections/*/groups/*/fields/*[source_model="adminhtml/system_config_source_email_template"]';
+
+    /**
+     * Module Human Readable Name
+     */
+    protected $_name = 'Bronto Transactional Emails';
+
+    /**
+     * Get Human Readable Name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->__($this->_name);
+    }
+
+    /**
+     * Disable Module for specified Scope
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     * @param bool   $deleteConfig
+     *
+     * @return bool
+     */
+    public function disableModule($scope = 'default', $scopeId = 0, $deleteConfig = false)
+    {
+        return $this->_disableModule(self::XML_PATH_ENABLED, $scope, $scopeId, $deleteConfig);
+    }
 
     /**
      * Retrieve helper module name
@@ -46,26 +67,32 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
         $stores = Mage::app()->getStores();
         if (is_array($stores) && count($stores) >= 1) {
             foreach ($stores as $store) {
-                if ($this->isEnabled($store->getId())) {
+                if ($this->isEnabled('store', $store->getId())) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
     /**
-     * @param string|int $store
-     * @param string|int $website
+     * Check if module is enabled
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     *
      * @return bool
      */
-    public function isEnabled($store = null, $website = null)
+    public function isEnabled($scope = 'default', $scopeId = 0)
     {
-        if (!$this->getApiToken($store, $website)) {
+        // Check if valid token is present
+        if (!$this->validApiToken(null, $scope, $scopeId)) {
             return false;
         }
 
-        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $store, $website);
+        // Get Enabled Scope
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_ENABLED, $scope, $scopeId);
     }
 
     /*
@@ -75,7 +102,7 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
      */
     public function getModuleEnabledText()
     {
-        $message = parent::getModuleEnabledText();
+        $message   = parent::getModuleEnabledText();
         $scopeData = $this->getScopeParams();
         if ($scopeData['scope'] != 'default') {
             $message = $this->__(
@@ -84,48 +111,41 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
                 'and select the desired templates.'
             );
         }
+
         return $message;
     }
 
     /**
      * Get Config setting for sending through bronto
      *
-     * @param string|int $store
-     * @param string|int $website
-     * @return boolean
+     * @param string $scope
+     * @param int    $scopeId
+     *
+     * @return bool
      */
-    public function canUseBronto($store = null, $website = null)
+    public function canUseBronto($scope = 'default', $scopeId = 0)
     {
-        if (!$this->getApiToken($store, $website)) {
+        if (!$this->getApiToken($scope, $scopeId)) {
             return false;
         }
 
-        return (bool)$this->getAdminScopedConfig(self::XML_PATH_USE_BRONTO, $store, $website);
+        return (bool)$this->getAdminScopedConfig(self::XML_PATH_USE_BRONTO, $scope, $scopeId);
     }
 
     /**
      * Sets the "Send through Bronto" option for any config scope
      *
-     * @param boolean $brontoSend
-     * @param int $storeId
-     * @param int $websiteId
-     * @return Bronto_Email_Helper_Data
+     * @param        $brontoSend
+     * @param string $scope
+     * @param int    $scopeId
+     *
+     * @return $this
      */
-    public function setUseBronto($brontoSend, $storeId = null, $websiteId = null)
+    public function setUseBronto($brontoSend, $scope = 'default', $scopeId = 0)
     {
-        if (!is_null($storeId)) {
-            $scope = 'stores';
-            $scopeId = $storeId;
-        } else if (!is_null($websiteId)) {
-            $scope = 'websites';
-            $scopeId = $websiteId;
-        } else {
-            $scope = 'default';
-            $scopeId = '0';
-        }
-
         $config = Mage::getModel('core/config');
         $config->saveConfig(self::XML_PATH_USE_BRONTO, $brontoSend ? '1' : '0', $scope, $scopeId);
+
         return $this;
     }
 
@@ -133,11 +153,13 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
      * Determine if email can be sent through bronto
      *
      * @param Mage_Core_Model_Email_Template $template
-     * @return boolean
+     * @param null                           $storeId
+     *
+     * @return bool
      */
     public function canSendBronto(Mage_Core_Model_Email_Template $template, $storeId = null)
     {
-        if ($this->isEnabled($storeId) && $this->canUseBronto($storeId) && $template->getTemplateSendType() != 'magento') {
+        if ($this->isEnabled('store', $storeId) && $this->canUseBronto('store', $storeId) && $template->getTemplateSendType() != 'magento') {
             return true;
         }
 
@@ -164,7 +186,8 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
      * @see parent
      * @return bool
      */
-    public function hasCustomConfig() {
+    public function hasCustomConfig()
+    {
         return true;
     }
 
@@ -173,13 +196,14 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
      *
      * @return array
      */
-    public function getCustomConfig() {
-        $emails = array();
+    public function getCustomConfig()
+    {
+        $emails    = array();
         $templates = Mage::getModel('bronto_email/template')->getCollection();
 
         if ($this->isVersionMatch(Mage::getVersionInfo(), 1, array(4, 5, 9, 10))) {
             $templateTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/template');
-            $brontoTable = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
+            $brontoTable   = Mage::getSingleton('core/resource')->getTableName('bronto_email/message');
             $templates->getSelect()->joinLeft(
                 $brontoTable,
                 "`{$templateTable}`.`template_id` = `{$brontoTable}`.`core_template_id`"
@@ -190,11 +214,11 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
 
         foreach ($templates as $template) {
             $emails[] = array(
-                'template_id' => $template->getTemplateId(),
-                'template_code' => $template->getTemplateCode(),
-                'bronto_message_id' => $template->getBrontoMessageId(),
+                'template_id'         => $template->getTemplateId(),
+                'template_code'       => $template->getTemplateCode(),
+                'bronto_message_id'   => $template->getBrontoMessageId(),
                 'bronto_message_name' => $template->getBrontoMessageName(),
-                'send_type' => $template->getTemplateSendType(),
+                'send_type'           => $template->getTemplateSendType(),
             );
         }
 
@@ -209,12 +233,13 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
 
         return array(
             'templates' => $emails,
-            'settings' => $settings,
+            'settings'  => $settings,
         );
     }
 
     /**
      * Get array of all template config paths
+     *
      * @return array
      */
     public function getTemplatePaths()
@@ -232,13 +257,13 @@ class Bronto_Email_Helper_Data extends Bronto_Common_Helper_Data implements Bron
 
         foreach ($sysCfgNodes as $fieldNode) {
 
-            $groupNode = $fieldNode->getParent()->getParent();
+            $groupNode   = $fieldNode->getParent()->getParent();
             $sectionNode = $groupNode->getParent()->getParent();
 
             // create email template path in system.xml
             $sectionName = $sectionNode->getName();
-            $groupName = $groupNode->getName();
-            $fieldName = $fieldNode->getName();
+            $groupName   = $groupNode->getName();
+            $fieldName   = $fieldNode->getName();
 
             $templatePaths[] = implode('/', array($sectionName, $groupName, $fieldName));
         }

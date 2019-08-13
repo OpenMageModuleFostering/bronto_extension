@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Cart_Subselection extends Bronto_Reminder_Model_Condition_Combine_Abstract
 {
@@ -45,6 +44,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Subselection extends Bronto_Remi
             '==' => Mage::helper('bronto_reminder')->__('found'),
             '!=' => Mage::helper('bronto_reminder')->__('not found')
         ));
+
         return $this;
     }
 
@@ -65,14 +65,15 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Subselection extends Bronto_Remi
     /**
      * Build query for matching shopping cart items
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     protected function _prepareConditionsSql($rule, $website)
     {
-        $select = $this->getResource()->createSelect();
-        $quoteTable = $this->getResource()->getTable('sales/quote');
+        $select         = $this->getResource()->createSelect();
+        $quoteTable     = $this->getResource()->getTable('sales/quote');
         $quoteItemTable = $this->getResource()->getTable('sales/quote_item');
 
         $select->from(array('item' => $quoteItemTable), array(new Zend_Db_Expr(1)));

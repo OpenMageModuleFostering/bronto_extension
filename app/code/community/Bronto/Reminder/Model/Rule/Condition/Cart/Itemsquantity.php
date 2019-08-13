@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Cart_Itemsquantity extends Bronto_Reminder_Model_Condition_Abstract
 {
@@ -27,7 +26,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Itemsquantity extends Bronto_Rem
     public function getNewChildSelectOptions()
     {
         return array('value' => $this->getType(),
-            'label' => Mage::helper('bronto_reminder')->__('Cart Line Items'));
+                     'label' => Mage::helper('bronto_reminder')->__('Cart Line Items'));
     }
 
     /**
@@ -46,13 +45,14 @@ class Bronto_Reminder_Model_Rule_Condition_Cart_Itemsquantity extends Bronto_Rem
     /**
      * Get SQL select for matching shopping cart items count
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     public function getConditionsSql($rule, $website)
     {
-        $table = $this->getResource()->getTable('sales/quote');
+        $table    = $this->getResource()->getTable('sales/quote');
         $operator = $this->getResource()->getSqlOperator($this->getOperator());
 
         $select = $this->getResource()->createSelect();

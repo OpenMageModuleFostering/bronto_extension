@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Rule_Condition_Wishlist_Subselection extends Bronto_Reminder_Model_Condition_Combine_Abstract
 {
@@ -45,6 +44,7 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Subselection extends Bronto_
             '==' => Mage::helper('bronto_reminder')->__('found'),
             '!=' => Mage::helper('bronto_reminder')->__('not found')
         ));
+
         return $this;
     }
 
@@ -65,13 +65,14 @@ class Bronto_Reminder_Model_Rule_Condition_Wishlist_Subselection extends Bronto_
     /**
      * Build query for matching wishlist items
      *
-     * @param $rule
+     * @param                                 $rule
      * @param int              | Zend_Db_Expr $website
+     *
      * @return Varien_Db_Select
      */
     protected function _prepareConditionsSql($rule, $website)
     {
-        $wishlistTable = $this->getResource()->getTable('wishlist/wishlist');
+        $wishlistTable     = $this->getResource()->getTable('wishlist/wishlist');
         $wishlistItemTable = $this->getResource()->getTable('wishlist/item');
 
         $select = $this->getResource()->createSelect();

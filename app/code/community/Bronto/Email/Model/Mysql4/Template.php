@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Model_Mysql4_Template extends Mage_Core_Model_Mysql4_Email_Template
 {
@@ -20,8 +19,10 @@ class Bronto_Email_Model_Mysql4_Template extends Mage_Core_Model_Mysql4_Email_Te
 
     /**
      * Get Template from original template code and store Id
-     * @param string $templateCode
+     *
+     * @param string   $templateCode
      * @param int|bool $storeId
+     *
      * @return array
      */
     public function loadByOriginalCode($templateCode, $storeId = false)
@@ -51,14 +52,15 @@ class Bronto_Email_Model_Mysql4_Template extends Mage_Core_Model_Mysql4_Email_Te
     /**
      * Retrieve select object for load object data
      *
-     * @param string $field
-     * @param mixed $value
+     * @param string                   $field
+     * @param mixed                    $value
      * @param Mage_Core_Model_Abstract $object
+     *
      * @return Zend_Db_Select
      */
     protected function _getLoadSelect($field, $value, $object)
     {
-        $field = $this->_getReadAdapter()->quoteIdentifier(sprintf('%s.%s', $this->getMainTable(), $field));
+        $field  = $this->_getReadAdapter()->quoteIdentifier(sprintf('%s.%s', $this->getMainTable(), $field));
         $select = $this->_getReadAdapter()->select()
             ->from($this->getMainTable())
             ->where($field . '=?', $value)

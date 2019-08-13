@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.1
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_Adminhtml_Block_Widget_Form
 {
@@ -22,6 +21,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                 ->addCss('lib/prototype/windows/themes/magento.css')
                 ->addItem('js', 'mage/adminhtml/variables.js');
         }
+
         return parent::_prepareLayout();
     }
 
@@ -33,6 +33,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         // If Bronto Email module not enabled, use Mage
         if (!Mage::helper('bronto_email')->isEnabledForAny()) {
             $parent = new Mage_Adminhtml_Block_System_Email_Template_Edit_Form();
+
             return $parent->_prepareForm();
         }
 
@@ -42,7 +43,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         // Create New Form Fieldset Element
         $fieldset = $form->addFieldset('base_fieldset', array(
             'legend' => Mage::helper('adminhtml')->__('Template Information'),
-            'class' => 'fieldset-wide'
+            'class'  => 'fieldset-wide'
         ));
 
         // Get the TemplateID
@@ -51,37 +52,37 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         // Build "Used Current/Default For"
         if ($templateId) {
             $fieldset->addField('used_currently_for', 'label', array(
-                'label' => Mage::helper('adminhtml')->__('Used Currently For'),
-                'container_id' => 'used_currently_for',
+                'label'              => Mage::helper('adminhtml')->__('Used Currently For'),
+                'container_id'       => 'used_currently_for',
                 'after_element_html' =>
-                '<script type="text/javascript">' .
-                (!$this->getEmailTemplate()->getSystemConfigPathsWhereUsedCurrently() ? '$(\'' . 'used_currently_for' . '\').hide(); ' : '') .
-                '</script>',
+                    '<script type="text/javascript">' .
+                    (!$this->getEmailTemplate()->getSystemConfigPathsWhereUsedCurrently() ? '$(\'' . 'used_currently_for' . '\').hide(); ' : '') .
+                    '</script>',
             ));
             if (!$this->getEmailTemplate()->getSystemConfigPathsWhereUsedCurrently()) {
                 $fieldset->addField('used_default_for', 'label', array(
-                    'label' => Mage::helper('adminhtml')->__('Used as Default For'),
-                    'container_id' => 'used_default_for',
+                    'label'              => Mage::helper('adminhtml')->__('Used as Default For'),
+                    'container_id'       => 'used_default_for',
                     'after_element_html' =>
-                    '<script type="text/javascript">' .
-                    (!(bool)$this->getEmailTemplate()->getOrigTemplateCode() ? '$(\'' . 'used_default_for' . '\').hide(); ' : '') .
-                    '</script>',
+                        '<script type="text/javascript">' .
+                        (!(bool)$this->getEmailTemplate()->getOrigTemplateCode() ? '$(\'' . 'used_default_for' . '\').hide(); ' : '') .
+                        '</script>',
                 ));
 
                 $fieldset->addField('note_used_currently', 'label', array(
-                    'label' => '',
-                    'container_id' => 'note_used_currently',
+                    'label'              => '',
+                    'container_id'       => 'note_used_currently',
                     'after_element_html' => '<div style="color:red;"><strong>Note:</strong> This Email Message is currently not used.</div>',
                 ));
             }
         } else {
             $fieldset->addField('used_default_for', 'label', array(
-                'label' => Mage::helper('adminhtml')->__('Used as Default For'),
-                'container_id' => 'used_default_for',
+                'label'              => Mage::helper('adminhtml')->__('Used as Default For'),
+                'container_id'       => 'used_default_for',
                 'after_element_html' =>
-                '<script type="text/javascript">' .
-                (!(bool)$this->getEmailTemplate()->getOrigTemplateCode() ? '$(\'' . 'used_default_for' . '\').hide(); ' : '') .
-                '</script>',
+                    '<script type="text/javascript">' .
+                    (!(bool)$this->getEmailTemplate()->getOrigTemplateCode() ? '$(\'' . 'used_default_for' . '\').hide(); ' : '') .
+                    '</script>',
             ));
         }
 
@@ -89,28 +90,28 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         // Otherwise set hidden field with single store Id
         if (!Mage::app()->isSingleStoreMode()) {
             $fieldset->addField('store_id', 'select', array(
-                'name' => 'store_id',
-                'label' => Mage::helper('adminhtml')->__('Store View'),
-                'title' => Mage::helper('adminhtml')->__('Store View'),
+                'name'     => 'store_id',
+                'label'    => Mage::helper('adminhtml')->__('Store View'),
+                'title'    => Mage::helper('adminhtml')->__('Store View'),
                 'onchange' => "updateMessages();",
                 'required' => true,
-                'values' => $this->_getActiveStoreValuesForForm(false, false),
+                'values'   => $this->_getActiveStoreValuesForForm(false, false),
             ));
         } else {
             $fieldset->addField('store_id', 'hidden', array(
-                'name' => 'store_id',
-                'value' => Mage::app()->getStore(true)->getId()
+                'name'  => 'store_id',
+                'value' => Mage::app()->getStore(true)->getId(),
             ));
         }
 
         // Create field for selecting How the template will be sent
         $sendtype = $fieldset->addField('template_send_type', 'select', array(
-            'name' => 'template_send_type',
-            'label' => Mage::helper('adminhtml')->__('Send Type'),
-            'title' => Mage::helper('adminhtml')->__('Send Type'),
+            'name'     => 'template_send_type',
+            'label'    => Mage::helper('adminhtml')->__('Send Type'),
+            'title'    => Mage::helper('adminhtml')->__('Send Type'),
             'onchange' => "updateMessages();",
             'required' => true,
-            'values' => array('magento' => 'Magento Email', 'marketing' => 'Bronto Marketing', 'transactional' => 'Bronto Transactional'),
+            'values'   => array('magento' => 'Magento Email', 'marketing' => 'Bronto Marketing', 'transactional' => 'Bronto Transactional'),
         ));
 
         // Add Script after send type field to handle updating form
@@ -124,8 +125,10 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                 if (sendType == 'magento') {
                     // Disable Some
                     $('bronto_message_id').disable();
+                    $('sales_rule').disable();
                     $('orig_template_text').disable();
                     $('container_bronto_message_id').hide();
+                    $('container_sales_rule').hide();
                     $('container_orig_template_text').hide();
                     
                     // Enable Others
@@ -142,8 +145,10 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                 } else {
                     // Enable Some
                     $('bronto_message_id').enable();
+                    $('sales_rule').enable();
                     $('orig_template_text').enable();
                     $('container_bronto_message_id').show();
+                    $('container_sales_rule').show();
                     $('container_orig_template_text').show();
                     
                     // Disable Others
@@ -192,53 +197,65 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
 
         // Template Name/Code
         $fieldset->addField('template_code', 'text', array(
-            'name' => 'template_code',
-            'label' => Mage::helper('adminhtml')->__('Name'),
+            'name'     => 'template_code',
+            'label'    => Mage::helper('adminhtml')->__('Name'),
             'required' => true
         ));
 
         // Add hidden fields to hold backups of the necessary values
         $fieldset->addField('bronto_message_id_hidden', 'hidden', array('name' => 'bronto_message_id_hidden'));
+        $fieldset->addField('sales_rule_hidden', 'hidden', array('name' => 'sales_rule_hidden'));
         $fieldset->addField('template_subject_hidden', 'hidden', array('name' => 'template_subject_hidden'));
         $fieldset->addField('template_text_hidden', 'hidden', array('name' => 'template_text_hidden'));
         $fieldset->addField('template_styles_hidden', 'hidden', array('name' => 'template_styles_hidden'));
 
         // Used for magento send type
         $fieldset->addField('template_subject', 'text', array(
-            'name' => 'template_subject',
-            'label' => Mage::helper('adminhtml')->__('Template Subject'),
-            'onchange' => "syncHiddenValue(this);",
+            'name'         => 'template_subject',
+            'label'        => Mage::helper('adminhtml')->__('Template Subject'),
+            'onchange'     => "syncHiddenValue(this);",
             'container_id' => 'container_template_subject',
-            'required' => true,
+            'required'     => true,
         ));
 
         // Create field to allow selecting Bronto Message to bind to template
         $fieldset->addField('bronto_message_id', 'select', array(
-            'name' => 'bronto_message_id',
-            'label' => Mage::helper('adminhtml')->__('Bronto Message'),
+            'name'         => 'bronto_message_id',
+            'label'        => Mage::helper('adminhtml')->__('Bronto Message'),
             'container_id' => 'container_bronto_message_id',
-            'onchange' => "syncHiddenValue(this);",
-            'values' => Mage::helper('bronto_email/message')->getAllMessageOptions(),
-            'required' => true,
+            'onchange'     => "syncHiddenValue(this);",
+            'values'       => Mage::helper('bronto_email/message')->getAllMessageOptions(),
+            'required'     => true,
+        ));
+
+        // Create field to allow selecting a sales rule to pull a coupon code from
+        $fieldset->addField('sales_rule', 'select', array(
+            'name'         => 'sales_rule',
+            'label'        => Mage::helper('adminhtml')->__('Shopping Cart Price Rule Coupon Code'),
+            'note'         => $this->__('Use API tag <em>%%%%#couponCode%%%%</em> within your message in Bronto. You are responsible for ensuring the shopping cart price rule is active and valid, or else it may appear blank.'),
+            'container_id' => 'container_sales_rule',
+            'onchange'     => "syncHiddenValue(this);",
+            'values'       => Mage::helper('bronto_common/salesrule')->getRuleOptionsArray(),
+            'required'     => false,
         ));
 
         // Display Variables that are available for the original template
         $fieldset->addField('template_variables_key', 'label', array(
-            'container_id' => 'template_variables_key_row',
-            'label' => Mage::helper('adminhtml')->__('Variables'),
+            'container_id'       => 'template_variables_key_row',
+            'label'              => Mage::helper('adminhtml')->__('Variables'),
             'after_element_html' => '<div id="template_variables_key_list"></div>' .
-            ($templateId ? '' : '<script>$("template_variables_key_row").hide();</script>')
+                ($templateId ? '' : '<script>$("template_variables_key_row").hide();</script>')
         ));
 
         // Display template text that was imported into Bronto
         $fieldset->addField('orig_template_text', 'textarea', array(
-            'name' => 'orig_template_text',
-            'label' => Mage::helper('adminhtml')->__('Original Template Content'),
-            'note' => $this->__('<strong>For Reference Only</strong>'),
+            'name'         => 'orig_template_text',
+            'label'        => Mage::helper('adminhtml')->__('Original Template Content'),
+            'note'         => $this->__('For Reference Only'),
             'container_id' => 'container_orig_template_text',
-            'onchange' => "syncHiddenValue(this);",
-            'readonly' => true,
-            'style' => 'height:24em;background-color:#efefef;',
+            'onchange'     => "syncHiddenValue(this);",
+            'readonly'     => true,
+            'style'        => 'height:24em;background-color:#efefef;',
         ));
 
         $fieldset->addField('orig_template_variables', 'hidden', array(
@@ -246,7 +263,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         ));
 
         $fieldset->addField('variables', 'hidden', array(
-            'name' => 'variables',
+            'name'  => 'variables',
             'value' => Zend_Json::encode($this->getVariables())
         ));
 
@@ -257,10 +274,10 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         // Used for magento send type
         $insertVariableButton = $this->getLayout()
             ->createBlock('adminhtml/widget_button', '', array(
-                'type' => 'button',
-                'label' => Mage::helper('adminhtml')->__('Insert Variable...'),
+                'type'         => 'button',
+                'label'        => Mage::helper('adminhtml')->__('Insert Variable...'),
                 'container_id' => 'container_widget_button',
-                'onclick' => 'templateControl.openVariableChooser();return false;',
+                'onclick'      => 'templateControl.openVariableChooser();return false;',
             ));
 
         $fieldset->addField('insert_variable', 'note', array(
@@ -268,33 +285,34 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
         ));
 
         $fieldset->addField('template_text', 'textarea', array(
-            'name' => 'template_text',
-            'label' => Mage::helper('adminhtml')->__('Template Content'),
-            'title' => Mage::helper('adminhtml')->__('Template Content'),
+            'name'         => 'template_text',
+            'label'        => Mage::helper('adminhtml')->__('Template Content'),
+            'title'        => Mage::helper('adminhtml')->__('Template Content'),
             'container_id' => 'container_template_text',
-            'onchange' => "syncHiddenValue(this);",
-            'required' => true,
-            'style' => 'height:24em',
+            'onchange'     => "syncHiddenValue(this);",
+            'required'     => true,
+            'style'        => 'height:24em',
         ));
 
         if (!$this->getEmailTemplate()->isPlain()) {
             $fieldset->addField('template_styles', 'textarea', array(
-                'name' => 'template_styles',
-                'label' => Mage::helper('adminhtml')->__('Template Styles'),
+                'name'         => 'template_styles',
+                'label'        => Mage::helper('adminhtml')->__('Template Styles'),
                 'container_id' => 'field_template_styles',
-                'onchange' => "syncHiddenValue(this);",
+                'onchange'     => "syncHiddenValue(this);",
             ));
         }
 
         if ($templateId) {
             $form->addValues($this->getEmailTemplate()->getData());
             $form->addValues(array(
-                'template_variables' => Zend_Json::encode($this->getEmailTemplate()->getVariablesOptionArray(true)),
+                'template_variables'       => Zend_Json::encode($this->getEmailTemplate()->getVariablesOptionArray(true)),
                 // Populate hidden fields
                 'bronto_message_id_hidden' => $this->getEmailTemplate()->getBrontoMessageId(),
-                'template_subject_hidden' => $this->getEmailTemplate()->getTemplateSubject(),
-                'template_text_hidden' => $this->getEmailTemplate()->getTemplateText(),
-                'template_styles_hidden' => $this->getEmailTemplate()->getTemplateStyles(),
+                'sales_rule_hidden'        => $this->getEmailTemplate()->getSalesRule(),
+                'template_subject_hidden'  => $this->getEmailTemplate()->getTemplateSubject(),
+                'template_text_hidden'     => $this->getEmailTemplate()->getTemplateText(),
+                'template_styles_hidden'   => $this->getEmailTemplate()->getTemplateStyles(),
             ));
         }
 
@@ -319,6 +337,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
 
     /**
      * Filter Store Options by stores where module is enabled
+     *
      * @param bool $empty
      * @param bool $all
      *
@@ -351,7 +370,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
                     // If Sub-Option value is a string and is numeric
                     if (is_string($subOption['value']) && is_numeric($subOption['value'])) {
                         // If Sub-Option Value is a store id and that store is not enabled, unset it's value
-                        if (!Mage::helper('bronto_email')->isEnabled($subOption['value'])) {
+                        if (!Mage::helper('bronto_email')->isEnabled('store', $subOption['value'])) {
                             unset($storeOptions[$optionId]['value'][$subId]);
                             // If Option no longer has any values, remove Option
                             if (count($storeOptions[$optionId]['value']) < 1) {
@@ -381,8 +400,8 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit_Form extends Mage_
      */
     public function getVariables()
     {
-        $variables = array();
-        $variables[] = Mage::getModel('core/source_email_variables')
+        $variables       = array();
+        $variables[]     = Mage::getModel('core/source_email_variables')
             ->toOptionArray(true);
         $customVariables = Mage::getModel('core/variable')
             ->getVariablesOptionArray(true);

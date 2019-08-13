@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Customer
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.0.0
  */
 class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Customer extends Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes
 {
@@ -18,6 +17,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Cus
     protected $_ignoreAttributes = array(
         'increment_id',
         'updated_at',
+        'store_id',
         'entity_id',
         'attribute_set_id',
         'entity_type_id',

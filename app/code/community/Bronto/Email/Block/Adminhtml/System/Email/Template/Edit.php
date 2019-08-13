@@ -3,7 +3,6 @@
 /**
  * @package     Bronto\Email
  * @copyright   2011-2013 Bronto Software, Inc.
- * @version     1.1.4
  */
 class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Adminhtml_Block_System_Email_Template_Edit
 {
@@ -15,10 +14,13 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
 
         Mage_Adminhtml_Block_Widget::__construct();
         $this->setTemplate('bronto/email/template/edit.phtml');
+
+        return $this;
     }
 
     /**
      * Prepare the layout, removing unneeded elements and changing button/form
+     *
      * @return null
      */
     protected function _prepareLayout()
@@ -35,14 +37,16 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
         $this->unsetChild('form');
 
         $this->setChild('save_button', $this->getLayout()->createBlock('adminhtml/widget_button')->setData(array(
-            'label' => Mage::helper('adminhtml')->__('Save Message'),
+            'label'   => Mage::helper('adminhtml')->__('Save Message'),
             'onclick' => 'templateControl.save();',
-            'class' => 'save'
+            'class'   => 'save'
         )));
 
         $this->setChild('form',
             $this->getLayout()->createBlock('bronto_email/adminhtml_system_email_template_edit_form')
         );
+
+        return $this;
     }
 
     /**
@@ -66,8 +70,9 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
     /**
      * Get array or Json of path data
      *
-     * @param boolean $asJSON
-     * @return array|json
+     * @param bool $asJSON
+     *
+     * @return array|string
      */
     public function getUsedDefaultForPaths($asJSON = true)
     {
@@ -75,7 +80,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
         if (Mage::helper('bronto_email')->isEnabledForAny()) {
             if ($this->getEmailTemplate()->hasData('store_id')) {
                 $paths[0]['scope_id'] = $this->getEmailTemplate()->getData('store_id');
-                $paths[0]['scope'] = 'stores';
+                $paths[0]['scope']    = 'stores';
             }
         }
 
@@ -92,27 +97,30 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
      * Get paths of where current template is currently used
      *
      * @param bool $asJSON
+     *
      * @return string
      */
     public function getUsedCurrentlyForPaths($asJSON = true)
     {
-        $paths = $this->getEmailTemplate()->getSystemConfigPathsWhereUsedCurrently();
+        $paths      = $this->getEmailTemplate()->getSystemConfigPathsWhereUsedCurrently();
         $pathsParts = $this->_getSystemConfigPathsParts($paths);
         if ($asJSON) {
             return Mage::helper('core')->jsonEncode($pathsParts);
         }
+
         return $pathsParts;
     }
 
     /**
-     * Convert xml config pathes to decorated names
+     * Convert xml config paths to decorated names
      *
      * @param array $paths
+     *
      * @return array
      */
     protected function _getSystemConfigPathsParts($paths)
     {
-        $result = $urlParams = $prefixParts = array();
+        $result     = $urlParams = $prefixParts = array();
         $scopeLabel = Mage::helper('adminhtml')->__('GLOBAL');
         if ($paths) {
             // create prefix path parts
@@ -123,7 +131,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
             // Add "Configuration" to path
             $prefixParts[] = array(
                 'title' => Mage::getSingleton('admin/config')->getMenuItemLabel('system/config'),
-                'url' => $this->getUrl('adminhtml/system_config/'),
+                'url'   => $this->getUrl('adminhtml/system_config/'),
             );
 
             // Cycle through paths to add them to the path details
@@ -141,15 +149,15 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
                             $store = Mage::app()->getStore($pathData['scope_id']);
                             if ($store) {
                                 $urlParams['website'] = $store->getWebsite()->getCode();
-                                $urlParams['store'] = $store->getCode();
-                                $scopeLabel = $store->getWebsite()->getName() . '/' . $store->getName();
+                                $urlParams['store']   = $store->getCode();
+                                $scopeLabel           = $store->getWebsite()->getName() . '/' . $store->getName();
                             }
                             break;
                         case 'websites':
                             $website = Mage::app()->getWebsite($pathData['scope_id']);
                             if ($website) {
                                 $urlParams['website'] = $website->getCode();
-                                $scopeLabel = $website->getName();
+                                $scopeLabel           = $website->getName();
                             }
                             break;
                         default:
@@ -164,7 +172,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
                 if ($sectionTitle = $adminhtmlConfig->getSystemConfigNodeLabel($sectionName)) {
                     $pathParts[] = array(
                         'title' => $sectionTitle,
-                        'url' => $this->getUrl('adminhtml/system_config/edit', $urlParams),
+                        'url'   => $this->getUrl('adminhtml/system_config/edit', $urlParams),
                     );
                 }
                 // If Group Name is set, add it to path
@@ -181,7 +189,7 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Edit extends Mage_Admin
                     );
                 }
 
-                $result[] = $pathParts;
+                $result[]  = $pathParts;
                 $pathParts = $prefixParts;
             }
         }

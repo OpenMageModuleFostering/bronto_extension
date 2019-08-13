@@ -10,7 +10,6 @@
  * @author    Adam Daniels <adam.daniels@atlanticbt.com>
  * @copyright 2013 Adam Daniels
  * @license   http://www.atlanticbt.com/ Atlantic BT
- * @version   0.1.0
  */
 class Bronto_Verify_Model_Validator_Directory
     extends Bronto_Verify_Model_Validator_ValidatorAbstract
@@ -21,7 +20,7 @@ class Bronto_Verify_Model_Validator_Directory
     protected function _construct()
     {
         $this->_permission = Mage::getStoreConfig('bronto_verify/permissionchecker/directories');
-        $this->_permLen = strlen($this->_permission);
+        $this->_permLen    = strlen($this->_permission);
         parent::_construct();
     }
 
@@ -31,7 +30,7 @@ class Bronto_Verify_Model_Validator_Directory
      * Checks to see if file is directory and if permissions match expected
      *
      * @param SplFileInfo $file     File to check
-     * @param array $badFiles current array of bad files to report
+     * @param array       $badFiles current array of bad files to report
      *
      * @return array
      * @access public
@@ -47,6 +46,7 @@ class Bronto_Verify_Model_Validator_Directory
                 }
             }
         }
+
         return parent::validateSetting($file, $badFiles);
     }
 }

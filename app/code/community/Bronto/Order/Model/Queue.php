@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Order
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.1.7
  */
 class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 {
@@ -16,10 +15,12 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Retrieve Order Queue Row
-     * @param int $orderId
-     * @param int $quoteId
-     * @param int $storeId
-     * @return Bronto_Order_Model_Queue
+     *
+     * @param bool $orderId
+     * @param bool $quoteId
+     * @param bool $storeId
+     *
+     * @return $this
      */
     public function getOrderRow($orderId = false, $quoteId = false, $storeId = false)
     {
@@ -73,13 +74,14 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get Count of missing orders
+     *
      * @return int
      */
     public function getMissingOrdersCount()
     {
         // Get Resources
         $resource = $this->getResource();
-        $adapter = $resource->getWriteAdapter();
+        $adapter  = $resource->getWriteAdapter();
 
         // Build Select Statement
         $select = $adapter->select();
@@ -100,8 +102,10 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get Sub-Select Statement that limits results
+     *
      * @param Bronto_Order_Model_Mysql4_Queue $resource
-     * @param type $adapter
+     * @param                                 $adapter
+     *
      * @return Varien_Db_Select
      */
     private function _getSubselect($resource, $adapter)
@@ -118,13 +122,14 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get collection of orders which aren't already in the queue, but should be
+     *
      * @return array
      */
     public function getMissingOrders()
     {
         // Get Resources
         $resource = $this->getResource();
-        $adapter = $resource->getWriteAdapter();
+        $adapter  = $resource->getWriteAdapter();
 
         // Get Sync Limit Value
         $count = Mage::helper('bronto_order')->getSyncLimit();

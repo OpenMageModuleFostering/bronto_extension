@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @package     Bronto\Reminder
- * @copyright   2011-2012 Bronto Software, Inc.
- * @version     1.5.0
+ * @package   Bronto\Reminder
+ * @copyright 2011-2013 Bronto Software, Inc.
  */
 class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql4_Collection_Abstract
 {
@@ -21,19 +20,22 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
      * Limit rules collection by is_active column
      *
      * @param int $value
+     *
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addIsActiveFilter($value)
     {
         $this->getSelect()->where('main_table.is_active = ?', $value);
+
         return $this;
     }
 
     /**
      * Limit rules collection by date columns
      *
-     * @param int $value
-     * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
+     * @param $date
+     *
+     * @return $this
      */
     public function addDateFilter($date)
     {
@@ -48,11 +50,13 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
      * Limit rules collection by separate rule
      *
      * @param int $value
+     *
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addRuleFilter($value)
     {
         $this->getSelect()->where('main_table.rule_id = ?', $value);
+
         return $this;
     }
 
@@ -65,7 +69,7 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
     {
         parent::_afterLoad();
         if ($this->getFlag('add_websites_to_result') && $this->_items) {
-            $select = $this->getConnection()->select()
+            $select   = $this->getConnection()->select()
                 ->from($this->getTable('bronto_reminder/website'), array(
                     'rule_id',
                     new Zend_Db_Expr('GROUP_CONCAT(website_id)')
@@ -87,12 +91,14 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
      * Init flag for adding rule website ids to collection result
      *
      * @param bool                                         | null $flag
+     *
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addWebsitesToResult($flag = null)
     {
         $flag = ($flag === null) ? true : $flag;
         $this->setFlag('add_websites_to_result', $flag);
+
         return $this;
     }
 
@@ -100,6 +106,7 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
      * Limit rules collection by specific website
      *
      * @param int                                          | array | Mage_Core_Model_Website $websiteId
+     *
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addWebsiteFilter($websiteId)
@@ -122,10 +129,11 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
     }
 
     /**
-     * Redeclared for support website id filter
+     * Re-declared for support website id filter
      *
      * @param string $field
-     * @param mixed $condition
+     * @param mixed  $condition
+     *
      * @return Bronto_Reminder_Model_Mysql4_Rule_Collection
      */
     public function addFieldToFilter($field, $condition = null)
@@ -133,6 +141,7 @@ class Bronto_Reminder_Model_Mysql4_Rule_Collection extends Mage_Core_Model_Mysql
         if ($field == 'website_ids') {
             return $this->addWebsiteFilter($condition);
         }
+
         return parent::addFieldToFilter($field, $condition);
     }
 }

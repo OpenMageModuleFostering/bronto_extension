@@ -3,7 +3,6 @@
 /**
  * @package   Bronto\Newsletter
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   1.3.5
  */
 class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
 {
@@ -32,6 +31,7 @@ class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
             return $collection->getFirstItem();
         } else {
             $this->setSubscriberId($subscriber_id)
+                ->setCreatedAt(Mage::getSingleton('core/date')->gmtDate())
                 ->setStore($store_id);
         }
 
@@ -40,13 +40,14 @@ class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get Count of missing subscribers
+     *
      * @return int
      */
     public function getMissingSubscribersCount()
     {
         // Get Resources
         $resource = $this->getResource();
-        $adapter = $resource->getWriteAdapter();
+        $adapter  = $resource->getWriteAdapter();
 
         // Build Select Statement
         $select = $adapter->select();
@@ -59,7 +60,7 @@ class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
         $result = $adapter->query($select)->fetch();
 
         if (array_key_exists('count', $result)) {
-            return (int) $result['count'];
+            return (int)$result['count'];
         } else {
             return 0;
         }
@@ -67,8 +68,10 @@ class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get Sub-Select Statement that limits results
+     *
      * @param Bronto_Newsletter_Model_Mysql4_Queue $resource
-     * @param type $adapter
+     * @param                                      $adapter
+     *
      * @return Varien_Db_Select
      */
     private function _getSubselect($resource, $adapter)
@@ -85,13 +88,14 @@ class Bronto_Newsletter_Model_Queue extends Mage_Core_Model_Abstract
 
     /**
      * Get collection of subscribers which aren't already in the queue, but should be
+     *
      * @return array
      */
     public function getMissingSubscribers()
     {
         // Get Resources
         $resource = $this->getResource();
-        $adapter = $resource->getWriteAdapter();
+        $adapter  = $resource->getWriteAdapter();
 
         // Get Sync Limit Value
         $count = Mage::helper('bronto_newsletter')->getSyncLimit();
