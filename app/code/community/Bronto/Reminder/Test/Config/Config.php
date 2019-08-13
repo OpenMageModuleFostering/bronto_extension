@@ -12,7 +12,7 @@ class Bronto_Reminder_Test_Config_Config
         return array(
             array('bronto_reminder/rule', 'Bronto_Reminder_Model_Rule'),
 	    array('bronto_reminder/email_message', 'Bronto_Reminder_Model_Email_Message'),
-	    array('bronto_reminder/rule_mysql4', 'Bronto_Reminder_Model_Mysql4_rule'),
+	    array('bronto_reminder/mysql4_rule', 'Bronto_Reminder_Model_Mysql4_rule'),
         );
     }
 

@@ -37,6 +37,9 @@ class Bronto_Order_Model_Observer
             $store   = Mage::app()->getStore($storeId);
             $storeId = $store->getId();
         }
+        
+        // Set the current store ID
+        Mage::app()->setCurrentStore($storeId);
 
         $result = array('total' => 0, 'success' => 0, 'error' => 0);
         Mage::helper('bronto_order')->writeDebug("Starting Order Import process for store: {$store->getName()} ({$storeId})");
@@ -179,6 +182,9 @@ class Bronto_Order_Model_Observer
         Mage::helper('bronto_order')->writeDebug('  Error:   ' . $results['error']);
         Mage::helper('bronto_order')->writeDebug('  Total:   ' . $results['total']);
 
+        // Set store back to admin store
+        Mage::app()->setCurrentStore(Mage_Core_Model_App::ADMIN_STORE_ID);
+        
         return $results;
     }
 

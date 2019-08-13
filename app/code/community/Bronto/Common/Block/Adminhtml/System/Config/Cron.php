@@ -113,7 +113,7 @@ class Bronto_Common_Block_Adminhtml_System_Config_Cron extends Mage_Adminhtml_Bl
         $percent  = 0;
         $pending  = (int) $this->getProgressBarPending();
         $total    = (int) $this->getProgressBarTotal();
-
+        
         $complete = $total - $pending;
         if ($complete > 0) {
             $percent = round(($complete / $total) * 100);

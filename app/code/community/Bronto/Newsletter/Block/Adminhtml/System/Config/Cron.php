@@ -8,7 +8,7 @@
 class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Block_Adminhtml_System_Config_Cron
 {
     protected $_jobCode        = 'bronto_newsletter_import';
-    protected $_hasProgressBar = false;
+    protected $_hasProgressBar = true;
 
     /**
      * @return Bronto_Order_Block_Adminhtml_System_Config_Cron
@@ -26,8 +26,7 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common
      */
     protected function getProgressBarTotal()
     {
-        return $this->getOrderResourceCollection()
-            ->addStoreFilter($storeId)
+        return $this->getNewsletterResourceCollection()
             ->getSize()
         ;
     }
@@ -37,30 +36,24 @@ class Bronto_Newsletter_Block_Adminhtml_System_Config_Cron extends Bronto_Common
      */
     protected function getProgressBarPending()
     {
-        return $this->getOrderResourceCollection()
+        return $this->getNewsletterResourceCollection()
             ->addBrontoNotImportedFilter()
             ->getSize()
         ;
     }
 
     /**
-     * @return Bronto_Order_Model_Resource_Order_Collection
+     * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
      */
-    protected function getOrderResourceCollection()
+    protected function getNewsletterResourceCollection()
     {
-        $collection = Mage::getModel('bronto_order/resource_order_collection');
-
-        if ($storeCode = Mage::app()->getRequest()->getParam('store')) {
-            $store = Mage::app()->getStore($storeCode);
-            $collection->addStoreFilter($store->getId());
-        } else if ($websiteCode = Mage::app()->getRequest()->getParam('website')){
-            $website = Mage::app()->getWebsite($websiteCode);
-            $collection->addStoreFilter($website->getStoreids());
-        } else if ($groupCode = Mage::app()->getRequest()->getParam('group')){
-            $website = Mage::app()->getGroup($groupCode)->getWebsite();
-            $collection->addStoreFilter($website->getStoreids());
+        $collection = Mage::getModel('bronto_newsletter/queue')->getCollection();
+        $storeIds   = Mage::helper('bronto_customer')->getStoreIds();
+        
+        if ($storeIds) {
+            $collection->addStoreFilter($storeIds);
         }
-
+        
         return $collection;
     }
 }

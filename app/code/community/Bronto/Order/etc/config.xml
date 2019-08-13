@@ -27,12 +27,8 @@
         <models>
             <bronto_order>
                 <class>Bronto_Order_Model</class>
-                <resourceModel>bronto_order_resource</resourceModel>
                 <resourceModel>bronto_order_mysql4</resourceModel>
             </bronto_order>
-            <bronto_order_resource>
-                <class>Bronto_Order_Model_Resource</class>
-            </bronto_order_resource>
             <bronto_order_mysql4>
                 <class>Bronto_Order_Model_Mysql4</class>
                 <entities>
@@ -44,7 +40,7 @@
             <bronto_order_setup>
                 <setup>
                     <module>Bronto_Order</module>
-                    <class>Bronto_Order_Model_Resource_Setup</class>
+                    <class>Bronto_Order_Model_Mysql4_Setup</class>
                 </setup>
                 <connection>
                     <use>core_setup</use>

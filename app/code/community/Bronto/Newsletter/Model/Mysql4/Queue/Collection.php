@@ -36,4 +36,54 @@ class Bronto_Newsletter_Model_Mysql4_Queue_Collection
         parent::_construct();
         $this->_init('bronto_newsletter/queue');
     }
+    
+    
+    
+    /**
+     * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
+     */
+    public function addBrontoImportedFilter()
+    {
+        $this->addFieldToFilter('imported', array('eq' => '1'));
+        return $this;
+    }
+
+    /**
+     * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
+     */
+    public function addBrontoNotImportedFilter()
+    {
+        $this->addFieldToFilter('imported', array('eq' => '0'));
+        return $this;
+    }
+
+    /**
+     * @param mixed $storeIds (null, int|string, array, array may contain null)
+     * @return Bronto_Newsletter_Model_Mysql4_Queue_Collection
+     */
+    public function addStoreFilter($storeIds)
+    {
+        $nullCheck = false;
+
+        if (!is_array($storeIds)) {
+            $storeIds = array($storeIds);
+        }
+
+        $storeIds = array_unique($storeIds);
+
+        if ($index = array_search(null, $storeIds)) {
+            unset($storeIds[$index]);
+            $nullCheck = true;
+        }
+
+        $storeIds[0] = ($storeIds[0] == '') ? 0 : $storeIds[0];
+
+        if ($nullCheck) {
+            $this->getSelect()->where('store IN(?) OR store IS NULL', $storeIds);
+        } else {
+            $this->getSelect()->where('store IN(?)', $storeIds);
+        }
+
+        return $this;
+    }
 }

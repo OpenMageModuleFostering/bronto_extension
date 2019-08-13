@@ -19,61 +19,6 @@ class Bronto_Newsletter_Helper_Contact extends Bronto_Common_Helper_Contact
     const XML_PATH_LISTS         = 'bronto_newsletter/contacts/lists';
 
     /**
-     * @param string                 $email       
-     * @param string                 $customSource
-     * @return Bronto_Api_Contact_Row
-     */
-    public function getContactByEmail($email, $customSource = 'bronto_newsletter', $store = null)
-    {
-        if ($contact = parent::getContactByEmail($email, $customSource, $store)) {
-            if ($this->getUpdateStatus()) {
-                // We want to use the Newsletter status
-                $contact = $this->setStatusFromNewsletter($contact);
-            }
-
-            $contact = $this->_addContactToLists($contact, $this->getListIds($store));
-        }
-
-        return $contact;
-    }
-
-    /**
-     * @param Bronto_Api_Contact_Row           $contact   
-     * @param Mage_Newsletter_Model_Subscriber $subscriber
-     * @return Bronto_Api_Contact_Row          
-     */
-    public function setStatusFromNewsletter(Bronto_Api_Contact_Row $contact, Mage_Newsletter_Model_Subscriber $subscriber = null)
-    {
-        if (!is_object($subscriber) || !($subscriber instanceOf Mage_Newsletter_Model_Subscriber)) {
-            /* @var $subscriber Mage_Newsletter_Model_Subscriber */
-            $subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($contact->email);
-        }
-
-        switch ($subscriber->getStatus()) {
-            case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:
-                $contact->status = Bronto_Api_Contact::STATUS_ONBOARDING;
-                break;
-            case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED:
-                $contact->status = Bronto_Api_Contact::STATUS_UNSUBSCRIBED;
-                break;
-            case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:
-            default:
-                $contact->status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
-                break;
-        }
-
-        // Special check for old Magento versions
-        if (defined('Mage_Newsletter_Model_Subscriber::STATUS_UNCONFIRMED')) {
-            if (Mage_Newsletter_Model_Subscriber::STATUS_UNCONFIRMED == $subscriber->getStatus()) {
-                $contact->status = Bronto_Api_Contact::STATUS_UNCONFIRMED;
-            }
-        }
-
-        $this->writeInfo("  Setting Contact ({$contact->email}) status to: {$contact->status}");
-        return $contact;
-    }
-
-    /**
      * @return bool
      */
     public function getUpdateStatus()
@@ -97,24 +42,25 @@ class Bronto_Newsletter_Helper_Contact extends Bronto_Common_Helper_Contact
 
         return $listIds;
     }
-
+    
     /**
-     * @param Bronto_Api_Contact_Row $contact
-     * @param array                  $listIds
-     * @return Bronto_Api_Contact_Row
+     * Get the list object from list id
+     * @param int $listId
+     * @return boolean|Bronto_Api_List_Row
      */
-    protected function _addContactToLists(Bronto_Api_Contact_Row $contact, array $listIds = array())
+    public function getListData($listId)
     {
-        if (empty($listIds)) {
-            return $contact;
+        if ($api = $this->getApi()) {
+            /* @var $listObject Bronto_Api_List */
+            $listObject = $api->getListObject();
+            foreach ($listObject->readAll()->iterate() as $list /* @var $list Bronto_Api_List_Row */) {
+                if ($list->id == $listId) {
+                    return $list;
+                }
+            }
         }
-
-        foreach ($listIds as $listId) {
-            $this->writeInfo("  Adding Contact to list: {$listId}");
-            $contact->addToList($listId);
-        }
-
-        return $contact;
+        
+        return false;
     }
 
     /**
@@ -125,5 +71,31 @@ class Bronto_Newsletter_Helper_Contact extends Bronto_Common_Helper_Contact
     protected function _getModuleName()
     {
         return 'Bronto_Newsletter';
+    }
+    
+    /**
+     * Convert Magento Newsletter Subscriber Status to Bronto API Contact Status
+     * @param Mage_Newsletter_Model_Subscriber $subscriber
+     * @return boolean
+     */
+    public function getQueueStatus(Mage_Newsletter_Model_Subscriber $subscriber)
+    {
+        // Set correct status based on subscriber status
+        switch ($subscriber->getStatus()) {
+            case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:
+                $status = Bronto_Api_Contact::STATUS_ONBOARDING;
+                break;
+
+            case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED:
+                $status = Bronto_Api_Contact::STATUS_UNSUBSCRIBED;
+                break;
+            
+            case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:
+            default:
+                $status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
+                break;
+        }
+
+        return $status;
     }
 }

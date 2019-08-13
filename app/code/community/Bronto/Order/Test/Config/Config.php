@@ -22,8 +22,7 @@ class Bronto_Order_Test_Config_Config
     public function resourceModelProvider()
     {
         return array(
-	    array('bronto_order_resource/setup', 'Bronto_Order_Model_Resource_Setup'),
-	    array('bronto_order_resource/order_collection', 'Bronto_Order_Model_Resource_Order_Collection'),
+	    array('bronto_order_mysql4/setup', 'Bronto_Order_Model_Mysql4_Setup'),
             array('bronto_order_mysql4/queue', 'Bronto_Order_Model_Mysql4_Queue'),
 	    array('bronto_order_mysql4/queue_collection', 'Bronto_Order_Model_Mysql4_Queue_Collection'),
 	);

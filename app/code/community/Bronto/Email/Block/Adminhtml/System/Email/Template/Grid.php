@@ -19,12 +19,13 @@ class Bronto_Email_Block_Adminhtml_System_Email_Template_Grid extends Mage_Admin
         }
 
         //  Change how table names and SQL aliases are mapped resource
-        //  to account for version 1.9 differences
+        //  to account for version 1.9 and 1.10 differences
         $resource = Mage::getSingleton('core/resource');
         $tableName = $resource->getTableName('core/store');
         $mainTable = $resource->getTableName('core/email_template');
         $version = Mage::getVersionInfo();
-        if (1 == $version['major'] && 9 != $version['minor']) {
+        
+        if (1 == $version['major'] && 9 != $version['minor'] && 10 != $version['minor'] && 11 != $version['minor']) {
             $mainTable = 'main_table';
         }
         $collection->getSelect()

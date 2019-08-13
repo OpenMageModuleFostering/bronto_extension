@@ -30,8 +30,8 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         Mage_Core_Model_Abstract::_afterLoad();
 
         $version = Mage::getVersionInfo();
-        if (   1 == $version['major']
-            && (6 >= $version['minor'] || 9 == $version['minor'] || 11 == $version['minor'])
+        if (1 == $version['major']
+            && (6 >= $version['minor'] || 9 == $version['minor'] || 10 == $version['minor'] || 11 == $version['minor'])
         ) {
             $conditionsArr = unserialize($this->getConditionsSerialized());
             if (!empty($conditionsArr) && is_array($conditionsArr)) {
@@ -96,6 +96,101 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         }
         return $this->_getData('website_ids');
     }
+    
+    /**
+     * Get Store Object for customer
+     * @param Mage_Customer_Model_Customer $customer
+     * @return Mage_Core_Model_Store
+     */
+    protected function _getRuleStore(Mage_Customer_Model_Customer $customer)
+    {
+        if ($customer->getStoreId()) {
+            $store = $customer->getStore();
+        } else {
+            $store = Mage::app()->getWebsite($customer->getWebsiteId())->getDefaultStore();
+        }
+        
+        return $store;
+    }
+    
+    /**
+     * Get array of Registered User abandons and then Guest abandons
+     * @param int $limit
+     * @return array
+     */
+    protected function _getRecipients($limit)
+    {
+        // Pull in array of customers who abandoned their cart
+        $recipients = (array) $this->_getResource()->getCustomersForNotification($limit, $this->getRuleId());
+        
+        // Check how many more we are allowed to pull
+        $remainingLimit = $limit - count($recipients);
+        
+        // Pull remining available number from guest abandons
+        if ($remainingLimit > 0 && $remainingLimit <= $limit) {
+            $guestAbandons = (array) $this->_getGuestAbandons($remainingLimit);
+            $recipients    = array_merge($recipients, $guestAbandons);
+        }
+        
+        // Ensure we aren't pulling more than the limit
+        if (count($recipients) > $limit) {
+            $recipients = array_slice($recipients, $limit);
+        }
+        
+        return $recipients;
+    }
+    
+    /**
+     * Get customer object for recipient
+     * @param array $recipient
+     * @return boolean|Mage_Customer_Model_Customer
+     */
+    protected function _getRecipientCustomer($recipient)
+    {
+        if($recipient['customer_id'] != 0) {
+            /* @var $customer Mage_Customer_Model_Customer */
+            $customer = Mage::getModel('customer/customer')->load($recipient['customer_id']);
+        } else {
+            // Guest Abandon.  Create Customer on the fly
+            $storeId  = $recipient['guest']->getStoreId();
+            $customer = Mage::getModel('customer/customer')
+                ->setFirstName($recipient['guest']->getFirstName())
+                ->setLastName($recipient['guest']->getLastName())
+                ->setEmail($recipient['guest']->getEmailAddress())
+                ->setStoreId($storeId)
+                ->setId(0)
+                ->setWebsiteId(Mage::getModel('core/store')->load($storeId)->getWebsiteId());
+        }
+        
+        if (!$customer || false === $customer->getId()) {
+            return false;
+        }
+        
+        return $customer;
+    }
+    
+    /**
+     * Get Quote Object from customer or guest
+     * @param Mage_Customer_Model_Customer $customer
+     * @param array $recipient
+     * @param Mage_Core_Model_Store $store
+     * @return Mage_Sales_Model_Quote
+     */
+    protected function _getRecipientQuote(Mage_Customer_Model_Customer $customer, array $recipient, Mage_Core_Model_Store $store)
+    {
+        if($customer->getId() != 0) {
+            $quote = Mage::getModel('sales/quote')
+                ->setStoreId($store->getId())
+                ->loadByCustomer($customer->getId());
+        } else {
+            // Load quote stored for guest
+            $quote = Mage::getModel('sales/quote')
+                ->setStoreId($store->getId())
+                ->loadByIdWithoutStore($recipient['guest']->getQuoteId());
+        }
+        
+        return $quote;
+    }
 
     /**
      * Send reminder emails
@@ -111,13 +206,13 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         $identity = Mage::helper('bronto_reminder')->getEmailIdentity();
 
         $this->_matchCustomers();
-
-        $recipients = $this->_getResource()->getCustomersForNotification($limit, $this->getRuleId());
-        $recipients = array_merge( $recipients, $this->_getGuestAbandons() );
-
+        
         if ($dontSend) {
             return $this;
         }
+
+        // Get Array of Recipients
+        $recipients = $this->_getRecipients($limit);
 
         $total   = 0;
         $success = 0;
@@ -125,31 +220,15 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
         foreach ($recipients as $recipient) {
             $total++;
 
-            if($recipient['customer_id'] != 0) {
-                /* @var $customer Mage_Customer_Model_Customer */
-                $customer = Mage::getModel('customer/customer')->load($recipient['customer_id']);
-                if (!$customer || !$customer->getId()) {
-                    $error++;
-                    continue;
-                }
-            } else {
-                // Guest Abandon.  Create Customer on the fly
-                $storeId = $recipient['guest']->getStoreId();
-                $customer = Mage::getModel('customer/customer');
-                $customer
-                    ->setFirstName($recipient['guest']->getFirstName())
-                    ->setLastName($recipient['guest']->getLastName())
-                    ->setEmail($recipient['guest']->getEmailAddress())
-                    ->setStoreId($storeId)
-                    ->setId(0)
-                    ->setWebsiteId(Mage::getModel('core/store')->load($storeId)->getWebsiteId());
+            // Get Customer Object
+            /* @var $customer Mage_Customer_Model_Customer */
+            if (!$customer = $this->_getRecipientCustomer($recipient)) {
+                $error++;
             }
-
-            if ($customer->getStoreId()) {
-                $store = $customer->getStore();
-            } else {
-                $store = Mage::app()->getWebsite($customer->getWebsiteId())->getDefaultStore();
-            }
+            
+            // Get Store Object
+            /* @var $store Mage_Core_Model_Store */
+            $store = $this->_getRuleStore($customer);
 
             $messageData = $this->getMessageData($recipient['rule_id'], $store->getId(), $customer->getWebsiteId());
             if (!$messageData) {
@@ -165,16 +244,7 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
             }
 
             /* @var $quote Mage_Sales_Model_Quote */
-            if($customer->getId() != 0) {
-                $quote = Mage::getModel('sales/quote')
-                    ->setStoreId($store->getId())
-                    ->loadByCustomer($customer->getId());
-            } else {
-                // Load quote stored for guest
-                $quote = Mage::getModel('sales/quote')
-                    ->setStoreId($store->getId())
-                    ->loadByIdWithoutStore($recipient['guest']->getQuoteId());
-            }
+            $quote = $this->_getRecipientQuote($customer, $recipient, $store);
 
             $templateVars = array(
                 'store'                 => $store,
@@ -207,16 +277,11 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
             if ($mail->getSentSuccess()) {
                 Mage::helper('bronto_reminder')->writeDebug('  Success');
 
-                if($customer->getId() != 0) {
-                    $this->_getResource()->addNotificationLog(
-                        $recipient['rule_id'], $customer->getId(), $mail->getLastDeliveryId(), $messageData['message_id']
-                    );
-
-                } else {
-                    // Add notification log for guest abandon email
-                    $this->_getResource()->addNotificationLog(
-                        $recipient['rule_id'], 0, $mail->getLastDeliveryId(), $messageData['message_id']
-                    );
+                $this->_getResource()->addNotificationLog(
+                    $recipient['rule_id'], $customer->getId(), $mail->getLastDeliveryId(), $messageData['message_id']
+                );
+                
+                if($customer->getId() == 0) {
                     // Update guest to reflect they have received a reminder notification
                     $recipient['guest']->setEmailSent(1)->save();
                 }
@@ -315,14 +380,16 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
     /**
      * Returns an array containing information for sending abandoned cart notifications
      * to guest users who abandoned the checkout process.
-     *
+     * @param int $limit
      * @return array
      */
-    private function _getGuestAbandons()
+    private function _getGuestAbandons($limit)
     {
         $guestAbandons = Mage::getModel('bronto_reminder/guest')
             ->getCollection()
-            ->addFieldToFilter('email_sent', array('eq' => 0));
+            ->addFieldToFilter('email_sent', array('eq' => 0))
+            ->setPageSize($limit);
+        
         $retVal = array();
         $ruleId = null;
         $couponId = null;

@@ -79,4 +79,22 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
         }
         return false;
     }
+    
+    /**
+     * 
+     * @param Bronto_Api_Field_Row $field
+     * @return boolean
+     */
+    public function getFieldOptionArray(Bronto_Api_Field_Row $field)
+    {
+        $fieldObjectOptions = $field->options;
+        if ($fieldObjectOptions) {
+            $options = array();
+            foreach ($fieldObjectOptions as $option) {
+                $options[] = $option->value;
+            }
+            return $options;
+        }
+        return false;
+    }
 }

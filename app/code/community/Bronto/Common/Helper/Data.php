@@ -435,7 +435,59 @@ class Bronto_Common_Helper_Data extends Mage_Core_Helper_Abstract
                 return false;
             }
         }
+        
+        // Apply advanced logging data to bronto_common logging
+        if (strtolower($this->_getModuleName()) == 'bronto_common') {
+            $this->_advancedLogging($level, $file);
+        }
+        
         return Mage::log($message, $level, $file, true);
+    }
+    
+    /**
+     * Adds Advanced logging data to 
+     * @param string $level
+     * @param string $file
+     * @return bool|null
+     */
+    protected function _advancedLogging($level, $file)
+    {
+        // Log Magento version
+        $edition = (class_exists('Enterprise_Cms_Helper_Data')) ? 'EE' : 'CE';
+        $message = 'Magento ' . $edition . ' v' . Mage::getVersion() . ' - ';
+        
+        // Log PHP version
+        if (phpversion()) {
+            $message .= 'PHP v' . phpversion() . ' - ';
+        }
+        
+        if (constant('PCRE_VERSION')) {
+            $message .= 'PECL v' . strstr(constant('PCRE_VERSION'), ' ', true) . ' - ';
+        }
+        
+        // append with list of custom modules
+        $modules = $this->_getModuleList();
+        $message .= 'Installed Modules: ' . $modules;
+        
+        Mage::log($message, $level, $file, true);
+    }
+    
+    /**
+     * Get list of active custom modules
+     * @return string
+     */
+    protected function _getModuleList()
+    {
+        $moduleList = array();
+        $modules = Mage::getConfig()->getNode('modules')->children();
+        
+        foreach ($modules as $name => $module) {
+            if (strpos($name, 'Mage_') === FALSE && strpos($name, 'Enterprise_') === FALSE && $module->active == 'true') {
+                $moduleList[] = $name . ' [v' . $module->version . ' codePool: ' . $module->codePool . ']';
+            }
+        }
+        
+        return implode(', ', $moduleList);
     }
     
     /**

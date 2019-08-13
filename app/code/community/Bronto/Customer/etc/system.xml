@@ -114,6 +114,7 @@
                             <label>Prefix</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -127,7 +128,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><prefix>_new_</prefix></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_prefix>
                         <!-- firstname -->
                         <firstname>
@@ -135,6 +135,7 @@
                             <label>First Name</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -148,7 +149,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><firstname>_new_</firstname></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_firstname>
                         <!-- middlename -->
                         <middlename>
@@ -156,6 +156,7 @@
                             <label>Middle Name/Initial</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -169,7 +170,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><middlename>_new_</middlename></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_middlename>
                         <!-- lastname -->
                         <lastname>
@@ -177,6 +177,7 @@
                             <label>Last Name</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -190,7 +191,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><lastname>_new_</lastname></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_lastname>
                         <!-- suffix -->
                         <suffix>
@@ -198,6 +198,7 @@
                             <label>Suffix</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -211,7 +212,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><suffix>_new_</suffix></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_suffix>
                         <!-- gender -->
                         <gender>
@@ -219,6 +219,7 @@
                             <label>Gender</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -232,7 +233,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><gender>_new_</gender></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_gender>
                         <!-- dob -->
                         <dob>
@@ -240,6 +240,7 @@
                             <label>Date of Birth</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -253,7 +254,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><dob>_new_</dob></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_dob>
                         <!-- taxvat -->
                         <taxvat>
@@ -261,6 +261,7 @@
                             <label>Tax/VAT Number</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -274,7 +275,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><taxvat>_new_</taxvat></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_taxvat>
                         <!-- website_id -->
                         <website_id>
@@ -282,6 +282,7 @@
                             <label>Website Association</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -295,7 +296,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><website_id>_new_</website_id></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_website_id>
                         <!-- group_id -->
                         <group_id>
@@ -303,6 +303,7 @@
                             <label>Customer Group</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -316,7 +317,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><group_id>_new_</group_id></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_group_id>
                         <!-- created_at -->
                         <created_at>
@@ -324,6 +324,7 @@
                             <label>Created At</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -337,7 +338,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><created_at>_new_</created_at></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_created_at>
                         <!-- created_in -->
                         <created_in>
@@ -345,6 +345,7 @@
                             <label>Created From</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -358,7 +359,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><created_in>_new_</created_in></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_created_in>
                     </fields>
                 </attributes>
@@ -377,6 +377,7 @@
                             <label>Street Address</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -390,7 +391,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><street>_new_</street></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_street>
                         <!-- city -->
                         <city>
@@ -398,6 +398,7 @@
                             <label>City</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -411,7 +412,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><city>_new_</city></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_city>
                         <!-- region -->
                         <region>
@@ -419,6 +419,7 @@
                             <label>State/Province</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -432,7 +433,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><region>_new_</region></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_region>
                         <!-- postcode -->
                         <postcode>
@@ -440,6 +440,7 @@
                             <label>Zip/Postal Code</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -453,7 +454,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><postcode>_new_</postcode></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_postcode>
                         <!-- country_id -->
                         <country_id>
@@ -461,6 +461,7 @@
                             <label>Country</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -474,7 +475,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><country_id>_new_</country_id></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_country_id>
                         <!-- company -->
                         <company>
@@ -482,6 +482,7 @@
                             <label>Company</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -495,7 +496,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><company>_new_</company></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_company>
                         <!-- telephone -->
                         <telephone>
@@ -503,6 +503,7 @@
                             <label>Telephone</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -516,7 +517,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><telephone>_new_</telephone></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_telephone>
                         <!-- fax -->
                         <fax>
@@ -524,6 +524,7 @@
                             <label>Fax</label>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <backend_model>bronto_customer/system_config_backend_brontofield</backend_model>
                             <source_model>bronto_common/system_config_source_field</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -537,7 +538,6 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                             <depends><fax>_new_</fax></depends>
-                            <validate>validate-length minimum-length-5</validate>
                         </new_fax>
                     </fields>
                 </address_attributes>

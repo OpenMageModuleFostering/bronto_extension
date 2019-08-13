@@ -3,19 +3,17 @@
 /**
  * @package   Order
  * @copyright 2011-2012 Bronto Software, Inc.
- * @version   1.1.5
+ * @version   1.1.7
  */
-class Bronto_Order_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
+class Bronto_Order_Model_Mysql4_Setup extends Mage_Sales_Model_Mysql4_Setup
 {
 
     /**
-     * Short description for function
-     * 
-     * Long description (if any) ...
+     * Get column definition for attribute
      * 
      * @param string    $code Parameter description (if any) ...
      * @param unknown   $data Parameter description (if any) ...
-     * @return string    Return description (if any) ...
+     * @return string   Return description (if any) ...
      * @access protected
      */
     protected function _getAttributeColumnDefinition($code, $data)
@@ -35,7 +33,7 @@ class Bronto_Order_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
      * @param int|string $entityTypeId
      * @param string $code
      * @param array $attr
-     * @return Mage_Sales_Model_Resource_Setup
+     * @return Mage_Sales_Model_Mysql4_Setup
      */
     public function removeAttribute($entityTypeId, $code)
     {
@@ -45,7 +43,7 @@ class Bronto_Order_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
             $this->_removeFlatAttribute($this->_flatEntityTables[$entityTypeId], $code);
             $this->_removeGridAttribute($this->_flatEntityTables[$entityTypeId], $code, $entityTypeId);
         } else {
-            parent::removeAttribute($entityTypeId, $code, $attr);
+            parent::removeAttribute($entityTypeId, $code);
         }
         return $this;
     }
@@ -57,7 +55,7 @@ class Bronto_Order_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
      * @param string $table
      * @param string $attribute
      * @param array $attr
-     * @return Mage_Sales_Model_Resource_Setup
+     * @return Mage_Sales_Model_Mysql4_Setup
      */
     protected function _removeFlatAttribute($table, $attribute)
     {
@@ -72,7 +70,7 @@ class Bronto_Order_Model_Resource_Setup extends Mage_Sales_Model_Mysql4_Setup
      * @param string $attribute
      * @param array $attr
      * @param string $entityTypeId
-     * @return Mage_Sales_Model_Resource_Setup
+     * @return Mage_Sales_Model_Mysql4_Setup
      */
     protected function _removeGridAttribute($table, $attribute, $entityTypeId)
     {

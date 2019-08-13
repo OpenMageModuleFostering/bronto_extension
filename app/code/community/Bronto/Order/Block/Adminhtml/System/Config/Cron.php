@@ -48,7 +48,7 @@ class Bronto_Order_Block_Adminhtml_System_Config_Cron extends Bronto_Common_Bloc
     }
 
     /**
-     * @return Bronto_Order_Model_Resource_Order_Collection
+     * @return Bronto_Order_Model_Mysql4_Queue_Collection
      */
     protected function getOrderResourceCollection()
     {

@@ -42,7 +42,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
     }
 
     /**
-     * @return Bronto_Customer_Model_Resource_Customer_Collection
+     * @return Bronto_Customer_Model_Mysql4_Queue_Collection
      */
     protected function getCustomerResourceCollection()
     {

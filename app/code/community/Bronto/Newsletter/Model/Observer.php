@@ -10,7 +10,7 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
     const NOTICE_IDENTIFER = 'bronto_newsletter';
     const BOX_UNCHECKED    = 0;
     const BOX_CHECKED      = 1;
-    const BOX_NOT_SHOWN    = 2;
+    const BOX_NOT_CHANGED  = 2;
 
     /**
      * @param Varien_Event_Observer $observer
@@ -27,7 +27,7 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             return;
         }
     }
-
+    
     /**
      * This event fires when customer continues past the Billing Info step
      * on the onepage checkout. We set a flag here in the session to avoid
@@ -40,76 +40,124 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
         if (!Mage::helper('bronto_newsletter')->isEnabled()) {
             return;
         }
-
+        Mage::getSingleton('checkout/session')->unsIsSubscribed();
         $params = Mage::app()->getRequest()->getParams();
-        if (isset($params['billing']['is_subscribed'])) {
+        
+        if (
+            isset($params['billing']['is_subscribed']) && 
+            ($params['billing']['is_subscribed'] === '1' ||
+            $params['billing']['is_subscribed'] === '0')
+        ) {
             $isSubscribed = (int) $params['billing']['is_subscribed'];
             Mage::getSingleton('checkout/session')->setIsSubscribed($isSubscribed);
         } else {
-            Mage::getSingleton('checkout/session')->setIsSubscribed(self::BOX_UNCHECKED);
+            Mage::getSingleton('checkout/session')->setIsSubscribed(self::BOX_NOT_CHANGED);
+        }
+        
+        return $observer;
+    }
+    
+    /**
+     * Get Bronto Contact Row via Email address
+     * @param string $email
+     * @return boolean|Bronto_Api_Contact_Row
+     */
+    protected function _getBrontoContact($email)
+    {
+        try {
+            /* @var $contact Bronto_Api_Contact_Row */
+            $contact = Mage::helper('bronto_newsletter/contact')->getContactByEmail($email, null, Mage::app()->getStore()->getId());
+            return $contact;
+        } catch (Exception $e) {
+            Mage::helper('bronto_newsletter')->writeError($e);
+            return false;
         }
     }
 
     /**
+     * Observe checkout event and handle assigning status
      * @param Varien_Event_Observer $observer
+     * @return boolean|Varien_Event_Observer
      */
     public function handleSubscriptionAtCheckout(Varien_Event_Observer $observer)
     {
         if (!Mage::helper('bronto_newsletter')->isEnabled()) {
             return;
         }
-
+        
         try {
             // Get e-mail address we are working with
             $email = $observer->getEvent()->getOrder()->getData('customer_email');
+            
             if (empty($email)) {
                 Mage::helper('bronto_newsletter')->writeError('No customer_email was provided.');
                 return false;
             }
 
             /* @var $subscriber Mage_Newsletter_Model_Subscriber */
-            $subscriber   = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
+            if (!$subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($email)) {
+                Mage::helper('bronto_newsletter')->writeError('Unable to create subscriber object');
+                return false;
+            }
+            
+            /* @var $contact Bronto_Api_Contact_Row */
+            if (!$contact = $this->_getBrontoContact($email)) {
+                Mage::helper('bronto_newsletter')->writeError('Unable to create contact object');
+                return false;
+            }
+            
+            // Get Subscription status
             $isSubscribed = Mage::getSingleton('checkout/session')->getIsSubscribed();
             
+            // Determine action
             switch ($isSubscribed) {
-                case self::BOX_UNCHECKED:
-                    // Unsubscribe the Customer
-                    if ($subscriber && $subscriber->isSubscribed()) {
-                        return $subscriber->unsubscribe();
-                    } else {
-                        // Make Custmoer Transactional
-                        $this->_makeTransactional($subscriber, $email);
-                    }
-                    break;
                 case self::BOX_CHECKED:
                     // Subscribe the Customer
-                    if (!$subscriber || !$subscriber->isSubscribed()) {
+                    if (!$subscriber->isSubscribed()) {
                         return $subscriber->subscribe($email);
                     }
                     break;
-                case self::BOX_NOT_SHOWN:
-                    // Just save the Customer
-                    $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE);
-                    $subscriber->save();
+                case self::BOX_UNCHECKED:
+                    // Unsubscribe the Customer if subscribed, Make Transactional if not in bronto
+                    if ($subscriber->isSubscribed()) {
+                        return $subscriber->unsubscribe();
+                    } elseif (!$contact->id && !$subscriber->isSubscribed()) {
+                        $this->_makeTransactional($subscriber, $email);
+                    }
+                    break;
+                case self::BOX_NOT_CHANGED:
+                    // Make Customer Transactional if not in bronto
+                    if (!$contact->id && !$subscriber->isSubscribed()) {
+                        $this->_makeTransactional($subscriber, $email);
+                    }
+                    break;
+                default:
+                    // Intentionally blank
                     break;
             }
-
         } catch (Exception $e) {
             Mage::helper('bronto_newsletter')->writeError($e);
         }
+        
+        return $observer;
     }
     
-    private function _makeTransactional($subscriber, $email)
+    /**
+     * Handle setting subscriber as transactional in bronto queue and 
+     * removing from magento subscription
+     * @param Mage_Newsletter_Model_Subscriber $subscriber
+     * @param string $email
+     * @return boolean|Mage_Newsletter_Model_Subscriber
+     */
+    private function _makeTransactional(Mage_Newsletter_Model_Subscriber $subscriber, $email)
     {
-        // Check For Existing Contact from Bronto
-        try {
-            $contactHelper = Mage::helper('bronto_common/contact');
-            $contact = $contactHelper->getContactByEmail($subscriber->getSubscriberEmail(), null, Mage::app()->getStore()->getId());
-        } catch (Exception $e) {
-            Mage::helper('bronto_newsletter')->writeError($e);
+        /* @var $contact Bronto_Api_Contact_Row */
+        if (!$contact = $this->_getBrontoContact($email)) {
+            Mage::helper('bronto_newsletter')->writeError('Unable to create contact object');
             return false;
         }
         
+        // Get Customer using the email provided
         $ownerId = Mage::getModel('customer/customer')
             ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
             ->loadByEmail($email)
@@ -119,6 +167,7 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             $ownerId = Mage::getSingleton('customer/session')->getId();
         }
         
+        // Set Magento Subscriber and Status
         $subscriber->setCustomerId($ownerId); 
         $subscriber->setSubscriberEmail($email);
         $subscriber->setStoreId(Mage::app()->getStore()->getId());
@@ -129,8 +178,8 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
         }
         
         $subscriber->save();
-        
-        $this->_saveToQueue($subscriber, Mage::app()->getStore()->getId());
+                
+        return $subscriber;
     }
 
     /**
@@ -143,15 +192,16 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
         }
 
         // Insert contact email into queuing table. Cron will
-        // then issue an update to Bronto on its next run.        
+        // then issue an update to Bronto on its next run.
         try {
             /* @var $subscriber Mage_Newsletter_Model_Subscriber */
-            if ($subscriber = $observer->getEvent()->getSubscriber()) {
-                $email = $subscriber->getEmail();  
-                if (!empty($email)) {
-                    $this->_saveToQueue($subscriber, Mage::app()->getStore()->getId());
-                }
+            if (!$subscriber = $observer->getEvent()->getSubscriber()) {
+                Mage::helper('bronto_newsletter')->writeError('Unable to create subscriber object');
+                return false;
             }
+            
+            // Send to queue
+            $this->_saveToQueue($subscriber, Mage::app()->getStore()->getId());
         } catch (Exception $e) {
             Mage::helper('bronto_newsletter')->writeError($e);
         }
@@ -161,54 +211,33 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
      * Add Subscriber to Bronto Newsletter Opt-in queue
      * @param Mage_Newsletter_Model_Subscriber $subscriber
      * @param int $storeId
-     * @param string $status
      * @return void
      */
     private function _saveToQueue($subscriber, $storeId) 
     {
+        // Get e-mail address we are working with
+        $email = $subscriber->getEmail();
+        if (empty($email)) {
+            Mage::helper('bronto_newsletter')->writeError('Subscriber does not have an email address.');
+            return false;
+        }
+        
         // Get Calculated Status
-        $status = $this->_getQueueStatus($subscriber);
+        $status = Mage::helper('bronto_newsletter/contact')->getQueueStatus($subscriber);
         
         /* @var $contactQueue Bronto_Newsletter_Model_Queue */
-        $contactQueue = Mage::getModel('bronto_newsletter/queue');
-
-        $contact = $contactQueue->getContactRow($subscriber->getId(), $storeId)
-            ->setSubscriberEmail($subscriber->getEmail())
-            ->setStatus($status)
-            ->setMessagePreference('html')
-            ->setSource('api')
-            ->setImported(0)
-            ->save();
-    }
-    
-    /**
-     * Determine Status to use when sending subscriber to opt-in queue
-     * @param Mage_Newsletter_Model_Subscriber $subscriber
-     * @param int $storeId
-     * @return boolean
-     */
-    private function _getQueueStatus($subscriber)
-    {
-        // Set correct status based on subscriber status
-        switch ($subscriber->getStatus()) {
-            case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:
-                $status = Bronto_Api_Contact::STATUS_ONBOARDING;
-                break;
-
-            case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED:
-                $status = Bronto_Api_Contact::STATUS_UNSUBSCRIBED;
-                break;
-
-            case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:
-                $status = Bronto_Api_Contact::STATUS_TRANSACTIONAL;
-                break;
-                
-            default:
-                $status = false;
-                break;
-    }
-
-        return $status;
+        $contactQueue = Mage::getModel('bronto_newsletter/queue')
+            ->getContactRow($subscriber->getId(), $storeId);
+        
+        // If ContactQueue status doesn't match subscriber status, replace it
+        if ($status != $contactQueue->getStatus()) {
+            $contactQueue->setSubscriberEmail($subscriber->getEmail())
+                ->setStatus($status)
+                ->setMessagePreference('html')
+                ->setSource('api')
+                ->setImported(0)
+                ->save();
+        }
     }
     
     /**
@@ -239,8 +268,7 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             return false;
         }
         
-        $helper        = Mage::helper('bronto_newsletter/contact');
-        $contactHelper = Mage::helper('bronto_common/contact');
+        $helper = Mage::helper('bronto_newsletter/contact');
         
         $lists = $helper->getListIds($storeId);
         
@@ -254,16 +282,23 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
         $subscribers->getSelect()->limit($limit);
         foreach ($subscribers as $subscriber) {
             try {
-                $contact = $contactHelper->getContactByEmail($subscriber->getSubscriberEmail(), null, $storeId);
+                /* @var $contact Bronto_Api_Contact_Row */
+                $contact = $helper->getContactByEmail($subscriber->getSubscriberEmail(), null, $storeId);
                 
+                // Get List Details
                 foreach ($lists as $listId) {
-                    $contactHelper->writeInfo("  Adding Contact to list: {$listId}");
+                    if ($list = $helper->getListData($listId)) {
+                        $listName = $list->label;
+                    } else {
+                        $listName = $listId;
+                    }
+                    $helper->writeInfo("  Adding Contact to list: {$listName}");
                     $contact->addToList($listId);
                 }
                 
                 if ($helper->getUpdateStatus()) {
                     $contact->status = $subscriber->getStatus();
-                    $contactHelper->writeInfo("  Setting Contact ({$contact->email}) status to: {$contact->status}");
+                    $helper->writeInfo("  Setting Contact ({$contact->email}) status to: {$contact->status}");
                 }
                 $contact->save();
                 $subscriber->setImported(1)->save();
@@ -291,7 +326,7 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
             'error'   => 0,
         );
 
-        $stores = Mage::app()->getStores();
+        $stores = Mage::app()->getStores(true);
         foreach ($stores as $_store) {
             $storeResult = $this->processSubscribersForStore($_store);
             $result['total']   += $storeResult['total'];
@@ -306,24 +341,6 @@ class Bronto_Newsletter_Model_Observer extends Mage_Core_Model_Abstract
      * @depricated
      */
     static public function cronImport() {
-        /* var $contactHelper Bronto_Newsletter_Helper_Contact */
-        $contactHelper = Mage::helper('bronto_newsletter/contact');
-        /* var $subscribers Bronto_Newsletter_Model_Mysql4_Queue_Collection */
-        $subscribers = Mage::getModel('bronto_newsletter/queue')
-            ->getCollection()
-            ->addFilter('imported', 0);
-
-        foreach($subscribers as $subscriber) {
-            $email = $subscriber->getSubscriberEmail();
-            $contact = $contactHelper->getContactByEmail($email, null, $subscriber->getStore());
-            $contact->status = $subscriber->getStatus();
-
-            try {
-                //$contactHelper->saveContact($contact);
-                $subscriber->setImported(1)->save();
-            } catch(Exception $e) {
-                Mage::helper('bronto_newsletter')->writeError($e);
-            }
-        }
+        return;
     }
 }

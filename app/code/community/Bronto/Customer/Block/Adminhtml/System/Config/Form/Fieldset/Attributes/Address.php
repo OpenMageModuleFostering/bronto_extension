@@ -24,6 +24,9 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Add
         'suffix',
         'vat_id',
     );
+    
+    protected $_configPath = Bronto_Customer_Helper_Data::XML_PREFIX_ADDRESS_ATTR;
+    protected $_fieldNameTemplate = 'groups[address_attributes][fields][_attrCode_][value]';
 
     /**
      * @return array
