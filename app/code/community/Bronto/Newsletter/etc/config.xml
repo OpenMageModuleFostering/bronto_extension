@@ -112,6 +112,7 @@
             </checkout>
             <contacts>
                 <update_status>1</update_status>
+                <update_unsub>0</update_unsub>
             </contacts>
         </bronto_newsletter>
     </default>

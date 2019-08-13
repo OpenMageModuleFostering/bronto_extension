@@ -25,7 +25,7 @@ class Bronto_Newsletter_Helper_Data extends Bronto_Common_Helper_Data
     /**
      * Module Human Readable Name
      */
-    protected $_name = 'Bronto Newsletter Subscription';
+    protected $_name = 'Bronto Newsletter Opt-In';
 
     /**
      * Get Human Readable Name

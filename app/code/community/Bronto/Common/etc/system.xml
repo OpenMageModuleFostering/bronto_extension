@@ -432,21 +432,6 @@
                             <show_in_store>1</show_in_store>
                             <comment><![CDATA[If enabled, debug logs will also contain each API call.]]></comment>
                         </verbose>
-                        <test>
-                            <label>Test Mode</label>
-                            <depends>
-                                <enabled>1</enabled>
-                            </depends>
-                            <frontend_type>select</frontend_type>
-                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
-                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
-                            <sort_order>30</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                            <comment>
-                                <![CDATA[Email sent with <a href="http://community.bronto.com/api/v4/objects/general/deliveryobject" target="_blank"><code>type=test</code></a> only to existing Contacts.]]></comment>
-                        </test>
                         <notices>
                             <label>Error Notices</label>
                             <depends>
@@ -463,9 +448,10 @@
                                 <![CDATA[Show warnings/errors as site notices.<br /><strong>Note:</strong> Site notices can be customer-facing.]]></comment>
                         </notices>
                         <clear_logs>
-                            <label>Clear Old Bronto Logs</label>
+                            <label>Enable Log Cleanup</label>
                             <depends>
                                 <debug>1</debug>
+                                <enabled>1</enabled>
                             </depends>
                             <frontend_type>select</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
@@ -474,13 +460,15 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
-                            <comment>Deletes old entries every midnight.</comment>
+                            <comment>At midnight, logs older than the Log
+                              Cleanup Threshold will be removed.</comment>
                         </clear_logs>
                         <log_threshold>
-                            <label>Clear Log Threshold</label>
+                            <label>Log Cleanup Threshold</label>
                             <depends>
                                 <debug>1</debug>
                                 <clear_logs>1</clear_logs>
+                                <enabled>1</enabled>
                             </depends>
                             <frontend_type>text</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
@@ -488,7 +476,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
-                            <comment>Deletes logs older than this value, in days.</comment>
+                            <comment><![CDATA[Number of days to keep logs.<br/>Default: 30]]></comment>
                         </log_threshold>
                     </fields>
                 </settings>

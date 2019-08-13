@@ -15,7 +15,7 @@ class Bronto_Newsletter_Block_Adminhtml_Widget_Button_Reset extends Mage_Adminht
         $this->setOnClick("deleteConfirm('This will mark all subscribers as not-imported and will cause the importer to re-process each subscriber again.\\n\\nAre you sure you want to do this?', '" . Mage::helper('bronto_newsletter')->getScopeUrl('*/newsletter/reset') . "'); return false;");
         $this->setClass('delete  bronto-cron-reset');
 
-        if (!Mage::helper('bronto_newsletter')->isModuleActive() || (!Mage::helper('bronto_newsletter')->isDebugEnabled() && !Mage::helper('bronto_newsletter')->isTestModeEnabled())) {
+        if (!Mage::helper('bronto_newsletter')->isModuleActive() || (!Mage::helper('bronto_newsletter')->isDebugEnabled())) {
             $this->setDisabled(true)->setClass('disabled');
             if (!Mage::helper('bronto_customer')->isDebugEnabled()) {
                 $this->setTitle('Enable Debug in the General section to ' . $this->getLabel() . '.');

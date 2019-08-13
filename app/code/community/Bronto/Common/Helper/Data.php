@@ -658,18 +658,6 @@ class Bronto_Common_Helper_Data
     /**
      * @return bool
      */
-    public function isTestModeEnabled()
-    {
-        if (!$this->getApiToken()) {
-            return false;
-        }
-
-        return (bool)$this->getAdminScopedConfig(self::XML_PATH_TEST);
-    }
-
-    /**
-     * @return bool
-     */
     public function isNoticesEnabled()
     {
         if (!$this->getApiToken()) {

@@ -222,18 +222,22 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
                 $delivery->messageId = $message->id;
 
                 $delivery->type = $this->getTemplateSendType() ? $this->getTemplateSendType() : 'transactional';
-                if (Mage::helper($this->_helper)->isTestModeEnabled()) {
-                    $delivery->type = 'test';
-                }
                 $delivery->fromEmail  = $this->getSenderEmail();
                 $delivery->fromName   = $this->getSenderName();
                 $delivery->replyEmail = $this->getSenderEmail();
-                $delivery->recipients = array(
+                $recipients = array(
                     array(
                         'type' => 'contact',
                         'id'   => $contact->id,
+                        'deliveryType' => 'selected'
                     ),
                 );
+                foreach (Mage::getModel('bronto_common/list', $this->_helper)
+                  ->addAdditionalRecipients($variables['store']->getId()) as $exclude) {
+                      $recipients[] = $exclude;
+                }
+                $delivery->recipients = $recipients;
+
                 Mage::helper($this->_helper)->writeDebug('  Processing Delivery');
                 $delivery = $this->getProcessedDelivery($delivery, $variables);
                 Mage::helper($this->_helper)->writeDebug('  Saving Delivery...');
@@ -436,6 +440,13 @@ class Bronto_Common_Model_Email_Template extends Mage_Core_Model_Email_Template
         } catch (Exception $e) {
             Mage::helper('bronto_common')->writeError('Failed to trigger email send: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * @param Bronto_Api_Delivery_Row $delivery
+     */
+    protected function _addAdditionalRecipients($delivery, $storeId)
+    {
     }
 
     /**

@@ -137,9 +137,7 @@ class Bronto_Reminder_Model_Rule_Condition_Cart extends Bronto_Reminder_Model_Co
         } elseif ('days' == $attributeValue) {
             $conditionValue *= 1440;
         } else {
-            if (!Mage::helper('bronto_common')->isTestModeEnabled()) {
-                $requiredValue = 30;
-            }
+            $requiredValue = 30;
         }
         if ($conditionValue < $requiredValue) {
             Mage::throwException(Mage::helper('bronto_reminder')->__('Root shopping cart condition should have %s value at least %d.', $attributeValue, $requiredValue));

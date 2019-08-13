@@ -328,7 +328,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 if (!preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $date)) {
                     return '';
                 } else {
-                    return $date;
+                    return implode('T', $dates) . Mage::getSingleton('core/date')->date('P');
                 }
                 break;
             default:

@@ -678,7 +678,7 @@ class Bronto_Reminder_Model_Mysql4_Rule
 
         // If a Unique ID was found to match, delete log and coupon table entries
         if ($uniqueId) {
-            $this->_getWriteAdapter()->delete($this->getTable('bronto_reminder/log'), "unique_id = $uniqueId");
+            $this->_getWriteAdapter()->delete($this->getTable('bronto_reminder/log'), "unique_id = '$uniqueId'");
             $this->_getWriteAdapter()->delete($this->getTable('bronto_reminder/coupon'), $where);
         }
 

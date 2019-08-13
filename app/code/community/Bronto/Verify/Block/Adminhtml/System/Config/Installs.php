@@ -35,6 +35,7 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Installs
         'bronto_reviews',
         'bronto_reminder',
         'bronto_email',
+        'bronto_api',
     );
 
     public function _construct()
@@ -300,12 +301,16 @@ class Bronto_Verify_Block_Adminhtml_System_Config_Installs
         $modules = Mage::helper('bronto_common')->getInstalledModules(true);
         $mTotal  = count($modules);
         $mCount  = 1;
-        foreach ($modules as $module) {
-            if (!in_array($module, $this->_modules)) {
-                continue;
+        foreach ($this->_modules as $module) {
+            $section = $module;
+            if ($module == 'bronto_api') {
+                $module = 'bronto_common/api';
+            } else {
+                if (!in_array($module, $modules)) {
+                    continue;
+                }
             }
             $mHelper = Mage::helper($module);
-            $section = $module;
             if ($section == 'bronto_common') {
                 $section = 'bronto';
             }

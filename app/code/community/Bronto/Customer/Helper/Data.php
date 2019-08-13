@@ -22,7 +22,7 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
     /**
      * Module Human Readable Name
      */
-    protected $_name = 'Bronto Customer Import';
+    protected $_name = 'Bronto Contact Import';
 
     /**
      * Get Human Readable Name

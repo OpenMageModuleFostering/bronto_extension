@@ -25,7 +25,7 @@ class Bronto_Reviews_Helper_Data
      */
     public function getName()
     {
-        return 'Bronto Reviews';
+        return 'Bronto Review Requests';
     }
 
     /**
@@ -142,7 +142,8 @@ class Bronto_Reviews_Helper_Data
         if ($product->getCategoryId()) {
             $params['category'] = $product->getCategoryId();
         } else {
-            $categoryId = end($product->getCategoryIds());
+            $categories = $product->getCategoryIds();
+            $categoryId = end($categories);
             $params['category'] = $categoryId;
         }
         return $url->getUrl('review/product/list', $params);

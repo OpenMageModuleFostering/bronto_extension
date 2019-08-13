@@ -256,7 +256,8 @@ class Bronto_Reviews_Model_Observer
     protected  function _cancelDelivery($deliveryId)
     {
         try {
-            $result = $this->getDeliveryObject()->delete(array('id' => $deliveryId));
+            $delivery = $this->getDeliveryObject();
+            $result = $delivery->update(array('id' => $deliveryId, 'status' => 'skipped'));
             if ($result->hasErrors()) {
                 $error = implode('<br />', $result->getErrors());
 
@@ -264,6 +265,30 @@ class Bronto_Reviews_Model_Observer
             }
         } catch (Exception $e) {
             $this->_helper->writeError('Failed Cancelling Delivery: ' . $e->getMessage());
+        }
+    }
+
+    protected function _setIneligibleRecipients($delivery, $storeId)
+    {
+        $helper = Mage::helper('bronto_reviews');
+        $listIds = $helper->getExclusionLists('store', $storeId);
+        if ($listIds) {
+            $listObject = $delivery->getApi()->getListObject();
+            try {
+                $lists = $listObject->read(array('id' => $listIds));
+                foreach ($lists as $list) {
+                    if ($list->hasError()) {
+                        continue;
+                    }
+                    $delivery->recipients[] = array(
+                        'type' => 'list',
+                        'id' => $list->id,
+                        'deliveryType' => 'ineligible'
+                    );
+                }
+            } catch (Exception $e) {
+                $helper->writeError('Failed to exlude lists: ' . $e->getMessage());
+            }
         }
     }
 
@@ -293,6 +318,9 @@ class Bronto_Reviews_Model_Observer
                 'type' => 'contact',
                 'id'   => $contact->id
             );
+            $exclusionRecipients = Mage::getModel('bronto_common/list', 'bronto_reviews')
+                ->addAdditionalRecipients($order->getStoreId());
+            array_unshift($exclusionRecipients, $deliveryRecipientObject);
 
             // Create Send Time
             $sendTime = date('c', strtotime('+' . abs($this->_helper->getReviewSendPeriod('store', $order->getStoreId())) . ' days'));
@@ -305,7 +333,7 @@ class Bronto_Reviews_Model_Observer
             $deliveryRow->fromEmail  = $this->_helper->getReviewSenderEmail('store', $order->getStoreId());
             $deliveryRow->fromName   = $this->_helper->getReviewSenderName('store', $order->getStoreId());
             $deliveryRow->replyEmail = $this->_helper->getReviewReplyTo('store', $order->getStoreId());
-            $deliveryRow->recipients = array($deliveryRecipientObject);
+            $deliveryRow->recipients = $exclusionRecipients;
             $deliveryRow->fields     = $this->_buildFields();
 
             // Save Delivery

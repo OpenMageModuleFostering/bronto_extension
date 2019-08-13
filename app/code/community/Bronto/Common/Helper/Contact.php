@@ -49,21 +49,6 @@ class Bronto_Common_Helper_Contact extends Bronto_Common_Helper_Data
     public function saveContact(Bronto_Api_Contact_Row $contact, $persistOnly = false)
     {
 
-        if ($this->isTestModeEnabled()) {
-            if (!$contact->id) {
-                // Check for @bronto.com
-                $parts = explode('@', $contact->email);
-                if (isset($parts[1]) && $parts[1] == 'bronto.com') {
-                    $this->writeInfo('TEST MODE: Contact is @bronto.com, allowing...');
-                } else {
-                    // User doesn't exist and isn't @bronto
-                    $this->writeInfo('TEST MODE: Not updating Contact with email: ' . $contact->email);
-
-                    return $contact;
-                }
-            }
-        }
-
         if ($persistOnly) {
             $contact->persist();
         } else {

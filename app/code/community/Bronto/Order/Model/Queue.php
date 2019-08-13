@@ -55,6 +55,14 @@ class Bronto_Order_Model_Queue extends Mage_Core_Model_Abstract
                 $order->save();
 
                 return $order;
+            } else if ($collection->count() > 1) {
+                // This might be the same quote id
+                foreach ($collection->getItems() as $row) {
+                    if ($row->getOrderId() == 0) {
+                        $row->delete();
+                    }
+                }
+                return $row;
             } else {
                 if (($quoteId > 0)) {
                     $this->setQuoteId($quoteId);

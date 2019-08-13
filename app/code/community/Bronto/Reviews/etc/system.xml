@@ -127,6 +127,22 @@
                             <show_in_store>1</show_in_store>
                             <validate>required-entry validate-email</validate>
                         </reply_to>
+                        <exclusion>
+                            <label>Exclusion List(s)</label>
+                            <depends>
+                                <enabled>1</enabled>
+                            </depends>
+                            <frontend_type>multiselect</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field_list</frontend_model>
+                            <source_model>bronto_common/system_config_source_list</source_model>
+                            <sort_order>70</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <can_be_empty>1</can_be_empty>
+                            <comment>Exclude sending for customers on the
+                              selected list(s).</comment>
+                        </exclusion>
                     </fields>
                 </settings>
             </groups>

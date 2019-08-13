@@ -222,7 +222,7 @@
                             <comment><![CDATA[If <em>Yes</em>, the contact status within Bronto will be set based on the Magento subscriber status.]]></comment>
                         </update_status>
                         <lists>
-                            <label>Add to List(s)</label>
+                            <label>Add Subscribers to List(s)</label>
                             <frontend_type>multiselect</frontend_type>
                             <frontend_model>bronto_common/adminhtml_system_config_form_field_list</frontend_model>
                             <source_model>bronto_common/system_config_source_list</source_model>
@@ -232,6 +232,19 @@
                             <show_in_store>1</show_in_store>
                             <can_be_empty>1</can_be_empty>
                         </lists>
+                        <update_unsub>
+                            <label>Remove Unsubscribes from List(s)</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>bronto_common/adminhtml_system_config_form_field</frontend_model>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[If <em>Yes</em>, the unsubscribing
+                              contact will be removed from the list(s) selected
+                              above.]]></comment>
+                        </update_unsub>
                     </fields>
                 </contacts>
                 <cron_list>

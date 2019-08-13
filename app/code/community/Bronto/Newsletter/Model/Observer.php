@@ -94,7 +94,8 @@ class Bronto_Newsletter_Model_Observer
             }
 
             /* @var $subscriber Mage_Newsletter_Model_Subscriber */
-            if (!$subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($email)) {
+            $subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
+            if (!$subscriber->hasSubscriberEmail() && $isSubscribed == Bronto_Api_Contact::STATUS_TRANSACTIONAL) {
                 $this->_helper->writeError('Unable to create subscriber object');
 
                 return false;
@@ -297,6 +298,15 @@ class Bronto_Newsletter_Model_Observer
             ->setPageSize($limit)
             ->getItems();
 
+        $actualLists = array();
+        foreach ($lists as $listId) {
+            if ($list = $helper->getListData($listId, 'store', $storeId)) {
+                $actualLists[$listId] = $list->label;
+            } else {
+                $this->_helper->writeError("The list ({$listId}) was not found. This may indicate that is does not exist. Try re-saving the config.");
+            }
+        }
+
         foreach ($subscribers as $subscriber) {
             try {
                 /* @var $contact Bronto_Api_Contact_Row */
@@ -309,27 +319,24 @@ class Bronto_Newsletter_Model_Observer
                     Mage::throwException($noContactMessage);
                 }
 
-                // Get List Details
-                foreach ($lists as $listId) {
-                    if ($list = $helper->getListData($listId, 'store', $storeId)) {
-                        $listName = $list->label;
-                    } else {
-                        Mage::throwException(
-                            "The list ({$listId}) was not found.  This may indicate that it does not exist.  Try re-saving the config"
-                        );
-                    }
-                    $helper->writeInfo("  Adding Contact to list: {$listName}");
-                    $contact->addToList($listId);
-                }
-
-                // Save List Update at least
-                $contact->save();
-
                 // If Bronto Status is 'Bounced', mark suppressed, show error and continue foreach
                 if ($contact->status == Bronto_Api_Contact::STATUS_BOUNCE) {
                     $bounceMessage = "Subscriber {$contact->email} Has Been Bounced in Bronto";
                     $subscriber->setBrontoSuppressed($bounceMessage)->save();
                     Mage::throwException($bounceMessage);
+                }
+
+                // Get List Details
+                if ($subscriber->getStatus() == Bronto_Api_Contact::STATUS_ACTIVE || ($helper->isRemoveUnsubs('store', $storeId) && $subscriber->getStatus() == Bronto_Api_Contact::STATUS_UNSUBSCRIBED)) {
+                    foreach ($actualLists as $listId => $listName) {
+                        if ($subscriber->getStatus() == Bronto_Api_Contact::STATUS_ACTIVE) {
+                            $helper->writeInfo("  Adding Contact to list: {$listName}");
+                            $contact->addToList($listId);
+                        } else {
+                            $helper->writeInfo("  Removing Contact from list: {$listName}");
+                            $contact->removeFromList($listId);
+                        }
+                    }
                 }
 
                 if ($helper->getUpdateStatus('store', $storeId)) {

@@ -28,7 +28,6 @@ class Bronto_Customer_Model_System_Config_Backend_Brontofield extends Mage_Core_
                 $attributes = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
             }
 
-
             if ($attributes) {
                 foreach ($attributes as $attribute) {
                     if ($this->field == $attribute->attribute_code) {

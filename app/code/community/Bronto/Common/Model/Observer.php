@@ -104,7 +104,7 @@ class Bronto_Common_Model_Observer
     public function clearOldLogs($cron)
     {
         $helper = Mage::helper(self::SUPPORT_IDENTIFIER);
-        if ($helper->shouldClearLogs()) {
+        if ($helper->isEnabled() && $helper->shouldClearLogs()) {
             $helper->clearOldLogs();
         }
     }

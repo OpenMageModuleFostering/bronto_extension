@@ -18,6 +18,7 @@ class Bronto_Reminder_Helper_Data extends Bronto_Common_Helper_Data implements B
     const XML_PATH_SEND_LIMIT         = 'bronto_reminder/settings/limit';
     const XML_PATH_EMAIL_IDENTITY     = 'bronto_reminder/settings/identity';
     const XML_PATH_EMAIL_THRESHOLD    = 'bronto_reminder/settings/threshold';
+    const XML_PATH_EXCLUSION_LISTS    = 'bronto_reminder/settings/exclusion';
 
     const XML_PATH_CRON_STRING = 'crontab/jobs/bronto_reminder_send_notification/schedule/cron_expr';
     const XML_PATH_CRON_MODEL  = 'crontab/jobs/bronto_reminder_send_notification/run/model';
@@ -283,10 +284,6 @@ class Bronto_Reminder_Helper_Data extends Bronto_Common_Helper_Data implements B
      */
     public function getSendFailureThreshold()
     {
-        if (Mage::helper('bronto_common')->isTestModeEnabled()) {
-            return 0;
-        }
-
         return (int)$this->getAdminScopedConfig(self::XML_PATH_EMAIL_THRESHOLD);
     }
 
