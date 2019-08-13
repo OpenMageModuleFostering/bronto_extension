@@ -41,7 +41,7 @@ class Bronto_Common_Model_Keysentry extends Mage_Core_Model_Abstract
         Mage::helper(self::NEWSLETTER)->disableModule($scope, $scopeId);
     }
 
-    public function unlinkEmails(Mage_Core_Model_Resource_Db_Collection_Abstract $collection, $scopeId)
+    public function unlinkEmails(Varien_Data_Collection_Db $collection, $scopeId)
     {
 /*
         //  missing key variable.  disabling for launch, keys are still relinked later

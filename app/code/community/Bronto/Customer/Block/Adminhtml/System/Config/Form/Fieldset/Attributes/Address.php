@@ -22,6 +22,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Add
         'prefix',
         'region_id',
         'suffix',
+        'vat_id',
     );
 
     /**

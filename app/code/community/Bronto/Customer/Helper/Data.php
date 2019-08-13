@@ -13,7 +13,7 @@ class Bronto_Customer_Helper_Data extends Bronto_Common_Helper_Data implements B
     const XML_PATH_UPGRADE_DATE = 'bronto_customer/settings/upgrade_date';
 
     const XML_PREFIX_CUSTOMER_ATTR = 'bronto_customer/attributes/';
-    const XML_PREFIX_ADDRESS_ATTR  = 'bronto_customer/attributes/';
+    const XML_PREFIX_ADDRESS_ATTR  = 'bronto_customer/address_attributes/';
 
     /**
      * @return bool

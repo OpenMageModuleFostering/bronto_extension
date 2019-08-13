@@ -31,7 +31,7 @@ class Bronto_Reminder_Model_Rule extends Mage_Rule_Model_Rule
 
         $version = Mage::getVersionInfo();
         if (   1 == $version['major']
-            && (6 >= $version['minor'] || 9 == $version['minor'])
+            && (6 >= $version['minor'] || 9 == $version['minor'] || 11 == $version['minor'])
         ) {
             $conditionsArr = unserialize($this->getConditionsSerialized());
             if (!empty($conditionsArr) && is_array($conditionsArr)) {

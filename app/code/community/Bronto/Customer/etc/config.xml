@@ -23,6 +23,11 @@
             </bronto_customer>
             <bronto_customer_resource>
                 <class>Bronto_Customer_Model_Resource</class>
+                <entities>
+                    <imported>
+                        <table>bronto_imported</table>
+                    </imported>
+                </entities>
             </bronto_customer_resource>
         </models>
         <resources>
@@ -51,7 +56,7 @@
                 <observers>
                     <bronto_customer_sales_customer_save_before>
                         <type>singleton</type>
-                        <class>bronto_customer/customer_observer</class>
+                        <class>bronto_customer/observer</class>
                         <method>markCustomerForReimport</method>
                     </bronto_customer_sales_customer_save_before>
                 </observers>

@@ -5,7 +5,8 @@
  * @copyright   2011-2013 Bronto Software, Inc.
  * @version     1.1.5
  */
-class Bronto_Customer_Model_Resource_Customer_Collection extends Mage_Customer_Model_Entity_Customer_Collection
+class Bronto_Customer_Model_Resource_Customer_Collection
+    extends Mage_Customer_Model_Entity_Customer_Collection
 {
     /**
      * @return Bronto_Customer_Model_Resource_Customer_Collection
@@ -22,6 +23,24 @@ class Bronto_Customer_Model_Resource_Customer_Collection extends Mage_Customer_M
     public function addBrontoNotImportedFilter()
     {
         $this->addAttributeToFilter('bronto_imported', array('null' => true));
+        return $this;
+    }
+
+    public function addBrontoMissingImportedAttribute()
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $db = $resource->getConnection('core_read');
+
+        $attributeId = Mage::getModel('eav/config')
+            ->getAttribute('customer', 'bronto_imported')
+            ->getId();
+
+        $subSelect = $db->select()
+            ->from($resource->getTableName('customer_entity_datetime'), array('entity_id'))
+            ->where($db->quoteInto('`attribute_id` = ?', $attributeId));
+        $this->getSelect()
+            ->where($db->quoteInto('`e`.`entity_id` not in ?', $subSelect));
+
         return $this;
     }
 

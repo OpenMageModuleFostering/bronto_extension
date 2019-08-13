@@ -28,6 +28,7 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Form_Fieldset_Attributes_Cus
         'confirmation',
         'reward_update_notification',
         'reward_warning_notification',
+        'disable_auto_group_change',
     );
 
     /**

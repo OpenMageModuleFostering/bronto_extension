@@ -6,7 +6,7 @@ class Bronto_Reminder_Test_Model_Observer
 
     protected function setUp()
     {
-	$this->_model = Mage::getModel('bronto_reminder/observer');
+        $this->_model = Mage::getModel('bronto_reminder/observer');
     }
 
     /**
@@ -14,9 +14,14 @@ class Bronto_Reminder_Test_Model_Observer
      * @group amd
      * @group model
      */
-    public function checkBrontoRequirements_ShouldReturnNull()
+    public function checkBrontoRequirementsShouldReturnNull()
     {
-	$this->assertNull($this->_model->checkBrontoRequirements(new Varien_Event_Observer()));
+        $sessionMock = $this->getModelMockBuilder('admin/session')
+            ->disableOriginalConstructor()
+            ->setMethods(null)
+            ->getMock();
+        $this->replaceByMock('singleton', 'admin/session', $sessionMock);
+        $this->assertNull($this->_model->checkBrontoRequirements(new Varien_Event_Observer()));
     }
 
     /**
@@ -24,13 +29,16 @@ class Bronto_Reminder_Test_Model_Observer
      * @group amd
      * @group model
      */
-    public function getCouponTypes_ShouldReturnSelf()
+    public function getCouponTypesShouldReturnSelf()
     {
-	$this->assertInstanceOf('Bronto_Reminder_Model_Observer', $this->_model->getCouponTypes());
+        $this->assertInstanceOf(
+            'Bronto_Reminder_Model_Observer',
+            $this->_model->getCouponTypes()
+        );
     }
 
-    public function getCouponTypes_ShouldSetTransport()
+    public function getCouponTypesShouldSetTransport()
     {
-	$this->markTestSkipped();
+        $this->markTestSkipped();
     }
 }

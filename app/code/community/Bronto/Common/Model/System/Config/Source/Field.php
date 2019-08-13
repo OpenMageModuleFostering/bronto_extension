@@ -26,9 +26,9 @@ class Bronto_Common_Model_System_Config_Source_Field
                 $fieldObject = $api->getFieldObject();
                 foreach ($fieldObject->readAll()->iterate() as $field /* @var $field Bronto_Api_Field_Row */) {
                     $this->_options[] = array(
-                        'value' => $field->name,
+                        'value' => $field->id,
                         'label' => $field->label,
-                    );
+                    );                    
                 }
             }
         } catch (Exception $e) {

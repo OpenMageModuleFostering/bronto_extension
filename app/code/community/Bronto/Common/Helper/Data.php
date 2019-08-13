@@ -325,7 +325,9 @@ class Bronto_Common_Helper_Data extends Mage_Core_Helper_Abstract
         $config->saveConfig($path, 0, $scope, $scopeId);
 
         $version = Mage::getVersionInfo();
-        if (1 == $version['major'] && 9 != $version['minor']) {
+        if (   1 == $version['major']
+            && (9 != $version['minor'] && 10 != $version['minor'])
+        ) {
             //  Get the Module alias from the path
             //  $path = bronto_email/settings/api_token
             //  $module = bronto_email

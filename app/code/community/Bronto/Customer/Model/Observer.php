@@ -7,8 +7,11 @@
  */
 class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 {
+    //  {{{ processCustomersForStore()
+
     /**
      * @param  mixed $storeId
+     *
      * @return array
      */
     public function processCustomersForStore($storeId = null)
@@ -44,18 +47,31 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
             return false;
         }
 
-        $customerIds = Mage::getModel('bronto_customer/resource_customer_collection')
+        //  This will find all customers who already have the bronto_imported attribute set on them
+        //  and are not imported into Bronto already. But will exclude to get any customer who is not
+        //  imported and does not have the bronto_imported attribute set
+        $notImportedCustomersWithAttribute = Mage::getModel('bronto_customer/resource_customer_collection')
             ->addStoreFilter($storeId)
             ->addBrontoNotImportedFilter()
             ->orderByUpdatedAt()
-            ->getAllIds($limit);
+            ->getAllIds();
+
+        //  This will find all customers who are missing the bronto_imported attribute on their entity
+        $notImportedCustomersWithoutAttribute = Mage::getModel('bronto_customer/resource_customer_collection')
+            ->addStoreFilter($storeId)
+            ->addBrontoMissingImportedAttribute()
+            ->orderByUpdatedAt()
+            ->getAllIds();
+
+        $allCustomerIds = array_merge($notImportedCustomersWithAttribute, $notImportedCustomersWithoutAttribute);
+        $customerIds = array_slice($allCustomerIds, 0, $limit);
 
         if (empty($customerIds)) {
             Mage::helper('bronto_customer')->writeVerboseDebug('  No Customers to process. Skipping...');
             return $result;
         }
 
-        $customerAttributes = Mage::getModel('customer/entity_attribute_collection')->addVisibleFilter();
+        $customerAttributes = Mage::getModel('customer/entity_attribute_collection');
         $addressAttributes  = Mage::getModel('customer/entity_address_attribute_collection')->addVisibleFilter();
         $customerCache      = array();
 
@@ -70,11 +86,11 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 $brontoContact->email = $customer->getEmail();
 
                 // For each Customer attribute
-                foreach ($customerAttributes as $attributeId => $attribute) {
-                    $_attributeCode = $_attribute->getAttributeCode();
+                foreach ($customerAttributes as $attributeId => $attribute) {   
+                    $_attributeCode = $attribute->getAttributeCode();
                     $_fieldName     = Mage::helper('bronto_customer')->getCustomerAttributeField($_attributeCode, $store);
                     if (!empty($_fieldName)) {
-                        $brontoContact->setField($_fieldName, $customer->getAttribute($_attributeCode));
+                        $brontoContact->setField($_fieldName, $customer->getData($_attributeCode));
                     }
                 }
 
@@ -82,10 +98,10 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 $primaryAddress = $customer->getPrimaryShippingAddress();
                 if (!empty($primaryAddress)) {
                     foreach ($addressAttributes as $attributeId => $attribute) {
-                        $_attributeCode = $_attribute->getAttributeCode();
+                        $_attributeCode = $attribute->getAttributeCode();
                         $_fieldName     = Mage::helper('bronto_customer')->getAddressAttributeField($_attributeCode, $store);
                         if (!empty($_fieldName)) {
-                            $brontoContact->setField($_fieldName, $primaryAddress->getAttribute($_attributeCode));
+                            $brontoContact->setField($_fieldName, $primaryAddress->getData($_attributeCode));
                         }
                     }
                 }
@@ -99,14 +115,14 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
                     // Flush every 10 Customers
                     if ($result['total'] % 100 === 0) {
-                        $result        = $this->flushCustomers($customerObject, $customerCache, $result);
+                        $result        = $this->flushCustomers($contactObject, $customerCache, $result);
                         $customerCache = array();
                     }
                 } catch (Exception $e) {
                     Mage::helper('bronto_customer')->writeError($e);
 
                     // Mark Customer as *not* imported
-                    $customer->setBrontoImported(null);
+                    $customer->setBrontoImported();
                     $customer->save();
 
                     $result['error']++;
@@ -117,7 +133,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         }
 
         // Final flush (for any we miss)
-        $result = $this->flushCustomers($customerObject, $customerCache, $result);
+        $result = $this->flushCustomers($contactObject, $customerCache, $result);
 
         Mage::helper('bronto_customer')->writeDebug('  Success: ' . $result['success']);
         Mage::helper('bronto_customer')->writeDebug('  Error:   ' . $result['error']);
@@ -126,10 +142,14 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
         return $result;
     }
 
+    //  }}}
+    //  {{{ flushCustomers()
+
     /**
      * @param  Bronto_Api_Customer $customerObject
      * @param  array $customerCache
      * @param  array $result
+     *
      * @return array
      */
     public function flushCustomers($customerObject, $customerCache, $result)
@@ -146,7 +166,7 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
                 $errorMessage = $flushResultRow->getErrorMessage();
                 if (isset($customerCache[$i])) {
                     // Reset Bronto Import status
-                    $customer = Mage::getModel('sales/customer')->load($customerCache[$i]);
+                    $customer = Mage::getModel('customer/customer')->load($customerCache[$i]);
                     $customer->setBrontoImported(null);
                     $customer->save();
                     Mage::helper('bronto_customer')->writeError("[{$errorCode}] {$errorMessage} ({$customer->getIncrementId})");
@@ -161,6 +181,9 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
         return $result;
     }
+
+    //  }}}
+    //  {{{ processCustomers()
 
     /**
      * @return array
@@ -183,4 +206,23 @@ class Bronto_Customer_Model_Observer extends Mage_Core_Model_Abstract
 
         return $result;
     }
+
+    //  }}}
+    //  {{{ markCustomerForReimport()
+
+    /**
+     * @param Varien_Event_Observer $observer
+     */
+    public function markCustomerForReimport(Varien_Event_Observer $observer)
+    {
+        /* @var $customer Mage_Customer_Model_Customer */
+        $customer = $observer->getCustomer();
+        if (   $customer->hasDataChanges()
+            && !$customer->dataHasChangedFor('bronto_imported')
+        ) {
+            $customer->setBrontoImported(null);
+        }
+    }
+
+    //  }}}
 }

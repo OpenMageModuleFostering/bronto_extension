@@ -66,6 +66,5 @@ class Bronto_Common_Test_Model_Keysentry extends EcomDev_PHPUnit_Test_Case
     public function getMatchingScopes($configuration)
     {
         $config = Mage::getStoreConfig('bronto/settings/api_token');
-        var_dump($config);
     }
 }

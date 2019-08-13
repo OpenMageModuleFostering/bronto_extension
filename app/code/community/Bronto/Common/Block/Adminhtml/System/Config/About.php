@@ -3,7 +3,7 @@
 /**
  * @package   Bronto\Common
  * @copyright 2011-2013 Bronto Software, Inc.
- * @version   2.0.0
+ * @version   2.0.1
  */
 class Bronto_Common_Block_Adminhtml_System_Config_About extends Mage_Adminhtml_Block_System_Config_Form_Fieldset
 {

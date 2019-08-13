@@ -13,17 +13,26 @@ class Bronto_RoundTrip_Test_Model_Roundtrip
 	 * @group jmk
 	 * @group model
 	 */
-	public function testProcessOrderShouldFailGracefully()
+	public function processOrderShouldFailGracefully()
 	{
+        $sessions = array('admin/session', 'adminhtml/session', 'core/session');
+        foreach ($sessions as $session) {
+            $sessionMock = $this->getModelMockBuilder($session)
+                ->disableOriginalConstructor()
+                ->setMethods(null)
+                ->getMock();
+            $this->replaceByMock('singleton', $session, $sessionMock);
+        }
+
         //  Create helper mock that will be used in logic
-        $helper = $this->getHelperMock('bronto_common', array('validApiTokens'));
+        $helper = $this->getHelperMock('bronto_common/data', array('validApiTokens'));
         $helper->expects($this->once())
             ->method('validApiTokens')
             ->will($this->returnValue(true));
 
         //  Inject helper object as item to be invoked when static
         //  method called to get helper
-        $this->replaceByMock('helper', 'bronto_common', $helper);
+        $this->replaceByMock('helper', 'bronto_common/data', $helper);
 
         //  Mock the roundtrip object so we can
         //  control how functionality is controlled

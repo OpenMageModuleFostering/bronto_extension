@@ -52,7 +52,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                            <comment><![CDATA[Allow Bronto modules to write logs in <code>var/log</code>.]]></comment>
+                            <comment><![CDATA[Allow the Bronto extension to write logs in <code>var/log</code>.]]></comment>
                         </debug>
                         <verbose>
                             <depends><debug>1</debug></depends>

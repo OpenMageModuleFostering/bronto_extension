@@ -36,10 +36,19 @@ class Bronto_Customer_Block_Adminhtml_System_Config_Cron extends Bronto_Common_B
      */
     protected function getProgressBarPending()
     {
-        return $this->getCustomerResourceCollection()
+        $notImportedCustomersWithAttribute = Mage::getModel('bronto_customer/resource_customer_collection')            
             ->addBrontoNotImportedFilter()
-            ->getSize()
-        ;
+            ->orderByUpdatedAt()
+            ->getAllIds();
+
+        //  This will find all customers who are missing the bronto_imported attribute on their entity
+        $notImportedCustomersWithoutAttribute = Mage::getModel('bronto_customer/resource_customer_collection')
+            ->addBrontoMissingImportedAttribute()
+            ->orderByUpdatedAt()
+            ->getAllIds();
+
+        $allCustomerIds = array_merge($notImportedCustomersWithAttribute, $notImportedCustomersWithoutAttribute);
+        return count($allCustomerIds);
     }
 
     /**

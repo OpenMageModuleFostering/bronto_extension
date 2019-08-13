@@ -26,7 +26,7 @@ class Bronto_Customer_Model_System_Config_Backend_Newfield extends Mage_Core_Mod
                 $field->save();
                 $fieldObject->addToCache($field->name, $field);
 
-                $this->_saveConfigData(str_replace('new_', '', $this->getPath()), $field->name);
+                $this->_saveConfigData(str_replace('new_', '', $this->getPath()), $field->id);
                 $this->setValue(null);
             } catch (Exception $e) {
                 Mage::throwException(Mage::helper('adminhtml')->__('Unable to save new field'));
